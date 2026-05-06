@@ -18,9 +18,9 @@
 
 <div class="main">
     <div class="booking-wrapper">
-        <div class="main-content-card">
+        <div class="primary-content-card">
             <h1>New Booking</h1>
-            <form class="form">
+            <form id="bookingForm" class="form">
                 <!-- Date -->
                 <label for="bookingDate">Date</label>
                 <input type="date" id="bookingDate" name="bookingDate">
@@ -28,12 +28,12 @@
                 <!-- Timeslot -->
                 <label for="timeslot">Timeslot</label>
                 <select id="timeslot" name="timeslot" required>
-                    <option value=null>Select Timeslot</option>
-                    <option value=1800>6pm</option>
-                    <option value=1815>6:15pm</option>
-                    <option value=1830>6:30pm</option>
-                    <option value=1845>6:45pm</option>
-                    <option value=1900>7:00pm</option>
+                    <option value="" disabled selected>Select Timeslot</option>
+                    <option value="1800">6pm</option>
+                    <option value="1815">6:15pm</option>
+                    <option value="1830">6:30pm</option>
+                    <option value="1845">6:45pm</option>
+                    <option value="1900">7:00pm</option>
                 </select>
 
                 <!-- First Name -->
@@ -51,6 +51,7 @@
                 <!-- Total Pax -->
                 <label for="totalPax">Total Pax</label>
                 <select id="totalPax" name="totalPax" required>
+                    <option value=0 disabled selected>Select Pax</option>
                     <option value=1>1</option>
                     <option value=2>2</option>
                     <option value=3>3</option>
@@ -71,6 +72,7 @@
                 <!-- Adult Pax -->
                 <label for="adultPax">Adults</label>
                 <select id="adultPax" name="adultPax" required>
+                    <option value=0>0</option>
                     <option value=1>1</option>
                     <option value=2>2</option>
                     <option value=3>3</option>
@@ -92,6 +94,7 @@
                 <label for="childPax">Children</label>
                 <select id="childPax" name="childPax" required>
                     <option value=0>None</option>
+                    <option value=1>1</option>
                     <option value=2>2</option>
                     <option value=3>3</option>
                     <option value=4>4</option>
@@ -138,32 +141,116 @@
                     <option value="window">Window</option>
                 </select>
 
-                <!-- Description -->
+                <!-- Email -->
                 <label for="email">Email</label>
                 <input type="text" id="email" name="email" placeholder="john.smith@email.com">
+
+                <!-- Additional Details -->
+                <label for="additionalDetails">Any Additional Notes</label>
+                <textarea id="additionalDetails" name="additionalDetails" placeholder="" rows="2"></textarea>
 
                 <!-- Submit button -->
                 <button type="submit">SAVE BOOKING</button>
             </form>
         </div>
 
-        <div class="sub-content-card">
+        <div class="secondary-content-card">
             <nav class="button-bar">
                 <ul class="button-bar">
                     <li><a class="bookings" href="manager.html">BOOKINGS</a></li>
                     <li><a class="new" href="create.html">NEW BOOKING</a></li>
                     <li><a class="walk-in" href="walkin-create.html">WALK-IN</a></li>
-                    <li><button type="submit">SAVE BOOKING</button></li>
+                    <li><button type="submit" form="bookingForm">SAVE BOOKING</button></li>
                 </ul>
             </nav>
         </div>
     </div>
 </div>
-<script>
-    window.onload = function() {
-        document.getElementById('bookingDate').value = new Date().toISOString().split('T')[0];
-    };
-</script>
-
 </body>
+
+<script>
+    const form = document.querySelector(".form");
+
+    const bookingDate = document.getElementById("bookingDate");
+    const timeslot = document.getElementById("timeslot");
+    const firstName = document.getElementById("firstName");
+    const lastName = document.getElementById("lastName");
+    const phoneNumber = document.getElementById("phoneNumber");
+    const totalPax = document.getElementById("totalPax");
+    const adultPax = document.getElementById("adultPax");
+    const childPax = document.getElementById("childPax");
+    const hcPax = document.getElementById("hcPax");
+    const preference = document.getElementById("preference");
+    const email = document.getElementById("email");
+    const additionalDetails = document.getElementById("additionalDetails");
+
+    // Default date
+    window.onload = function() {
+        if (!bookingDate.value) {
+            bookingDate.value = new Date().toISOString().split('T')[0];
+        }
+    };
+
+    // Pax sync logic
+    function updatePax() {
+        const total = parseInt(totalPax.value) || 0;
+        const children = parseInt(childPax.value) || 0;
+        const hc = parseInt(hcPax.value) || 0;
+
+        let adults = total - children - hc;
+        if (adults < 0) adults = 0;
+
+        adultPax.value = adults;
+    }
+
+    totalPax.addEventListener("change", updatePax);
+    childPax.addEventListener("change", updatePax);
+    hcPax.addEventListener("change", updatePax);
+
+    // Form submit → save to localStorage
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const date = bookingDate.value;
+        const key = `bookings-${date}`;
+
+        const booking = {
+            id: crypto.randomUUID(),
+            date: date,
+            timeslot: timeslot.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
+            phoneNumber: phoneNumber.value,
+            totalPax: parseInt(totalPax.value),
+            adultPax: parseInt(adultPax.value),
+            childPax: parseInt(childPax.value),
+            hcPax: parseInt(hcPax.value),
+            preference: preference.value,
+            email: email.value,
+            additionalDetails: additionalDetails.value,
+            createdAt: new Date().toISOString()
+        };
+
+        // Get existing bookings for this date
+        let bookings = [];
+        const existing = localStorage.getItem(key);
+
+        if (existing) {
+            try {
+                bookings = JSON.parse(existing);
+            } catch {
+                bookings = [];
+            }
+        }
+
+        // Add new booking
+        bookings.push(booking);
+
+        // Save back to localStorage
+        localStorage.setItem(key, JSON.stringify(bookings));
+
+        // Send back to booking manager
+        window.location.href = "manager.html";
+    });
+</script>
 </html>
