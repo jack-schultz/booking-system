@@ -22,14 +22,20 @@ h2 {
 }
 
 /* ========== CARDS ========== */
-.main-content-card {
+.content-card {
+    background-color: grey;
+    padding: 20px;
+    margin: 0;
+    border-radius: 10px;
+}
+.primary-content-card {
     width: 70%;
     background-color: whitesmoke;
     padding: 20px;
     margin: 0;
     border-radius: 10px;
 }
-.sub-content-card {
+.secondary-content-card {
     width: 30%;
     background-color: whitesmoke;
     padding: 20px;
@@ -108,7 +114,7 @@ h2 {
 }
 
 
-/* =============== BOOKING BUTTONS & WRAPPER =============== */
+/* =============== MAIN BOOKING BUTTONS & WRAPPER =============== */
 .booking-wrapper {
     display: flex;
     justify-content: space-between; /* pushes one left, one right */

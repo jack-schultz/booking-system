@@ -6,7 +6,21 @@
     <link rel="stylesheet" href="../style.css">
     <style>
 
-
+        .button-wrapper {
+            display: flex;
+        }
+        .button-wrapper p {
+            margin: 0;
+            padding: 0;
+        }
+        .booking-list {
+            display: flex;
+            flex-direction: column; /* Items stack vertically */
+            row-gap: 20px; /* Vertical space between items */
+        }
+        .booking-summary {
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
@@ -22,14 +36,12 @@
 
 <div class="main">
     <div class="booking-wrapper">
-        <div class="main-content-card">
+        <div class="primary-content-card">
             <h1>Booking Manager</h1>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ut fermentum erat, eu consequat libero. Cras ornare placerat pellentesque. Morbi eros tortor, venenatis vitae tortor a, vulputate semper elit. Quisque lacinia metus diam, consectetur cursus ante malesuada ac. Sed dictum sodales consectetur. Donec urna felis, aliquet a egestas ut, vestibulum eget augue. Maecenas eros purus, interdum ac ligula non, fringilla tincidunt sapien. Etiam id tempus massa. Nullam eleifend arcu quis pretium aliquet. Curabitur pretium aliquet augue, ac efficitur velit tempus at. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam vitae scelerisque nisl. Sed vulputate, turpis non volutpat accumsan, mi nibh elementum felis, vitae iaculis augue tellus id quam. Curabitur ut tincidunt neque. Etiam hendrerit condimentum dui at blandit. Nullam eget dignissim diam.
-            Donec id scelerisque sapien. Proin a aliquam arcu. Duis facilisis, dolor quis sodales sodales, libero magna blandit elit, sed porttitor nulla eros sed tellus. Aenean maximus leo eget vestibulum varius. Vivamus convallis consequat eros. Nullam ex urna, lacinia ornare semper a, malesuada suscipit neque. In sollicitudin, libero et molestie iaculis, mauris lorem iaculis lectus, ac sodales elit nunc et massa. Suspendisse potenti. Integer aliquam molestie lacus sed interdum. In rhoncus arcu eros, ac ullamcorper risus lacinia eget. Morbi faucibus elit sem, finibus rutrum nibh faucibus vel. Donec quis ipsum sapien. Suspendisse porta magna ut libero ultrices pretium. Proin facilisis, odio et ultrices commodo, mi diam posuere lorem, vitae porta justo ipsum quis ligula. Duis viverra interdum sem id porttitor. Aenean dapibus, ante vitae tincidunt egestas, sem nunc tempor orci, id viverra ipsum tellus quis nisi.
-            <div id="bookinglist"></div>
+            <div class="booking-list" id="booking-list"></div>
         </div>
 
-        <div class="sub-content-card">
+        <div class="secondary-content-card">
             <nav class="button-bar">
                 <ul class="button-bar">
                     <li><a class="bookings" href="manager.html">BOOKINGS</a></li>
@@ -40,6 +52,113 @@
         </div>
     </div>
 </div>
-
 </body>
+
+<script>
+    const bookingList = document.getElementById("booking-list");
+
+    function getTodayKey() {
+        const today = new Date().toISOString().split('T')[0];
+        return `bookings-${today}`;
+    }
+
+    function loadBookings() {
+        const key = getTodayKey();
+        const data = localStorage.getItem(key);
+
+        if (!data) {
+            bookingList.innerHTML = "<p>No bookings for today</p>";
+            return;
+        }
+
+        let bookings = [];
+        try {
+            bookings = JSON.parse(data);
+        } catch {
+            bookingList.innerHTML = "<p>Error loading bookings</p>";
+            return;
+        }
+
+        if (bookings.length === 0) {
+            bookingList.innerHTML = "<p>No bookings for today</p>";
+            return;
+        }
+
+        bookingList.innerHTML = "";
+
+        bookings.forEach((booking, index) => {
+            const div = document.createElement("div");
+            div.className = "content-card";
+
+            div.innerHTML = `
+                <div class="booking-summary" style="cursor:pointer;">
+                    ${booking.firstName} ${booking.lastName} |
+                    ${formatTime(booking.timeslot)} |
+                    ${booking.totalPax} (${booking.adultPax}, ${booking.childPax}, ${booking.hcPax})
+                </div>
+
+                <div class="booking-details" style="display:none; margin-top:10px;">
+                    <p><strong>Total Pax:</strong> ${booking.totalPax}</p>
+                    <p><strong>Adult Pax:</strong> ${booking.adultPax}</p>
+                    <p><strong>Child Pax:</strong> ${booking.childPax}</p>
+                    <p><strong>HC Pax:</strong> ${booking.hcPax}</p>
+                    <p><strong>Phone:</strong> ${booking.phoneNumber}</p>
+                    <p><strong>Email:</strong> ${booking.email || "-"}</p>
+                    <p><strong>Preference:</strong> ${booking.preference}</p>
+                    <p><strong>Notes:</strong> ${booking.additionalDetails || "-"}</p>
+
+                    <div class="button-wrapper">
+                        <button class="edit-button" data-id="${booking.id}">Edit</button>
+                        <button class="delete-button" data-id="${booking.id}">Delete</button>
+                    </div>
+                </div>
+            `;
+
+            // Toggle details
+            div.querySelector(".booking-summary").addEventListener("click", () => {
+                const details = div.querySelector(".booking-details");
+                details.style.display = details.style.display === "none" ? "block" : "none";
+            });
+
+            // Delete
+            div.querySelector(".delete-button").addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                let confirmBox = confirm("Are you sure you want to delete this task?");
+                if (confirmBox) {
+                    bookings.splice(index, 1);
+                    localStorage.setItem(key, JSON.stringify(bookings));
+                    div.remove();
+                }
+            });
+
+            // Edit
+            div.querySelector(".edit-button").addEventListener("click", (event) => {
+                event.stopPropagation();
+
+                const id = event.target.getAttribute("data-id");
+
+                // send user to create page with edit query string
+                window.location.href = `create.html?edit=${id}`;
+            });
+
+            bookingList.appendChild(div);
+        });
+    }
+
+    function formatTime(time) {
+        if (!time) return "";
+        const str = time.toString().padStart(4, '0');
+        let hours = parseInt(str.slice(0, 2));
+        const minutes = str.slice(2);
+
+        const ampm = hours >= 12 ? "pm" : "am";
+        if (hours > 12) hours -= 12;
+        if (hours === 0) hours = 12;
+
+        return `${hours}:${minutes} ${ampm}`;
+    }
+
+    window.onload = loadBookings;
+</script>
 </html>
