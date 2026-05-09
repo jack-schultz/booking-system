@@ -26,10 +26,12 @@
 <body>
 <div class="navbar">
     <div class="nav-left">
+        <a href="../login.html">Login</a>
         <a href="../index.html">Home</a>
         <a href="manager.html">Bookings</a>
     </div>
     <div class="nav-right">
+        <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
 </div>
@@ -160,5 +162,31 @@
     }
 
     window.onload = loadBookings;
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const client = window.supabase.createClient(
+        "https://qknvowhqqsdtyogkgbsb.supabase.co",
+        "sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I"
+    );
+
+    // Logout logic
+    document.getElementById("logoutBtn")
+        .addEventListener("click", async () => {
+        await client.auth.signOut();
+        window.location.href = "../login.html";
+    });
+
+    // Check if client is logged in
+    async function protectPage() {
+        const {
+            data: { user }
+        } = await client.auth.getUser();
+        if (!user) {
+            window.location.href = "../login.html";
+        }
+    }
+    protectPage();
 </script>
 </html>
