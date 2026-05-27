@@ -88,26 +88,43 @@
 
         bookingList.innerHTML = "";
 
-        bookings.forEach((booking, index) => {
-            const div = document.createElement("div");
-            div.className = "content-card";
+        // Sort by timeslot, then lastName. Allows display by timeslot
+        bookings.sort((a, b) => {
+            if (a.timeslot === b.timeslot) {
+                return a.lastName.localeCompare(b.lastName);
+            }
+            return a.timeslot - b.timeslot;
+        });
 
-            div.innerHTML = `
+        bookings.forEach((booking, index) => {
+
+            // Add timeslot div if one doesn't exist for this timeslot. Works because bookings is sorted by timeslot
+            const id = booking.timeslot;
+            if (!document.getElementById(id)) {
+                const timeslot_div = document.createElement("div");
+                timeslot_div.innerHTML = `${formatTime(booking.timeslot)}`;
+                timeslot_div.id = id;
+                timeslot_div.className = "timeslot-display"
+                bookingList.appendChild(timeslot_div);
+            }
+
+            // Add booking div containing booking information
+            const booking_div = document.createElement("div");
+            booking_div.className = "content-card";
+            booking_div.innerHTML = `
                 <div class="booking-summary" style="cursor:pointer;">
-                    ${booking.firstName} ${booking.lastName} |
-                    ${formatTime(booking.timeslot)} |
-                    ${booking.totalPax} (${booking.adultPax}, ${booking.childPax}, ${booking.hcPax})
+                    <strong>${booking.firstName} ${booking.lastName}</strong> for
+                    <strong>${booking.totalPax}</strong> PAX (${booking.adultPax}, ${booking.childPax}, ${booking.hcPax})
+                    Preference: <strong>${booking.preference}</strong>
                 </div>
 
                 <div class="booking-details" style="display:none; margin-top:10px;">
-                    <p><strong>Total Pax:</strong> ${booking.totalPax}</p>
-                    <p><strong>Adult Pax:</strong> ${booking.adultPax}</p>
-                    <p><strong>Child Pax:</strong> ${booking.childPax}</p>
-                    <p><strong>HC Pax:</strong> ${booking.hcPax}</p>
-                    <p><strong>Phone:</strong> ${booking.phoneNumber}</p>
-                    <p><strong>Email:</strong> ${booking.email || "-"}</p>
-                    <p><strong>Preference:</strong> ${booking.preference}</p>
-                    <p><strong>Notes:</strong> ${booking.additionalDetails || "-"}</p>
+                    <p><strong>Total Pax</strong>: <strong>${booking.totalPax}</strong> (<strong>${booking.adultPax}</strong> Adults, <strong>${booking.childPax}</strong> Children, <strong>${booking.hcPax}</strong> HC)</p>
+                    <p><strong>Time</strong>: ${formatTime(booking.timeslot)}</p>
+                    <p><strong>Phone</strong>: ${booking.phoneNumber}</p>
+                    <p><strong>Email</strong>: ${booking.email || "-"}</p>
+                    <p><strong>Preference</strong>: ${booking.preference}</p>
+                    <p><strong>Notes</strong>: ${booking.additionalDetails || "-"}</p>
 
                     <div class="button-wrapper">
                         <button class="edit-button" data-id="${booking.id}">Edit</button>
@@ -117,25 +134,25 @@
             `;
 
             // Toggle details
-            div.querySelector(".booking-summary").addEventListener("click", () => {
-                const details = div.querySelector(".booking-details");
+            booking_div.querySelector(".booking-summary").addEventListener("click", () => {
+                const details = booking_div.querySelector(".booking-details");
                 details.style.display = details.style.display === "none" ? "block" : "none";
             });
 
             // Delete
-            div.querySelector(".delete-button").addEventListener("click", (event) => {
+            booking_div.querySelector(".delete-button").addEventListener("click", (event) => {
                 event.stopPropagation();
 
                 let confirmBox = confirm("Are you sure you want to delete this task?");
                 if (confirmBox) {
                     bookings.splice(index, 1);
                     localStorage.setItem(key, JSON.stringify(bookings));
-                    div.remove();
+                    booking_div.remove();
                 }
             });
 
             // Edit
-            div.querySelector(".edit-button").addEventListener("click", (event) => {
+            booking_div.querySelector(".edit-button").addEventListener("click", (event) => {
                 event.stopPropagation();
 
                 const id = event.target.getAttribute("data-id");
@@ -144,7 +161,7 @@
                 window.location.href = `create.html?edit=${id}`;
             });
 
-            bookingList.appendChild(div);
+            bookingList.appendChild(booking_div);
         });
     }
 
