@@ -23,129 +23,225 @@
         <div class="primary-content-card">
             <h1>New Booking</h1>
             <form id="bookingForm" class="form">
-                <!-- Date -->
-                <label for="bookingDate">Date</label>
-                <input type="date" id="bookingDate" name="bookingDate">
+                <div class="booking-row">
+                    <!-- Date -->
+                    <div class="booking-column">
+                        <label for="bookingDate">Date</label>
+                        <input type="date" id="bookingDate" name="bookingDate">
+                    </div>
 
-                <!-- Timeslot -->
-                <label for="timeslot">Timeslot</label>
-                <select id="timeslot" name="timeslot" required>
-                    <option value="" disabled selected>Select Timeslot</option>
-                    <option value="1800">6pm</option>
-                    <option value="1815">6:15pm</option>
-                    <option value="1830">6:30pm</option>
-                    <option value="1845">6:45pm</option>
-                    <option value="1900">7:00pm</option>
-                </select>
+                    <!-- Timeslot -->
+                    <div class="booking-column">
+                        <label for="timeslot">Timeslot</label>
+                        <select id="timeslot" name="timeslot" required>
+                            <option value="" disabled selected>Select Timeslot</option>
+                            <option value="0900">9:00am</option>
+                            <option value="0915">9:15am</option>
+                            <option value="0930">9:30am</option>
+                            <option value="0945">9:45am</option>
 
-                <!-- First Name -->
-                <label for="firstName">First Name</label>
-                <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                            <option value="1000">10:00am</option>
+                            <option value="1015">10:15am</option>
+                            <option value="1030">10:30am</option>
+                            <option value="1045">10:45am</option>
 
-                <!-- First Name -->
-                <label for="lastName">First Name</label>
-                <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
+                            <option value="1100">11:00am</option>
+                            <option value="1115">11:15am</option>
+                            <option value="1130">11:30am</option>
+                            <option value="1145">11:45am</option>
 
-                <!-- Phone Number -->
-                <label for="phoneNumber">Phone Number</label>
-                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="04XXXXXXXX" inputmode="numeric" pattern="[0-9]*" required>
+                            <option value="1200">12:00pm</option>
+                            <option value="1215">12:15pm</option>
+                            <option value="1230">12:30pm</option>
+                            <option value="1245">12:45pm</option>
 
-                <!-- Total Pax -->
-                <label for="totalPax">Total Pax</label>
-                <select id="totalPax" name="totalPax" required>
-                    <option value=0 disabled selected>Select Pax</option>
-                    <option value=1>1</option>
-                    <option value=2>2</option>
-                    <option value=3>3</option>
-                    <option value=4>4</option>
-                    <option value=5>5</option>
-                    <option value=6>6</option>
-                    <option value=7>7</option>
-                    <option value=8>8</option>
-                    <option value=9>9</option>
-                    <option value=10>10</option>
-                    <option value=11>11</option>
-                    <option value=12>12</option>
-                    <option value=13>13</option>
-                    <option value=14>14</option>
-                    <option value=15>15</option>
-                </select>
+                            <option value="1300">1:00pm</option>
+                            <option value="1315">1:15pm</option>
+                            <option value="1330">1:30pm</option>
+                            <option value="1345">1:45pm</option>
 
-                <!-- Adult Pax -->
-                <label for="adultPax">Adults</label>
-                <select id="adultPax" name="adultPax" required>
-                    <option value=0>0</option>
-                    <option value=1>1</option>
-                    <option value=2>2</option>
-                    <option value=3>3</option>
-                    <option value=4>4</option>
-                    <option value=5>5</option>
-                    <option value=6>6</option>
-                    <option value=7>7</option>
-                    <option value=8>8</option>
-                    <option value=9>9</option>
-                    <option value=10>10</option>
-                    <option value=11>11</option>
-                    <option value=12>12</option>
-                    <option value=13>13</option>
-                    <option value=14>14</option>
-                    <option value=15>15</option>
-                </select>
+                            <option value="1400">2:00pm</option>
+                            <option value="1415">2:15pm</option>
+                            <option value="1430">2:30pm</option>
+                            <option value="1445">2:45pm</option>
 
-                <!-- Child Pax -->
-                <label for="childPax">Children</label>
-                <select id="childPax" name="childPax" required>
-                    <option value=0>None</option>
-                    <option value=1>1</option>
-                    <option value=2>2</option>
-                    <option value=3>3</option>
-                    <option value=4>4</option>
-                    <option value=5>5</option>
-                    <option value=6>6</option>
-                    <option value=7>7</option>
-                    <option value=8>8</option>
-                    <option value=9>9</option>
-                    <option value=10>10</option>
-                    <option value=11>11</option>
-                    <option value=12>12</option>
-                    <option value=13>13</option>
-                    <option value=14>14</option>
-                    <option value=15>15</option>
-                </select>
+                            <option value="1500">3:00pm</option>
+                            <option value="1515">3:15pm</option>
+                            <option value="1530">3:30pm</option>
+                            <option value="1545">3:45pm</option>
 
-                <!-- HC Pax -->
-                <label for="hcPax">HighChairs Required</label>
-                <select id="hcPax" name="hcPax" required>
-                    <option value=0>None</option>
-                    <option value=1>1</option>
-                    <option value=2>2</option>
-                    <option value=3>3</option>
-                    <option value=4>4</option>
-                    <option value=5>5</option>
-                    <option value=6>6</option>
-                    <option value=7>7</option>
-                    <option value=8>8</option>
-                    <option value=9>9</option>
-                    <option value=10>10</option>
-                    <option value=11>11</option>
-                    <option value=12>12</option>
-                    <option value=13>13</option>
-                    <option value=14>14</option>
-                    <option value=15>15</option>
-                </select>
+                            <option value="1600">4:00pm</option>
+                            <option value="1615">4:15pm</option>
+                            <option value="1630">4:30pm</option>
+                            <option value="1645">4:45pm</option>
 
-                <!-- Preference -->
-                <label for="preference">Preference</label>
-                <select id="preference" name="preference" required>
-                    <option value="none">None</option>
-                    <option value="booth">Booth</option>
-                    <option value="table">Table</option>
-                    <option value="window">Window</option>
-                </select>
+                            <option value="1700">5:00pm</option>
+                            <option value="1715">5:15pm</option>
+                            <option value="1730">5:30pm</option>
+                            <option value="1745">5:45pm</option>
 
-                <!-- Email -->
-                <label for="email">Email</label>
-                <input type="text" id="email" name="email" placeholder="john.smith@email.com">
+                            <option value="1800">6:00pm</option>
+                            <option value="1815">6:15pm</option>
+                            <option value="1830">6:30pm</option>
+                            <option value="1845">6:45pm</option>
+
+                            <option value="1900">7:00pm</option>
+                            <option value="1915">7:15pm</option>
+                            <option value="1930">7:30pm</option>
+                            <option value="1945">7:45pm</option>
+
+                            <option value="2000">8:00pm</option>
+                            <option value="2015">8:15pm</option>
+                            <option value="2030">8:30pm</option>
+                            <option value="2045">8:45pm</option>
+
+                            <option value="2100">9:00pm</option>
+                            <option value="2115">9:15pm</option>
+                            <option value="2130">9:30pm</option>
+                            <option value="2145">9:45pm</option>
+
+                            <option value="2200">10:00pm</option>
+                            <option value="2215">10:15pm</option>
+                            <option value="2230">10:30pm</option>
+                            <option value="2245">10:45pm</option>
+
+                            <option value="2300">11:00pm</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="booking-row">
+                    <!-- First Name -->
+                    <div class="booking-column">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="booking-column">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="booking-column">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="text" id="phoneNumber" name="phoneNumber" placeholder="04XXXXXXXX" inputmode="numeric" pattern="[0-9]*" required>
+                    </div>
+                </div>
+
+                <div class="booking-row">
+                    <div class="booking-column">
+                        <!-- Total Pax -->
+                        <label for="totalPax">Total Pax</label>
+                        <select id="totalPax" name="totalPax" required>
+                            <option value=0 disabled selected>Select Pax</option>
+                            <option value=1>1</option>
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=5>5</option>
+                            <option value=6>6</option>
+                            <option value=7>7</option>
+                            <option value=8>8</option>
+                            <option value=9>9</option>
+                            <option value=10>10</option>
+                            <option value=11>11</option>
+                            <option value=12>12</option>
+                            <option value=13>13</option>
+                            <option value=14>14</option>
+                            <option value=15>15</option>
+                        </select>
+                    </div>
+
+                    <div class="booking-column">
+                        <!-- Adult Pax -->
+                        <label for="adultPax">Adults</label>
+                        <select id="adultPax" name="adultPax" required>
+                            <option value=0>0</option>
+                            <option value=1>1</option>
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=5>5</option>
+                            <option value=6>6</option>
+                            <option value=7>7</option>
+                            <option value=8>8</option>
+                            <option value=9>9</option>
+                            <option value=10>10</option>
+                            <option value=11>11</option>
+                            <option value=12>12</option>
+                            <option value=13>13</option>
+                            <option value=14>14</option>
+                            <option value=15>15</option>
+                        </select>
+                    </div>
+
+                    <div class="booking-column">
+                        <!-- Child Pax -->
+                        <label for="childPax">Children</label>
+                        <select id="childPax" name="childPax" required>
+                            <option value=0>None</option>
+                            <option value=1>1</option>
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=5>5</option>
+                            <option value=6>6</option>
+                            <option value=7>7</option>
+                            <option value=8>8</option>
+                            <option value=9>9</option>
+                            <option value=10>10</option>
+                            <option value=11>11</option>
+                            <option value=12>12</option>
+                            <option value=13>13</option>
+                            <option value=14>14</option>
+                            <option value=15>15</option>
+                        </select>
+                    </div>
+
+                    <div class="booking-column">
+                        <!-- HC Pax -->
+                        <label for="hcPax">HighChairs Required</label>
+                        <select id="hcPax" name="hcPax" required>
+                            <option value=0>None</option>
+                            <option value=1>1</option>
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=5>5</option>
+                            <option value=6>6</option>
+                            <option value=7>7</option>
+                            <option value=8>8</option>
+                            <option value=9>9</option>
+                            <option value=10>10</option>
+                            <option value=11>11</option>
+                            <option value=12>12</option>
+                            <option value=13>13</option>
+                            <option value=14>14</option>
+                            <option value=15>15</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="booking-row">
+                    <div class="booking-column">
+                        <!-- Preference -->
+                        <label for="preference">Preference</label>
+                        <select id="preference" name="preference" required>
+                            <option value="none">None</option>
+                            <option value="booth">Booth</option>
+                            <option value="table">Table</option>
+                            <option value="window">Window</option>
+                        </select>
+                    </div>
+
+                    <div class="booking-column">
+                        <!-- Email -->
+                        <label for="email">Email</label>
+                        <input type="text" id="email" name="email" placeholder="john.smith@email.com">
+                    </div>
+                </div>
 
                 <!-- Additional Details -->
                 <label for="additionalDetails">Any Additional Notes</label>
