@@ -43,15 +43,14 @@
 
 </body>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-    const client = window.supabase.createClient(
-        "https://qknvowhqqsdtyogkgbsb.supabase.co",
-        "sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I"
-    );
+<script type="module">
+    import { supabase } from "./supabaseClient.js";
+    import { initDatabase } from "./db";
 
     const form = document.getElementById("loginForm");
+
+    // initialize DB
+    const dbPromise = initDatabase();
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -59,19 +58,20 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
 
-        const { error } = await client.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
             password
         });
 
         if (error) {
-            document.getElementById("error").textContent =
-                error.message;
+            document.getElementById("error").textContent = error.message;
             return;
         }
+
+        // ensure DB is ready (already migrated)
+        await dbPromise;
 
         window.location.href = "booking/manager.html";
     });
 </script>
-
 </html>
