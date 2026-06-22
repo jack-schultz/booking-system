@@ -113,18 +113,18 @@ h2 {
     background-color: #555;
 }
 
-
 .booking-row {
     display: flex;
     gap: 20px;
     flex-direction: row;
+    flex-grow: 1; /* Fills all available space */
 }
 
 .booking-column {
     display: flex;
     flex-direction: column;
+    flex-grow: 1; /* Fills all available space */
 }
-
 
 /* =============== MAIN BOOKING BUTTONS & WRAPPER =============== */
 .booking-wrapper {
@@ -134,7 +134,7 @@ h2 {
     padding: 0;
 }
 
-.button-bar ul {
+.button-bar {
     list-style: none;
     margin: 0;
     padding: 0;

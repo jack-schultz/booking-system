@@ -122,11 +122,19 @@
                         <label for="lastName">Last Name</label>
                         <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
                     </div>
+                </div>
 
+                <div class="booking-row">
                     <!-- Phone Number -->
                     <div class="booking-column">
                         <label for="phoneNumber">Phone Number</label>
                         <input type="text" id="phoneNumber" name="phoneNumber" placeholder="04XXXXXXXX" inputmode="numeric" pattern="[0-9]*" required>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="booking-column">
+                        <label for="email">Email</label>
+                        <input type="text" id="email" name="email" placeholder="john.smith@email.com">
                     </div>
                 </div>
 
@@ -237,15 +245,11 @@
                     </div>
 
                     <div class="booking-column">
-                        <!-- Email -->
-                        <label for="email">Email</label>
-                        <input type="text" id="email" name="email" placeholder="john.smith@email.com">
+                        <!-- Additional Details -->
+                        <label for="additionalDetails">Any Additional Notes</label>
+                        <textarea id="additionalDetails" name="additionalDetails" placeholder="" rows="2"></textarea>
                     </div>
                 </div>
-
-                <!-- Additional Details -->
-                <label for="additionalDetails">Any Additional Notes</label>
-                <textarea id="additionalDetails" name="additionalDetails" placeholder="" rows="2"></textarea>
 
                 <!-- Submit button -->
                 <button type="submit">SAVE BOOKING</button>
@@ -254,21 +258,23 @@
 
         <div class="secondary-content-card">
             <nav class="button-bar">
-                <ul class="button-bar">
-                    <li><a class="bookings" href="manager.html">BOOKINGS</a></li>
-                    <li><a class="new" href="create.html">NEW BOOKING</a></li>
-                    <li><a class="walk-in" href="walkin-create.html">WALK-IN</a></li>
-                    <li><button type="submit" form="bookingForm">SAVE BOOKING</button></li>
-                </ul>
+                <a class="bookings" href="manager.html">BOOKINGS</a>
+                <a class="new" href="create.html">NEW BOOKING</a>
+                <a class="walk-in" href="walkin-create.html">WALK-IN</a>
+                <button type="submit" form="bookingForm">SAVE BOOKING</button>
             </nav>
         </div>
     </div>
 </div>
 </body>
 
-<script>
-    const form = document.querySelector(".form");
+<script type="module">
+    // Get supabase client
+    import { supabase } from "../supabaseClient.js";
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
 
+    const form = document.querySelector(".form");
     const bookingDate = document.getElementById("bookingDate");
     const timeslot = document.getElementById("timeslot");
     const firstName = document.getElementById("firstName");
@@ -283,11 +289,9 @@
     const additionalDetails = document.getElementById("additionalDetails");
 
     // Default date
-    window.onload = function() {
-        if (!bookingDate.value) {
-            bookingDate.value = new Date().toISOString().split('T')[0];
-        }
-    };
+    if (!bookingDate.value) {
+        bookingDate.value = new Date().toISOString().split('T')[0];
+    }
 
     // Pax sync logic
     function updatePax() {
@@ -306,15 +310,12 @@
     hcPax.addEventListener("change", updatePax);
 
     // Form submit → save to localStorage
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", async(e) => {
         e.preventDefault();
-
-        const date = bookingDate.value;
-        const key = `bookings-${date}`;
 
         const booking = {
             id: crypto.randomUUID(),
-            date: date,
+            date: bookingDate.value,
             timeslot: timeslot.value,
             firstName: firstName.value,
             lastName: lastName.value,
@@ -329,40 +330,29 @@
             createdAt: new Date().toISOString()
         };
 
-        // Get existing bookings for this date
-        let bookings = [];
-        const existing = localStorage.getItem(key);
+        console.log(booking.timeslot, booking.date)
 
-        if (existing) {
-            try {
-                bookings = JSON.parse(existing);
-            } catch {
-                bookings = [];
-            }
+        // Save new booking to Supabase
+        const { error } = await supabase
+            .from("bookings")
+            .insert({
+                first_name: booking.firstName,
+                last_name: booking.lastName,
+                datetime: booking.timeslot,
+            });
+
+        if (error) {
+            console.error(error);
         }
 
-        // Add new booking
-        bookings.push(booking);
-
-        // Save back to localStorage
-        localStorage.setItem(key, JSON.stringify(bookings));
-
         // Send back to booking manager
-        window.location.href = "manager.html";
+        //window.location.href = "manager.html";
     });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const client = window.supabase.createClient(
-        "https://qknvowhqqsdtyogkgbsb.supabase.co",
-        "sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I"
-    );
 
     // Logout logic
     document.getElementById("logoutBtn")
         .addEventListener("click", async () => {
-            await client.auth.signOut();
+            await supabase.auth.signOut();
             window.location.href = "../login.html";
         });
 
@@ -370,7 +360,7 @@
     async function protectPage() {
         const {
             data: { user }
-        } = await client.auth.getUser();
+        } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = "../login.html";
         }
