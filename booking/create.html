@@ -13,6 +13,7 @@
         <a href="manager.html">Bookings</a>
     </div>
     <div class="nav-right">
+        <a id="logged_in_user"></a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
@@ -21,7 +22,7 @@
 <div class="main">
     <div class="booking-wrapper">
         <div class="primary-content-card">
-            <h1>New Booking</h1>
+            <h1 id="pageTitle">New Booking</h1>
             <form id="bookingForm" class="form">
                 <div class="booking-row">
                     <!-- Date -->
@@ -269,12 +270,24 @@
 </body>
 
 <script type="module">
-    // Get supabase client
     import { supabase } from "../supabaseClient.js";
+    import { initDatabase } from "../db/index.js";
+    import {
+        buildDatetime,
+        getBookingById,
+        getDateFromDatetime,
+        getTimeslotFromDatetime,
+        insertBooking,
+        updateBooking,
+    } from "../db/bookings.js";
+
     const { data: { session } } = await supabase.auth.getSession();
     const user = session?.user;
 
+    const db = await initDatabase();
+
     const form = document.querySelector(".form");
+    const pageTitle = document.getElementById("pageTitle");
     const bookingDate = document.getElementById("bookingDate");
     const timeslot = document.getElementById("timeslot");
     const firstName = document.getElementById("firstName");
@@ -288,20 +301,19 @@
     const email = document.getElementById("email");
     const additionalDetails = document.getElementById("additionalDetails");
 
-    // Default date
+    const editId = new URLSearchParams(window.location.search).get("edit");
+    let editingId = null;
+
     if (!bookingDate.value) {
-        bookingDate.value = new Date().toISOString().split('T')[0];
+        bookingDate.value = new Date().toISOString().split("T")[0];
     }
 
-    // Pax sync logic
     function updatePax() {
-        const total = parseInt(totalPax.value) || 0;
-        const children = parseInt(childPax.value) || 0;
-        const hc = parseInt(hcPax.value) || 0;
-
+        const total = parseInt(totalPax.value, 10) || 0;
+        const children = parseInt(childPax.value, 10) || 0;
+        const hc = parseInt(hcPax.value, 10) || 0;
         let adults = total - children - hc;
         if (adults < 0) adults = 0;
-
         adultPax.value = adults;
     }
 
@@ -309,62 +321,79 @@
     childPax.addEventListener("change", updatePax);
     hcPax.addEventListener("change", updatePax);
 
-    // Form submit → save to localStorage
-    form.addEventListener("submit", async(e) => {
+    async function loadBookingForEdit(id) {
+        const booking = await getBookingById(db, id);
+        if (!booking) {
+            window.location.href = "manager.html";
+            return;
+        }
+
+        editingId = id;
+        pageTitle.textContent = "Edit Booking";
+        bookingDate.value = getDateFromDatetime(booking.datetime);
+        timeslot.value = getTimeslotFromDatetime(booking.datetime);
+        firstName.value = booking.first_name;
+        lastName.value = booking.last_name;
+        phoneNumber.value = booking.phone_number ?? "";
+        email.value = booking.email ?? "";
+        totalPax.value = booking.total_pax;
+        adultPax.value = booking.adult_pax;
+        childPax.value = booking.child_pax;
+        hcPax.value = booking.hc_pax;
+        preference.value = booking.preference ?? "none";
+        additionalDetails.value = booking.notes ?? "";
+    }
+
+    if (editId) {
+        await loadBookingForEdit(editId);
+    }
+
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const booking = {
-            id: crypto.randomUUID(),
-            date: bookingDate.value,
-            timeslot: timeslot.value,
-            firstName: firstName.value,
-            lastName: lastName.value,
-            phoneNumber: phoneNumber.value,
-            totalPax: parseInt(totalPax.value),
-            adultPax: parseInt(adultPax.value),
-            childPax: parseInt(childPax.value),
-            hcPax: parseInt(hcPax.value),
-            preference: preference.value,
+        const record = {
+            first_name: firstName.value,
+            last_name: lastName.value,
+            phone_number: phoneNumber.value,
             email: email.value,
-            additionalDetails: additionalDetails.value,
-            createdAt: new Date().toISOString()
+            total_pax: parseInt(totalPax.value, 10),
+            adult_pax: parseInt(adultPax.value, 10),
+            child_pax: parseInt(childPax.value, 10),
+            hc_pax: parseInt(hcPax.value, 10),
+            preference: preference.value,
+            notes: additionalDetails.value,
+            datetime: buildDatetime(bookingDate.value, timeslot.value),
+            profile_id: user?.id ?? null,
+            status: "confirmed",
         };
 
-        console.log(booking.timeslot, booking.date)
-
-        // Save new booking to Supabase
-        const { error } = await supabase
-            .from("bookings")
-            .insert({
-                first_name: booking.firstName,
-                last_name: booking.lastName,
-                datetime: booking.timeslot,
+        if (editingId) {
+            await updateBooking(db, editingId, record);
+        } else {
+            await insertBooking(db, {
+                ...record,
+                restaurant_id: 1, // TODO: This should be pulled from the profiles table from supabase and saved for local running
+                id: crypto.randomUUID(),
+                created_at: new Date().toISOString(),
             });
-
-        if (error) {
-            console.error(error);
         }
 
-        // Send back to booking manager
-        //window.location.href = "manager.html";
+        window.location.href = "manager.html";
     });
 
-    // Logout logic
-    document.getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-            await supabase.auth.signOut();
-            window.location.href = "../login.html";
-        });
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "../login.html";
+    });
 
-    // Check if client is logged in
-    async function protectPage() {
-        const {
-            data: { user }
-        } = await supabase.auth.getUser();
+    async function login() {
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = "../login.html";
+            return;
         }
+        document.getElementById("logged_in_user").innerHTML = user.email ?? "None"
     }
-    protectPage();
+    login();
 </script>
 </html>
