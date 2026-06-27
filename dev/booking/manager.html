@@ -31,6 +31,7 @@
         <a href="manager.html">Bookings</a>
     </div>
     <div class="nav-right">
+        <a id="logged_in_user">Not Logged In</a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
@@ -54,30 +55,25 @@
 </div>
 </body>
 
-<script>
-    const bookingList = document.getElementById("booking-list");
+<script type="module">
+    import { supabase } from "../supabaseClient.js";
+    import { initDatabase } from "../db/index.js";
+    import {
+        deleteBooking,
+        formatTimeslot,
+        getBookingsForDate,
+        getTimeslotFromDatetime,
+    } from "../db/bookings.js";
 
-    function getTodayKey() {
-        const today = new Date().toISOString().split('T')[0];
-        return `bookings-${today}`;
+    const bookingList = document.getElementById("booking-list");
+    const db = await initDatabase();
+
+    function getTodayDate() {
+        return new Date().toISOString().split("T")[0];
     }
 
-    function loadBookings() {
-        const key = getTodayKey();
-        const data = localStorage.getItem(key);
-
-        if (!data) {
-            bookingList.innerHTML = "<p>No bookings for today</p>";
-            return;
-        }
-
-        let bookings = [];
-        try {
-            bookings = JSON.parse(data);
-        } catch {
-            bookingList.innerHTML = "<p>Error loading bookings</p>";
-            return;
-        }
+    async function loadBookings() {
+        const bookings = await getBookingsForDate(db, getTodayDate());
 
         if (bookings.length === 0) {
             bookingList.innerHTML = "<p>No bookings for today</p>";
@@ -86,43 +82,33 @@
 
         bookingList.innerHTML = "";
 
-        // Sort by timeslot, then lastName. Allows display by timeslot
-        bookings.sort((a, b) => {
-            if (a.timeslot === b.timeslot) {
-                return a.lastName.localeCompare(b.lastName);
-            }
-            return a.timeslot - b.timeslot;
-        });
+        bookings.forEach((booking) => {
+            const timeslot = getTimeslotFromDatetime(booking.datetime);
 
-        bookings.forEach((booking, index) => {
-
-            // Add timeslot div if one doesn't exist for this timeslot. Works because bookings is sorted by timeslot
-            const id = booking.timeslot;
-            if (!document.getElementById(id)) {
-                const timeslot_div = document.createElement("div");
-                timeslot_div.innerHTML = `${formatTime(booking.timeslot)}`;
-                timeslot_div.id = id;
-                timeslot_div.className = "timeslot-display"
-                bookingList.appendChild(timeslot_div);
+            if (!document.getElementById(timeslot)) {
+                const timeslotDiv = document.createElement("div");
+                timeslotDiv.textContent = formatTimeslot(booking.datetime);
+                timeslotDiv.id = timeslot;
+                timeslotDiv.className = "timeslot-display";
+                bookingList.appendChild(timeslotDiv);
             }
 
-            // Add booking div containing booking information
-            const booking_div = document.createElement("div");
-            booking_div.className = "content-card";
-            booking_div.innerHTML = `
+            const bookingDiv = document.createElement("div");
+            bookingDiv.className = "content-card";
+            bookingDiv.innerHTML = `
                 <div class="booking-summary" style="cursor:pointer;">
-                    <strong>${booking.firstName} ${booking.lastName}</strong> for
-                    <strong>${booking.totalPax}</strong> PAX (${booking.adultPax}, ${booking.childPax}, ${booking.hcPax})
+                    <strong>${booking.first_name} ${booking.last_name}</strong> for
+                    <strong>${booking.total_pax}</strong> PAX (${booking.adult_pax}, ${booking.child_pax}, ${booking.hc_pax})
                     Preference: <strong>${booking.preference}</strong>
                 </div>
 
                 <div class="booking-details" style="display:none; margin-top:10px;">
-                    <p><strong>Total Pax</strong>: <strong>${booking.totalPax}</strong> (<strong>${booking.adultPax}</strong> Adults, <strong>${booking.childPax}</strong> Children, <strong>${booking.hcPax}</strong> HC)</p>
-                    <p><strong>Time</strong>: ${formatTime(booking.timeslot)}</p>
-                    <p><strong>Phone</strong>: ${booking.phoneNumber}</p>
+                    <p><strong>Total Pax</strong>: <strong>${booking.total_pax}</strong> (<strong>${booking.adult_pax}</strong> Adults, <strong>${booking.child_pax}</strong> Children, <strong>${booking.hc_pax}</strong> HC)</p>
+                    <p><strong>Time</strong>: ${formatTimeslot(booking.datetime)}</p>
+                    <p><strong>Phone</strong>: ${booking.phone_number ?? "-"}</p>
                     <p><strong>Email</strong>: ${booking.email || "-"}</p>
                     <p><strong>Preference</strong>: ${booking.preference}</p>
-                    <p><strong>Notes</strong>: ${booking.additionalDetails || "-"}</p>
+                    <p><strong>Notes</strong>: ${booking.notes || "-"}</p>
 
                     <div class="button-wrapper">
                         <button class="edit-button" data-id="${booking.id}">Edit</button>
@@ -131,77 +117,43 @@
                 </div>
             `;
 
-            // Toggle details
-            booking_div.querySelector(".booking-summary").addEventListener("click", () => {
-                const details = booking_div.querySelector(".booking-details");
+            bookingDiv.querySelector(".booking-summary").addEventListener("click", () => {
+                const details = bookingDiv.querySelector(".booking-details");
                 details.style.display = details.style.display === "none" ? "block" : "none";
             });
 
-            // Delete
-            booking_div.querySelector(".delete-button").addEventListener("click", (event) => {
+            bookingDiv.querySelector(".delete-button").addEventListener("click", async (event) => {
                 event.stopPropagation();
-
-                let confirmBox = confirm("Are you sure you want to delete this task?");
-                if (confirmBox) {
-                    bookings.splice(index, 1);
-                    localStorage.setItem(key, JSON.stringify(bookings));
-                    booking_div.remove();
+                if (confirm("Are you sure you want to delete this booking?")) {
+                    await deleteBooking(db, booking.id);
+                    await loadBookings();
                 }
             });
 
-            // Edit
-            booking_div.querySelector(".edit-button").addEventListener("click", (event) => {
+            bookingDiv.querySelector(".edit-button").addEventListener("click", (event) => {
                 event.stopPropagation();
-
                 const id = event.target.getAttribute("data-id");
-
-                // send user to create page with edit query string
                 window.location.href = `create.html?edit=${id}`;
             });
 
-            bookingList.appendChild(booking_div);
+            bookingList.appendChild(bookingDiv);
         });
     }
 
-    function formatTime(time) {
-        if (!time) return "";
-        const str = time.toString().padStart(4, '0');
-        let hours = parseInt(str.slice(0, 2));
-        const minutes = str.slice(2);
-
-        const ampm = hours >= 12 ? "pm" : "am";
-        if (hours > 12) hours -= 12;
-        if (hours === 0) hours = 12;
-
-        return `${hours}:${minutes} ${ampm}`;
-    }
-
-    window.onload = loadBookings;
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const client = window.supabase.createClient(
-        "https://qknvowhqqsdtyogkgbsb.supabase.co",
-        "sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I"
-    );
-
-    // Logout logic
-    document.getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-        await client.auth.signOut();
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        await supabase.auth.signOut();
         window.location.href = "../login.html";
     });
 
-    // Check if client is logged in
-    async function protectPage() {
-        const {
-            data: { user }
-        } = await client.auth.getUser();
+    async function login() {
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = "../login.html";
+            return;
         }
+        document.getElementById("logged_in_user").innerHTML = user.email
+        await loadBookings();
     }
-    protectPage();
+    login();
 </script>
 </html>

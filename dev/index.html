@@ -13,6 +13,7 @@
         <a href="booking/manager.html">Bookings</a>
     </div>
     <div class="nav-right">
+        <a id="logged_in_user">Not Logged In</a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
@@ -21,4 +22,20 @@
 This is an empty page. Please continue to the <a href="booking/manager.html">Booking Manager</a>
 
 </body>
+
+<script type="module">
+    import { supabase } from "/supabaseClient.js";
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+    });
+
+    async function login() {
+        const { data: { user } } = await supabase.auth.getUser();
+        document.getElementById("logged_in_user").innerHTML = user.email ?? "None"
+    }
+    login();
+</script>
+
 </html>
