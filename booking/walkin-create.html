@@ -66,7 +66,6 @@
         } = await client.auth.getUser();
         if (!user) {
             window.location.href = "../login.html";
-            return;
         }
         document.getElementById("logged_in_user").innerHTML = user.email
     }
