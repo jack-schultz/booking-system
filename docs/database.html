@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database — Booking System</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<div class="navbar">
+    <div class="nav-left">
+        <a href="../login.html">Login</a>
+        <a href="../index.html">Home</a>
+        <a href="../booking/manager.html">Bookings</a>
+        <a href="index.html">Docs</a>
+    </div>
+    <div class="nav-right">
+        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
+    </div>
+</div>
+
+<div class="docs-layout">
+    <nav class="docs-sidebar" id="docs-sidebar"></nav>
+    <article class="docs-content" id="doc-content"><p class="docs-loading">Loading…</p></article>
+</div>
+
+<script type="module">
+    import { initDocPage } from './docs.js';
+    initDocPage('./database.md', 'Database');
+</script>
+</body>
+</html>

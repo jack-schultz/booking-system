@@ -6,7 +6,7 @@ A restaurant booking system.
 
 ## Documentation
 
-See [docs/index.md](docs/index.md) for setup, architecture, and development notes.
+See [docs/index.html](docs/index.html) for setup, architecture, and development notes.
 
 ## Development
 
