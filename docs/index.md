@@ -11,7 +11,7 @@ Restaurant booking system — vanilla HTML/JS frontend with Supabase auth and a 
 | [Authentication](./authentication.html) | Supabase login, session checks, and route protection |
 | [Database](./database.html) | PowerSync local SQLite, schema, and migrations |
 | [PowerSync + Supabase roadmap](./powersync-supabase.html) | Planned cloud sync setup (local DB in use today) |
-| [Deployment](./deployment.html) | GitHub Pages workflow and production builds |
+| [Deployment](./deployment.html) | GitHub Pages workflow, production builds, and how to add new pages |
 
 ## Quick start
 

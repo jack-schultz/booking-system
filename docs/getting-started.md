@@ -40,13 +40,13 @@ booking-system/
 ├── db/                # PowerSync schema, open/init, migrations, booking helpers
 │   ├── bookings.js    # CRUD helpers (get, insert, update, delete)
 │   └── ...
-├── docs/              # This documentation
+├── docs/              # Documentation (markdown + HTML shells; see Deployment for how to add pages)
 ├── login.html         # Login (initializes local DB)
 ├── signup.html        # Account creation
 ├── index.html         # Home
 ├── supabaseClient.js  # Shared Supabase client (ES module)
 ├── style.css          # Global styles
-└── vite.config.js     # Dev/build config for PowerSync
+└── vite.config.js     # Dev/build config; lists every HTML page that ships to GitHub Pages
 ```
 
 ## Typical dev flow
