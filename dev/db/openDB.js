@@ -9,11 +9,9 @@ export async function openDB() {
     db = new PowerSyncDatabase({
         schema: AppSchema,
         database: {
-            dbFilename: 'hb-booking.db'
+            dbFilename: 'bookings.db',
         }
     });
-
-    await db.init();
 
     return db;
 }
