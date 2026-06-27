@@ -34,15 +34,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: main/package-lock.json
 
       - name: Build main
         working-directory: main
         env:
           VITE_BASE_PATH: /booking-system/
         run: |
-          npm ci
+          if [ ! -f package.json ]; then
+            echo "No package.json on main — skipping Vite build"
+            exit 0
+          fi
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
           npm run build
 
       - name: Build dev
@@ -50,15 +56,40 @@ jobs:
         env:
           VITE_BASE_PATH: /booking-system/dev/
         run: |
-          npm ci
+          if [ ! -f package.json ]; then
+            echo "No package.json on dev — skipping Vite build"
+            exit 0
+          fi
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
           npm run build
 
       - name: Prepare site
         run: |
-          mkdir public
-          cp -r main/dist/* public/
-          mkdir -p public/dev
-          cp -r dev/dist/* public/dev/
+          mkdir -p public public/dev
+
+          if [ -d main/dist ] && [ "$(ls -A main/dist 2>/dev/null)" ]; then
+            cp -r main/dist/* public/
+          else
+            for path in main/*; do
+              name="$(basename "$path")"
+              [ "$name" = ".github" ] && continue
+              cp -r "$path" public/
+            done
+          fi
+
+          if [ -d dev/dist ] && [ "$(ls -A dev/dist 2>/dev/null)" ]; then
+            cp -r dev/dist/* public/dev/
+          else
+            for path in dev/*; do
+              name="$(basename "$path")"
+              [ "$name" = ".github" ] && continue
+              cp -r "$path" public/dev/
+            done
+          fi
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
