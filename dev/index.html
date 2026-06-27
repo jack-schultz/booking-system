@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-    <link rel="stylesheet" href="style.css">
+  <script type="module" crossorigin src="/booking-system/dev/assets/index-B5ossInU.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-DVJvaHM5.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-jpfcui-6.css">
 </head>
 <body>
 <div class="navbar">
@@ -23,19 +25,5 @@ This is an empty page. Please continue to the <a href="booking/manager.html">Boo
 
 </body>
 
-<script type="module">
-    import { supabase } from "/supabaseClient.js";
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "login.html";
-    });
-
-    async function login() {
-        const { data: { user } } = await supabase.auth.getUser();
-        document.getElementById("logged_in_user").innerHTML = user.email ?? "None"
-    }
-    login();
-</script>
 
 </html>

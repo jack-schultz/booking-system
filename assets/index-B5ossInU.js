@@ -1,0 +1,1 @@
+import{t as e}from"./supabaseClient-DVJvaHM5.js";/* empty css              */document.getElementById(`logoutBtn`).addEventListener(`click`,async()=>{await e.auth.signOut(),window.location.href=`login.html`});async function t(){let{data:{user:t}}=await e.auth.getUser();document.getElementById(`logged_in_user`).innerHTML=t.email??`None`}t();
