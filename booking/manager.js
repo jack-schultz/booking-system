@@ -5,7 +5,7 @@ import {
     getBookingsForDate,
     getTimeslotFromDatetime,
 } from '../db/bookings.js';
-import { initAccountSwitcher } from '../auth/accountSwitcher.js';
+import { initAccountSwitcher, getActiveRestaurantId } from '../auth/accountSwitcher.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
 
@@ -19,6 +19,7 @@ const bookingList = document.getElementById('booking-list');
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
     loginRedirect: '../login.html',
+    onSwitch: () => loadBookings(),
 });
 const db = await initDatabase();
 
@@ -27,7 +28,7 @@ function getTodayDate() {
 }
 
 async function loadBookings() {
-    const bookings = await getBookingsForDate(db, getTodayDate());
+    const bookings = await getBookingsForDate(db, getTodayDate(), getActiveRestaurantId());
 
     if (bookings.length === 0) {
         bookingList.innerHTML = '<p>No bookings for today</p>';
@@ -78,7 +79,7 @@ async function loadBookings() {
         bookingDiv.querySelector('.booking-action-delete').addEventListener('click', async (event) => {
             event.stopPropagation();
             if (confirm('Are you sure you want to delete this booking?')) {
-                await deleteBooking(db, booking.id);
+                await deleteBooking(db, booking.id, getActiveRestaurantId());
                 await loadBookings();
             }
         });

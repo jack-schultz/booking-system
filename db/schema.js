@@ -31,6 +31,7 @@ export const AppSchema = new Schema({
         {
             indexes: {
                 idx_bookings_profile_id: ['profile_id'],
+                idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
             },
         }

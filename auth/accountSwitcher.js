@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient.js";
+import { DEFAULT_RESTAURANT_ID } from "../config/constants.js";
 import {
     addOrUpdateAccount,
     afterAuthLock,
@@ -82,6 +83,10 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
 
 export function getActiveProfileId() {
     return getActiveAccount()?.id ?? null;
+}
+
+export function getActiveRestaurantId() {
+    return getActiveAccount()?.restaurant_id ?? DEFAULT_RESTAURANT_ID;
 }
 
 export async function initAccountSwitcher(options = {}) {

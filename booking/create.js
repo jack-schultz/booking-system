@@ -6,7 +6,7 @@ import {
     insertBooking,
     updateBooking,
 } from '../db/bookings.js';
-import { BOOKING_STATUS, DEFAULT_RESTAURANT_ID } from '../config/constants.js';
+import { BOOKING_STATUS } from '../config/constants.js';
 import { populateTimeslotSelect } from '../config/timeslots.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
@@ -55,7 +55,7 @@ totalPax.addEventListener('change', updatePax);
 childPax.addEventListener('change', updatePax);
 hcPax.addEventListener('change', updatePax);
 
-const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId }] = await Promise.all([
+const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId, getActiveRestaurantId }] = await Promise.all([
     import('../db/index.js'),
     import('../auth/accountSwitcher.js'),
 ]);
@@ -68,7 +68,8 @@ const db = await initDatabase();
 await switcherPromise;
 
 async function loadBookingForEdit(id) {
-    const booking = await getBookingById(db, id);
+    const restaurantId = getActiveRestaurantId();
+    const booking = await getBookingById(db, id, restaurantId);
     if (!booking) {
         window.location.href = 'manager.html';
         return;
@@ -113,12 +114,12 @@ form.addEventListener('submit', async (e) => {
     };
 
     if (editingId) {
-        await updateBooking(db, editingId, record);
+        await updateBooking(db, editingId, record, getActiveRestaurantId());
     } else {
         await insertBooking(db, {
             ...record,
             profile_id: getActiveProfileId(),
-            restaurant_id: DEFAULT_RESTAURANT_ID,
+            restaurant_id: getActiveRestaurantId(),
             id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
         });

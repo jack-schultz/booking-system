@@ -1,19 +1,21 @@
 import { updateAccountProfile } from './accounts.js';
 
 /**
- * Loads first_name / last_name from public.profiles for the authenticated user.
+ * Loads profile fields from public.profiles for the authenticated user.
  * Requires RLS allowing select where auth.uid() = id.
  */
 export async function fetchUserProfile(supabase, userId) {
     const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name')
+        .select('first_name, last_name, restaurant_id')
         .eq('id', userId)
         .maybeSingle();
 
     if (error) {
         console.warn('Could not load profile:', error.message);
         return null;
+    } else {
+        console.log('Loaded profile:', data);
     }
 
     return data;

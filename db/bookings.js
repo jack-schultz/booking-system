@@ -33,15 +33,20 @@ export function formatTimeslot(datetime) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-export async function getBookingsForDate(db, dateStr) {
+export async function getBookingsForDate(db, dateStr, restaurantId) {
     return db.getAll(
-        `SELECT * FROM bookings WHERE date(datetime) = date(?) ORDER BY datetime, last_name`,
-        [dateStr]
+        `SELECT * FROM bookings
+         WHERE restaurant_id = ? AND date(datetime) = date(?)
+         ORDER BY datetime, last_name`,
+        [restaurantId, dateStr]
     );
 }
 
-export async function getBookingById(db, id) {
-    return db.get(`SELECT * FROM bookings WHERE id = ?`, [id]);
+export async function getBookingById(db, id, restaurantId) {
+    return db.get(
+        `SELECT * FROM bookings WHERE id = ? AND restaurant_id = ?`,
+        [id, restaurantId]
+    );
 }
 
 export async function insertBooking(db, booking) {
@@ -72,13 +77,13 @@ export async function insertBooking(db, booking) {
     );
 }
 
-export async function updateBooking(db, id, booking) {
+export async function updateBooking(db, id, booking, restaurantId) {
     await db.execute(
         `UPDATE bookings SET
             first_name = ?, last_name = ?, preference = ?, datetime = ?,
             phone_number = ?, email = ?, total_pax = ?, adult_pax = ?,
             child_pax = ?, hc_pax = ?, notes = ?, status = ?
-        WHERE id = ?`,
+        WHERE id = ? AND restaurant_id = ?`,
         [
             booking.first_name,
             booking.last_name,
@@ -93,10 +98,14 @@ export async function updateBooking(db, id, booking) {
             booking.notes ?? null,
             booking.status ?? BOOKING_STATUS.CONFIRMED,
             id,
+            restaurantId,
         ]
     );
 }
 
-export async function deleteBooking(db, id) {
-    await db.execute(`DELETE FROM bookings WHERE id = ?`, [id]);
+export async function deleteBooking(db, id, restaurantId) {
+    await db.execute(
+        `DELETE FROM bookings WHERE id = ? AND restaurant_id = ?`,
+        [id, restaurantId]
+    );
 }
