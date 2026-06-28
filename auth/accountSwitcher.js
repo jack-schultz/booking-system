@@ -91,15 +91,19 @@ export async function initAccountSwitcher(options = {}) {
 
     dropdownRender = setupDropdown(triggerEl, { loginRedirect, onSwitch });
 
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // getSession() must run before onAuthStateChange is registered
+    await migrateExistingSession(supabase);
+
+    supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) {
             addOrUpdateAccount(session);
-            await syncAccountProfileFromSupabase(supabase, session.user.id);
-            dropdownRender?.();
+            setTimeout(() => {
+                void syncAccountProfileFromSupabase(supabase, session.user.id).then(() => {
+                    dropdownRender?.();
+                });
+            }, 0);
         }
     });
-
-    await migrateExistingSession(supabase);
 
     const active = getActiveAccount();
     if (active) {
