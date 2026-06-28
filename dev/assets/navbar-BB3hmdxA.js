@@ -1,4 +1,4 @@
-import{createClient as e}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";var t=e(`https://qknvowhqqsdtyogkgbsb.supabase.co`,`sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I`);function n(e,{basePath:t=``,showAuthControls:n=!1}={}){e.outerHTML=`
+function e(e,{basePath:t=``,showAuthControls:n=!1}={}){e.outerHTML=`
         <div class="site-navbar">
             <div class="site-navbar-links-primary">
                 <a href="${t}login.html">Login</a>
@@ -11,4 +11,4 @@ import{createClient as e}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js
                 <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
             </div>
         </div>
-    `}export{t as n,n as t};
+    `}export{e as t};
