@@ -12,7 +12,7 @@ Short guide for where code belongs in this project. Full setup and architecture 
 | SQL and booking CRUD | `db/bookings.js` |
 | Database schema | `db/schema.js` |
 | Schema migrations | `db/migrations/` (add numbered file + register in `index.js`) |
-| Auth / account switching | `auth/accountSwitcher.js`, `auth/accounts.js` |
+| Auth / account switching | `auth/accountSwitcher.js`, `auth/accounts.js`, `auth/profiles.js` |
 | App-wide constants | `config/constants.js`, `config/timeslots.js` |
 | Styles | `style.css` |
 | Supabase client config | `supabaseClient.js` + `.env` (see `.env.example`) |
