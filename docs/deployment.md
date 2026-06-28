@@ -146,9 +146,16 @@ Pushing to either `main` or `dev` triggers a full redeploy of **both** environme
 
 ## Environment and secrets
 
-- Supabase URL and anon key are in `supabaseClient.js` (public by design).
-- No GitHub secrets are required for the deploy workflow.
-- When adding PowerSync Cloud, store the PowerSync endpoint URL in config; JWTs come from Supabase at runtime.
+Supabase URL and anon key are public (anon) credentials, safe for client-side use. They can be set in three places:
+
+| Context | Where to set |
+|---------|----------------|
+| Local dev | Copy `.env.example` → `.env` |
+| GitHub Pages build | **Repository secrets** named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` |
+
+**Important:** The deploy workflow reads **repository** secrets (`Settings → Secrets and variables → Actions → Repository secrets`).
+
+When adding PowerSync Cloud, store the PowerSync endpoint URL in config; JWTs come from Supabase at runtime.
 
 ## Manual deploy trigger
 
