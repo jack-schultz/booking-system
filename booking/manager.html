@@ -4,51 +4,33 @@
     <meta charset="UTF-8">
     <title>Booking System</title>
     <link rel="stylesheet" href="../style.css">
-    <style>
-
-        .button-wrapper {
-            display: flex;
-        }
-        .button-wrapper p {
-            margin: 0;
-            padding: 0;
-        }
-        .booking-list {
-            display: flex;
-            flex-direction: column; /* Items stack vertically */
-            row-gap: 20px; /* Vertical space between items */
-        }
-        .booking-summary {
-            font-size: 24px;
-        }
-    </style>
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
+<div class="site-navbar">
+    <div class="site-navbar-links-primary">
         <a href="../login.html">Login</a>
         <a href="../index.html">Home</a>
         <a href="manager.html">Bookings</a>
     </div>
-    <div class="nav-right">
+    <div class="site-navbar-links-user">
         <a id="logged_in_user">Not Logged In</a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
 </div>
 
-<div class="main">
-    <div class="booking-wrapper">
-        <div class="primary-content-card">
+<div class="page-content">
+    <div class="booking-page-layout">
+        <div class="page-primary-panel">
             <h1>Booking Manager</h1>
-            <div class="booking-list" id="booking-list"></div>
+            <div class="booking-manager-list" id="booking-list"></div>
         </div>
 
-        <div class="secondary-content-card">
-            <nav class="button-bar">
-                <a class="bookings" href="manager.html">BOOKINGS</a>
-                <a class="new" href="create.html">NEW BOOKING</a>
-                <a class="walk-in" href="walkin-create.html">WALK-IN</a>
+        <div class="page-sidebar-panel">
+            <nav class="booking-sidebar-nav">
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--bookings" href="manager.html">BOOKINGS</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--new-booking" href="create.html">NEW BOOKING</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--walk-in" href="walkin-create.html">WALK-IN</a>
             </nav>
         </div>
     </div>
@@ -56,7 +38,6 @@
 </body>
 
 <script type="module">
-    import { supabase } from "../supabaseClient.js";
     import { initDatabase } from "../db/index.js";
     import {
         deleteBooking,
@@ -64,8 +45,10 @@
         getBookingsForDate,
         getTimeslotFromDatetime,
     } from "../db/bookings.js";
+    import { initAccountSwitcher } from "../auth/accountSwitcher.js";
 
     const bookingList = document.getElementById("booking-list");
+    const switcherPromise = initAccountSwitcher({ requireAuth: true, loginRedirect: "../login.html" });
     const db = await initDatabase();
 
     function getTodayDate() {
@@ -89,20 +72,20 @@
                 const timeslotDiv = document.createElement("div");
                 timeslotDiv.textContent = formatTimeslot(booking.datetime);
                 timeslotDiv.id = timeslot;
-                timeslotDiv.className = "timeslot-display";
+                timeslotDiv.className = "booking-timeslot-heading";
                 bookingList.appendChild(timeslotDiv);
             }
 
             const bookingDiv = document.createElement("div");
-            bookingDiv.className = "content-card";
+            bookingDiv.className = "booking-list-item-card";
             bookingDiv.innerHTML = `
-                <div class="booking-summary" style="cursor:pointer;">
+                <div class="booking-list-item-summary">
                     <strong>${booking.first_name} ${booking.last_name}</strong> for
                     <strong>${booking.total_pax}</strong> PAX (${booking.adult_pax}, ${booking.child_pax}, ${booking.hc_pax})
                     Preference: <strong>${booking.preference}</strong>
                 </div>
 
-                <div class="booking-details" style="display:none; margin-top:10px;">
+                <div class="booking-list-item-details">
                     <p><strong>Total Pax</strong>: <strong>${booking.total_pax}</strong> (<strong>${booking.adult_pax}</strong> Adults, <strong>${booking.child_pax}</strong> Children, <strong>${booking.hc_pax}</strong> HC)</p>
                     <p><strong>Time</strong>: ${formatTimeslot(booking.datetime)}</p>
                     <p><strong>Phone</strong>: ${booking.phone_number ?? "-"}</p>
@@ -110,19 +93,18 @@
                     <p><strong>Preference</strong>: ${booking.preference}</p>
                     <p><strong>Notes</strong>: ${booking.notes || "-"}</p>
 
-                    <div class="button-wrapper">
-                        <button class="edit-button" data-id="${booking.id}">Edit</button>
-                        <button class="delete-button" data-id="${booking.id}">Delete</button>
+                    <div class="booking-actions-row">
+                        <button class="booking-action-edit" data-id="${booking.id}">Edit</button>
+                        <button class="booking-action-delete" data-id="${booking.id}">Delete</button>
                     </div>
                 </div>
             `;
 
-            bookingDiv.querySelector(".booking-summary").addEventListener("click", () => {
-                const details = bookingDiv.querySelector(".booking-details");
-                details.style.display = details.style.display === "none" ? "block" : "none";
+            bookingDiv.querySelector(".booking-list-item-summary").addEventListener("click", () => {
+                bookingDiv.querySelector(".booking-list-item-details").classList.toggle("is-expanded");
             });
 
-            bookingDiv.querySelector(".delete-button").addEventListener("click", async (event) => {
+            bookingDiv.querySelector(".booking-action-delete").addEventListener("click", async (event) => {
                 event.stopPropagation();
                 if (confirm("Are you sure you want to delete this booking?")) {
                     await deleteBooking(db, booking.id);
@@ -130,7 +112,7 @@
                 }
             });
 
-            bookingDiv.querySelector(".edit-button").addEventListener("click", (event) => {
+            bookingDiv.querySelector(".booking-action-edit").addEventListener("click", (event) => {
                 event.stopPropagation();
                 const id = event.target.getAttribute("data-id");
                 window.location.href = `create.html?edit=${id}`;
@@ -140,18 +122,8 @@
         });
     }
 
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "../login.html";
-    });
-
     async function login() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            window.location.href = "../login.html";
-            return;
-        }
-        document.getElementById("logged_in_user").innerHTML = user.email
+        await switcherPromise;
         await loadBookings();
     }
     login();

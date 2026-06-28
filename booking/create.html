@@ -6,33 +6,33 @@
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
+<div class="site-navbar">
+    <div class="site-navbar-links-primary">
         <a href="../login.html">Login</a>
         <a href="../index.html">Home</a>
         <a href="manager.html">Bookings</a>
     </div>
-    <div class="nav-right">
+    <div class="site-navbar-links-user">
         <a id="logged_in_user">Not Logged In</a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
 </div>
 
-<div class="main">
-    <div class="booking-wrapper">
-        <div class="primary-content-card">
+<div class="page-content">
+    <div class="booking-page-layout">
+        <div class="page-primary-panel">
             <h1 id="pageTitle">New Booking</h1>
-            <form id="bookingForm" class="form">
-                <div class="booking-row">
+            <form id="bookingForm" class="booking-form">
+                <div class="booking-form-row">
                     <!-- Date -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="bookingDate">Date</label>
                         <input type="date" id="bookingDate" name="bookingDate">
                     </div>
 
                     <!-- Timeslot -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="timeslot">Timeslot</label>
                         <select id="timeslot" name="timeslot" required>
                             <option value="" disabled selected>Select Timeslot</option>
@@ -111,36 +111,36 @@
                     </div>
                 </div>
 
-                <div class="booking-row">
+                <div class="booking-form-row">
                     <!-- First Name -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="firstName" placeholder="John" required>
                     </div>
 
                     <!-- Last Name -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="lastName">Last Name</label>
                         <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
                     </div>
                 </div>
 
-                <div class="booking-row">
+                <div class="booking-form-row">
                     <!-- Phone Number -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="phoneNumber">Phone Number</label>
                         <input type="text" id="phoneNumber" name="phoneNumber" placeholder="04XXXXXXXX" inputmode="numeric" pattern="[0-9]*" required>
                     </div>
 
                     <!-- Email -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="email">Email</label>
                         <input type="text" id="email" name="email" placeholder="john.smith@email.com">
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <div class="booking-column">
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <!-- Total Pax -->
                         <label for="totalPax">Total Pax</label>
                         <select id="totalPax" name="totalPax" required>
@@ -163,7 +163,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <!-- Adult Pax -->
                         <label for="adultPax">Adults</label>
                         <select id="adultPax" name="adultPax" required>
@@ -186,7 +186,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <!-- Child Pax -->
                         <label for="childPax">Children</label>
                         <select id="childPax" name="childPax" required>
@@ -209,7 +209,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <!-- HC Pax -->
                         <label for="hcPax">HighChairs Required</label>
                         <select id="hcPax" name="hcPax" required>
@@ -233,8 +233,8 @@
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <div class="booking-column">
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <!-- Preference -->
                         <label for="preference">Preference</label>
                         <select id="preference" name="preference" required>
@@ -245,7 +245,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <!-- Additional Details -->
                         <label for="additionalDetails">Any Additional Notes</label>
                         <textarea id="additionalDetails" name="additionalDetails" placeholder="" rows="2"></textarea>
@@ -257,12 +257,12 @@
             </form>
         </div>
 
-        <div class="secondary-content-card">
-            <nav class="button-bar">
-                <a class="bookings" href="manager.html">BOOKINGS</a>
-                <a class="new" href="create.html">NEW BOOKING</a>
-                <a class="walk-in" href="walkin-create.html">WALK-IN</a>
-                <button type="submit" form="bookingForm">SAVE BOOKING</button>
+        <div class="page-sidebar-panel">
+            <nav class="booking-sidebar-nav">
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--bookings" href="manager.html">BOOKINGS</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--new-booking" href="create.html">NEW BOOKING</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--walk-in" href="walkin-create.html">WALK-IN</a>
+                <button type="submit" form="bookingForm" class="booking-sidebar-nav-link booking-sidebar-nav-link--save">SAVE BOOKING</button>
             </nav>
         </div>
     </div>
@@ -270,7 +270,6 @@
 </body>
 
 <script type="module">
-    import { supabase } from "../supabaseClient.js";
     import { initDatabase } from "../db/index.js";
     import {
         buildDatetime,
@@ -280,13 +279,13 @@
         insertBooking,
         updateBooking,
     } from "../db/bookings.js";
+    import { getActiveProfileId, initAccountSwitcher } from "../auth/accountSwitcher.js";
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
+    await initAccountSwitcher({ requireAuth: true, loginRedirect: "../login.html" });
 
     const db = await initDatabase();
 
-    const form = document.querySelector(".form");
+    const form = document.querySelector(".booking-form");
     const pageTitle = document.getElementById("pageTitle");
     const bookingDate = document.getElementById("bookingDate");
     const timeslot = document.getElementById("timeslot");
@@ -363,7 +362,6 @@
             preference: preference.value,
             notes: additionalDetails.value,
             datetime: buildDatetime(bookingDate.value, timeslot.value),
-            profile_id: user?.id ?? null,
             status: "confirmed",
         };
 
@@ -372,6 +370,7 @@
         } else {
             await insertBooking(db, {
                 ...record,
+                profile_id: getActiveProfileId(),
                 restaurant_id: 1, // TODO: This should be pulled from the profiles table from supabase and saved for local running
                 id: crypto.randomUUID(),
                 created_at: new Date().toISOString(),
@@ -380,20 +379,5 @@
 
         window.location.href = "manager.html";
     });
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "../login.html";
-    });
-
-    async function login() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            window.location.href = "../login.html";
-            return;
-        }
-        document.getElementById("logged_in_user").innerHTML = user.email ?? "None"
-    }
-    login();
 </script>
 </html>

@@ -1,7 +1,14 @@
-html, body {
+/*
+=============================================================================
+Base
+=============================================================================
+*/
+
+html,
+body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: lightblue; /* light grey background */
+    background-color: lightblue;
     color: #222;
 }
 
@@ -9,33 +16,43 @@ h1 {
     text-align: center;
     margin: 0;
 }
+
 h2 {
     margin-top: 0;
 }
 
+/*
+=============================================================================
+Page layout
+=============================================================================
+*/
 
-/* ========== MAIN ========== */
-.main {
-    max-width: 100%; /* limits how wide the page can be */
-    margin: 0 auto; /* centers it horizontally */
-    padding: 20px; /* adds space inside so content isn’t touching edges */
-}
-
-/* ========== CARDS ========== */
-.content-card {
-    background-color: grey;
+/* Main content area below the navbar */
+.page-content {
+    max-width: 100%;
+    margin: 0 auto;
     padding: 20px;
-    margin: 0;
-    border-radius: 10px;
 }
-.primary-content-card {
+
+/* Two-column booking pages: primary panel + sidebar */
+.booking-page-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0;
+}
+
+/* Left column: forms, lists, and main page content */
+.page-primary-panel {
     width: 70%;
     background-color: whitesmoke;
     padding: 20px;
     margin: 0;
     border-radius: 10px;
 }
-.secondary-content-card {
+
+/* Right column: sidebar navigation */
+.page-sidebar-panel {
     width: 30%;
     background-color: whitesmoke;
     padding: 20px;
@@ -43,42 +60,159 @@ h2 {
     border-radius: 10px;
 }
 
-/* ========== NAVBAR ========== */
-.navbar {
+/*
+=============================================================================
+Site navbar
+=============================================================================
+*/
+
+.site-navbar {
     background-color: #333;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
 }
 
-.navbar a {
+.site-navbar a {
     color: #f2f2f2;
     text-decoration: none;
     padding: 14px 16px;
     display: block;
 }
 
-.navbar a:hover {
+.site-navbar a:hover {
     background-color: #575757;
 }
 
-.nav-left, .nav-right {
+.site-navbar-links-primary,
+.site-navbar-links-user {
     display: flex;
+    align-items: stretch;
 }
 
-/* =============== FORMS =============== */
-.form {
+
+/*
+=============================================================================
+Navbar account switcher
+=============================================================================
+*/
+
+.navbar-account-switcher {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.navbar-account-trigger {
+    cursor: pointer;
+}
+
+.navbar-account-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 220px;
+    background-color: #444;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.navbar-account-option {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    color: #f2f2f2;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.navbar-account-option:hover {
+    background-color: #575757;
+}
+
+.navbar-account-option.is-active {
+    background-color: #4a90e2;
+}
+
+.navbar-account-add-link {
+    display: block;
+    padding: 12px 16px;
+    color: #aad4ff;
+    text-decoration: none;
+    border-top: 1px solid #575757;
+    font-size: 14px;
+}
+
+.navbar-account-add-link:hover {
+    background-color: #575757;
+}
+
+
+/*
+=============================================================================
+Auth forms (login, signup)
+=============================================================================
+*/
+
+.auth-form {
+    max-width: 420px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.auth-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+}
+
+.auth-form button {
+    margin-top: 12px;
+    padding: 12px;
+    border: none;
+    background-color: #333;
+    color: white;
+    font-size: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.auth-form button:hover {
+    background-color: #555;
+}
+
+
+/*
+=============================================================================
+Booking forms (create / edit)
+=============================================================================
+*/
+
+.booking-form {
     width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* Inputs, selects, textarea */
-.form input,
-.form select,
-.form textarea {
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
     margin-bottom: 10px;
     padding: 10px;
     border: 1px solid #ccc;
@@ -86,17 +220,15 @@ h2 {
     font-size: 14px;
 }
 
-/* Focus effect */
-.form input:focus,
-.form select:focus,
-.form textarea:focus {
+.booking-form input:focus,
+.booking-form select:focus,
+.booking-form textarea:focus {
     outline: none;
     border-color: #4a90e2;
-    box-shadow: 0 0 5px rgba(74,144,226,0.3);
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
 }
 
-/* Button */
-.form button {
+.booking-form button {
     margin-top: 20px;
     padding: 12px;
     border: none;
@@ -108,84 +240,145 @@ h2 {
     transition: background 0.2s ease;
 }
 
-/* Button hover */
-.form button:hover {
+.booking-form button:hover {
     background-color: #555;
 }
 
-.booking-row {
+.booking-form-row {
     display: flex;
     gap: 20px;
     flex-direction: row;
-    flex-grow: 1; /* Fills all available space */
+    flex-grow: 1;
 }
 
-.booking-column {
+.booking-form-column {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Fills all available space */
+    flex-grow: 1;
 }
 
-/* =============== MAIN BOOKING BUTTONS & WRAPPER =============== */
-.booking-wrapper {
-    display: flex;
-    justify-content: space-between; /* pushes one left, one right */
-    gap: 1rem;
-    padding: 0;
-}
 
-.button-bar {
+/*
+=============================================================================
+Booking sidebar navigation
+=============================================================================
+*/
+
+.booking-sidebar-nav {
     list-style: none;
     margin: 0;
     padding: 0;
-
     display: flex;
-    flex-direction: column;   /* stacked vertically */
-    gap: 20px;                /* space between buttons */
+    flex-direction: column;
+    gap: 20px;
     align-items: stretch;
 }
 
-.bookings {
-    color: #fff;
-    background-color: darkseagreen;
-}
-.new {
-    color: #fff;
-    background-color: steelblue;
-}
-.walk-in {
-    color: #fff;
-    background-color: yellowgreen;
-}
-
-/* button styling */
-.button-bar a, button  {
+.booking-sidebar-nav-link {
     display: flex;
     justify-content: center;
     align-items: center;
-
     width: 100%;
-    min-height: 100px;  /* large touch-friendly size */
-
+    min-height: 100px;
     font-size: 24px;
     font-weight: bold;
     text-decoration: none;
-
+    color: #fff;
     border-radius: 8px;
-
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-/* hover + active states */
-.button-bar a:hover {
+.booking-sidebar-nav-link:hover {
     background-color: #555;
 }
 
-.button-bar a:active {
+.booking-sidebar-nav-link:active {
     transform: scale(0.98);
 }
 
-/* optional: full width container */
-.button-bar nav {
-    width: 100%;
+.booking-sidebar-nav-link--bookings {
+    background-color: darkseagreen;
+}
+
+.booking-sidebar-nav-link--new-booking {
+    background-color: steelblue;
+}
+
+.booking-sidebar-nav-link--walk-in {
+    background-color: yellowgreen;
+}
+
+.booking-sidebar-nav-link--save {
+    background-color: #333;
+    border: none;
+    cursor: pointer;
+}
+
+
+/*
+=============================================================================
+Booking manager list
+=============================================================================
+*/
+
+.booking-manager-list {
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+}
+
+.booking-timeslot-heading {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.booking-list-item-card {
+    background-color: grey;
+    padding: 20px;
+    margin: 0;
+    border-radius: 10px;
+}
+
+.booking-list-item-summary {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.booking-list-item-details {
+    display: none;
+    margin-top: 10px;
+}
+
+.booking-list-item-details.is-expanded {
+    display: block;
+}
+
+.booking-actions-row {
+    display: flex;
+    gap: 10px;
+}
+
+.booking-actions-row button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    color: white;
+}
+
+.booking-action-edit {
+    background-color: steelblue;
+}
+
+.booking-action-delete {
+    background-color: #c0392b;
+}
+
+.booking-action-edit:hover {
+    background-color: #4a7dab;
+}
+
+.booking-action-delete:hover {
+    background-color: #a93226;
 }
