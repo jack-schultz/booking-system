@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from '../config/constants.js';
+import { isOnline } from '../config/connectivity.js';
 
 /**
  * Supabase auth holds a lock while notifying onAuthStateChange listeners.
@@ -95,6 +96,10 @@ export async function setActiveAccount(id, supabase) {
     const previousActiveId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
     localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, id);
 
+    if (!isOnline()) {
+        return true;
+    }
+
     const { data, error } = await supabase.auth.setSession({
         access_token: account.access_token,
         refresh_token: account.refresh_token,
@@ -126,7 +131,11 @@ export async function migrateExistingSession(supabase) {
     if (accounts.length === 0) return;
 
     const active = getActiveAccount();
-    if (active) await setActiveAccount(active.id, supabase);
+    if (!active) return;
+
+    if (!isOnline()) return;
+
+    await setActiveAccount(active.id, supabase);
 }
 
 export async function removeActiveAccount(supabase) {

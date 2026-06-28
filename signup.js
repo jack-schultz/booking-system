@@ -1,3 +1,4 @@
+import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { mountSiteNavbar } from './ui/navbar.js';
 

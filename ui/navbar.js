@@ -19,9 +19,25 @@ export function mountSiteNavbar(mountPoint, { basePath = '', showAuthControls = 
                 <a href="${basePath}booking/manager.html">Bookings</a>
             </div>
             <div class="site-navbar-links-user">
+                <span id="offline-indicator" class="offline-indicator" hidden>Offline</span>
                 ${authControls}
                 <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
             </div>
         </div>
     `;
+
+    mountOfflineIndicator();
+}
+
+function mountOfflineIndicator() {
+    const indicator = document.getElementById('offline-indicator');
+    if (!indicator) return;
+
+    function update() {
+        indicator.hidden = navigator.onLine;
+    }
+
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
 }

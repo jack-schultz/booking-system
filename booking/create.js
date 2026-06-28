@@ -1,3 +1,4 @@
+import '../pwa/register.js';
 import {
     buildDatetime,
     getBookingById,

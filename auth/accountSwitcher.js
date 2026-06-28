@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient.js";
 import { DEFAULT_RESTAURANT_ID } from "../config/constants.js";
+import { isOnline } from "../config/connectivity.js";
 import {
     addOrUpdateAccount,
     afterAuthLock,
@@ -13,6 +14,19 @@ import {
 import { syncAccountProfileFromSupabase } from "./profiles.js";
 
 let dropdownRender = null;
+
+function setupOnlineSync() {
+    window.addEventListener("online", () => {
+        afterAuthLock(async () => {
+            await migrateExistingSession(supabase);
+            const active = getActiveAccount();
+            if (active) {
+                await syncAccountProfileFromSupabase(supabase, active.id);
+                dropdownRender?.();
+            }
+        });
+    });
+}
 
 function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
     const wrapper = document.createElement("div");
@@ -62,7 +76,9 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
                 afterAuthLock(async () => {
                     const ok = await setActiveAccount(accountId, supabase);
                     if (!ok) return;
-                    await syncAccountProfileFromSupabase(supabase, accountId);
+                    if (isOnline()) {
+                        await syncAccountProfileFromSupabase(supabase, accountId);
+                    }
                     render();
                     onSwitch?.(getActiveAccount());
                 });
@@ -101,6 +117,8 @@ export async function initAccountSwitcher(options = {}) {
 
     dropdownRender = setupDropdown(triggerEl, { loginRedirect, onSwitch });
 
+    setupOnlineSync();
+
     // getSession() must run before onAuthStateChange is registered
     await migrateExistingSession(supabase);
 
@@ -115,7 +133,7 @@ export async function initAccountSwitcher(options = {}) {
     });
 
     const active = getActiveAccount();
-    if (active) {
+    if (active && isOnline()) {
         await syncAccountProfileFromSupabase(supabase, active.id);
     }
     dropdownRender?.();

@@ -1,3 +1,4 @@
+import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { initDatabase } from './db/index.js';
 import { registerLoggedInSession } from './auth/accountSwitcher.js';

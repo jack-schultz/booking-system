@@ -1,6 +1,7 @@
 import { cpSync, mkdirSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 function copyDocsMarkdown() {
     return {
@@ -52,5 +53,23 @@ export default defineConfig({
             },
         },
     },
-    plugins: [copyDocsMarkdown()],
+    plugins: [
+        copyDocsMarkdown(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            includeAssets: ['style.css'],
+            manifest: {
+                name: 'Booking System',
+                short_name: 'Bookings',
+                theme_color: '#333333',
+                background_color: '#87ceeb',
+                display: 'standalone',
+                start_url: './login.html',
+            },
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
+                maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+            },
+        }),
+    ],
 });

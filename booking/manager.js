@@ -1,3 +1,4 @@
+import '../pwa/register.js';
 import { initDatabase } from '../db/index.js';
 import {
     deleteBooking,
