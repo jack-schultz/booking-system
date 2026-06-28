@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-    <style>
-
-
-    </style>
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-jpfcui-6.css">
+  <script type="module" crossorigin src="/booking-system/dev/assets/walkin-CfkOYJOO.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-Dl6Gz46P.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-B6tAdeCP.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
+<div class="site-navbar">
+    <div class="site-navbar-links-primary">
         <a href="../login.html">Login</a>
         <a href="../index.html">Home</a>
         <a href="manager.html">Bookings</a>
     </div>
-    <div class="nav-right">
+    <div class="site-navbar-links-user">
         <a id="logged_in_user"></a>
         <a id="logoutBtn">Logout</a>
         <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
     </div>
 </div>
 
-<div class="main">
-    <div class="booking-wrapper">
-        <div class="primary-content-card">
+<div class="page-content">
+    <div class="booking-page-layout">
+        <div class="page-primary-panel">
             <h1>Log Walk-In</h1>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ut fermentum erat, eu consequat libero. Cras ornare placerat pellentesque. Morbi eros tortor, venenatis vitae tortor a, vulputate semper elit. Quisque lacinia metus diam, consectetur cursus ante malesuada ac. Sed dictum sodales consectetur. Donec urna felis, aliquet a egestas ut, vestibulum eget augue. Maecenas eros purus, interdum ac ligula non, fringilla tincidunt sapien. Etiam id tempus massa. Nullam eleifend arcu quis pretium aliquet. Curabitur pretium aliquet augue, ac efficitur velit tempus at. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam vitae scelerisque nisl. Sed vulputate, turpis non volutpat accumsan, mi nibh elementum felis, vitae iaculis augue tellus id quam. Curabitur ut tincidunt neque. Etiam hendrerit condimentum dui at blandit. Nullam eget dignissim diam.
             Donec id scelerisque sapien. Proin a aliquam arcu. Duis facilisis, dolor quis sodales sodales, libero magna blandit elit, sed porttitor nulla eros sed tellus. Aenean maximus leo eget vestibulum varius. Vivamus convallis consequat eros. Nullam ex urna, lacinia ornare semper a, malesuada suscipit neque. In sollicitudin, libero et molestie iaculis, mauris lorem iaculis lectus, ac sodales elit nunc et massa. Suspendisse potenti. Integer aliquam molestie lacus sed interdum. In rhoncus arcu eros, ac ullamcorper risus lacinia eget. Morbi faucibus elit sem, finibus rutrum nibh faucibus vel. Donec quis ipsum sapien. Suspendisse porta magna ut libero ultrices pretium. Proin facilisis, odio et ultrices commodo, mi diam posuere lorem, vitae porta justo ipsum quis ligula. Duis viverra interdum sem id porttitor. Aenean dapibus, ante vitae tincidunt egestas, sem nunc tempor orci, id viverra ipsum tellus quis nisi.
         </div>
 
-        <div class="secondary-content-card">
-            <nav class="button-bar">
-                <a class="bookings" href="manager.html">BOOKINGS</a>
-                <a class="new" href="create.html">NEW BOOKING</a>
-                <a class="walk-in" href="walkin-create.html">WALK-IN</a>
+        <div class="page-sidebar-panel">
+            <nav class="booking-sidebar-nav">
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--bookings" href="manager.html">BOOKINGS</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--new-booking" href="create.html">NEW BOOKING</a>
+                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--walk-in" href="walkin-create.html">WALK-IN</a>
             </nav>
         </div>
     </div>
@@ -45,31 +44,5 @@
 
 </body>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const client = window.supabase.createClient(
-        "https://qknvowhqqsdtyogkgbsb.supabase.co",
-        "sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I"
-    );
-
-    // Logout logic
-    document.getElementById("logoutBtn")
-        .addEventListener("click", async () => {
-            await client.auth.signOut();
-            window.location.href = "../login.html";
-        });
-
-    // Check if client is logged in
-    async function login() {
-        const {
-            data: { user }
-        } = await client.auth.getUser();
-        if (!user) {
-            window.location.href = "../login.html";
-        }
-        document.getElementById("logged_in_user").innerHTML = user.email
-    }
-    login();
-</script>
 
 </html>

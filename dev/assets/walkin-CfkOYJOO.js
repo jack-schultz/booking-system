@@ -1,0 +1,1 @@
+import"./modulepreload-polyfill-Dezn_h7o.js";/* empty css              */import{n as e}from"./accountSwitcher-Dl6Gz46P.js";e({requireAuth:!0,loginRedirect:`../login.html`});
