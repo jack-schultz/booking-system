@@ -1,3 +1,5 @@
+import { BOOKING_STATUS } from '../config/constants.js';
+
 export function buildDatetime(dateStr, timeslot) {
     const str = timeslot.toString().padStart(4, '0');
     return `${dateStr}T${str.slice(0, 2)}:${str.slice(2)}:00`;
@@ -58,7 +60,7 @@ export async function insertBooking(db, booking) {
             booking.preference,
             booking.datetime,
             booking.profile_id ?? null,
-            booking.status ?? 'confirmed',
+            booking.status ?? BOOKING_STATUS.CONFIRMED,
             booking.phone_number,
             booking.email ?? null,
             booking.total_pax,
@@ -89,7 +91,7 @@ export async function updateBooking(db, id, booking) {
             booking.child_pax,
             booking.hc_pax,
             booking.notes ?? null,
-            booking.status ?? 'confirmed',
+            booking.status ?? BOOKING_STATUS.CONFIRMED,
             id,
         ]
     );

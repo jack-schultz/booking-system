@@ -8,6 +8,8 @@ A restaurant booking system.
 
 See [docs/index.html](docs/index.html) for setup, architecture, and development notes.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for where to put code and project conventions.
+
 ## Development
 
 ```bash

@@ -6,78 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="site-navbar">
-    <div class="site-navbar-links-primary">
-        <a href="login.html">Login</a>
-        <a href="index.html">Home</a>
-        <a href="booking/manager.html">Bookings</a>
-    </div>
-    <div class="site-navbar-links-user">
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
 <h1>Login</h1>
 
 <form id="loginForm" class="auth-form">
     <label for="email">Email</label>
-    <input
-            type="email"
-            id="email"
-            placeholder="Email"
-            required
-    >
+    <input type="email" id="email" placeholder="Email" required>
 
     <label for="password">Password</label>
-    <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-    >
+    <input type="password" id="password" placeholder="Password" required>
 
     <button type="submit">Login</button>
 </form>
 
-<p id="error"></p>
+<p id="error" class="auth-message auth-message--error"></p>
+<p>Need an account? <a href="signup.html">Sign up here</a></p>
 
+<script type="module" src="./login.js"></script>
 </body>
-
-<script type="module">
-    import { supabase } from "./supabaseClient.js";
-    import { initDatabase } from "./db/index.js";
-    import { registerLoggedInSession } from "./auth/accountSwitcher.js";
-
-    const form = document.getElementById("loginForm");
-    const dbPromise = initDatabase();
-
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-
-        const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-
-        if (error) {
-            document.getElementById("error").textContent = error.message;
-            return;
-        }
-
-        await registerLoggedInSession(supabase);
-        await dbPromise;
-        window.location.href = "booking/manager.html";
-    });
-
-    window.addEventListener('error', e => {
-        console.error('window error', e);
-    });
-
-    window.addEventListener('unhandledrejection', e => {
-        console.error('unhandled rejection', e.reason);
-    });
-</script>
 </html>

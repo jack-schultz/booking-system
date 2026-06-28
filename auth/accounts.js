@@ -1,9 +1,8 @@
-const ACCOUNTS_KEY = "booking_system_accounts";
-const ACTIVE_ID_KEY = "booking_system_active_account_id";
+import { STORAGE_KEYS } from '../config/constants.js';
 
 function readAccounts() {
     try {
-        const raw = localStorage.getItem(ACCOUNTS_KEY);
+        const raw = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
         return raw ? JSON.parse(raw) : [];
     } catch {
         return [];
@@ -11,7 +10,7 @@ function readAccounts() {
 }
 
 function writeAccounts(accounts) {
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+    localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
 }
 
 export function getAccounts() {
@@ -20,7 +19,7 @@ export function getAccounts() {
 
 export function getActiveAccount() {
     const accounts = readAccounts();
-    const activeId = localStorage.getItem(ACTIVE_ID_KEY);
+    const activeId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
     return accounts.find((a) => a.id === activeId) ?? accounts[0] ?? null;
 }
 
@@ -45,7 +44,7 @@ export function addOrUpdateAccount(session) {
     }
 
     writeAccounts(accounts);
-    localStorage.setItem(ACTIVE_ID_KEY, user.id);
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, user.id);
     return account;
 }
 
@@ -53,7 +52,7 @@ export async function setActiveAccount(id, supabase) {
     const account = readAccounts().find((a) => a.id === id);
     if (!account) return false;
 
-    localStorage.setItem(ACTIVE_ID_KEY, id);
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, id);
 
     const { error } = await supabase.auth.setSession({
         access_token: account.access_token,
@@ -87,12 +86,12 @@ export async function removeActiveAccount(supabase) {
     writeAccounts(remaining);
 
     if (remaining.length === 0) {
-        localStorage.removeItem(ACTIVE_ID_KEY);
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
         await supabase.auth.signOut();
         return null;
     }
 
-    localStorage.setItem(ACTIVE_ID_KEY, remaining[0].id);
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, remaining[0].id);
     await setActiveAccount(remaining[0].id, supabase);
     return remaining[0];
 }

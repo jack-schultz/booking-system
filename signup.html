@@ -6,44 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="site-navbar">
-    <div class="site-navbar-links-primary">
-        <a href="login.html">Login</a>
-        <a href="index.html">Home</a>
-        <a href="booking/manager.html">Bookings</a>
-    </div>
-    <div class="site-navbar-links-user">
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
+
+<h1>Sign Up</h1>
 
 <form id="signupForm" class="auth-form">
     <label for="email">Email</label>
     <input type="email" id="email" required>
 
     <label for="password">Password</label>
-    <input type="password" id="password" required>
-    <button>Create Account</button>
+    <input type="password" id="password" required minlength="6">
+
+    <button type="submit">Create Account</button>
 </form>
+
+<p id="message" class="auth-message"></p>
+<p>Already have an account? <a href="login.html">Log in</a></p>
+
+<script type="module" src="./signup.js"></script>
 </body>
-
-
-<script>
-    signupForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const { error } = await supabase.auth.signUp({
-            email: email.value,
-            password: password.value
-        });
-
-        if (error) {
-            alert(error.message);
-            return;
-        }
-
-        alert("Account created");
-    });
-</script>
-
 </html>

@@ -1,0 +1,121 @@
+import { initDatabase } from '../db/index.js';
+import {
+    buildDatetime,
+    getBookingById,
+    getDateFromDatetime,
+    getTimeslotFromDatetime,
+    insertBooking,
+    updateBooking,
+} from '../db/bookings.js';
+import { getActiveProfileId, initAccountSwitcher } from '../auth/accountSwitcher.js';
+import { BOOKING_STATUS, DEFAULT_RESTAURANT_ID } from '../config/constants.js';
+import { populateTimeslotSelect } from '../config/timeslots.js';
+import { mountSiteNavbar } from '../ui/navbar.js';
+import { mountBookingSidebar } from '../ui/bookingSidebar.js';
+
+mountSiteNavbar(document.getElementById('site-navbar-mount'), {
+    basePath: '../',
+    showAuthControls: true,
+});
+mountBookingSidebar(document.getElementById('booking-sidebar-mount'), { showSaveButton: true });
+
+await initAccountSwitcher({ requireAuth: true, loginRedirect: '../login.html' });
+
+const db = await initDatabase();
+
+const form = document.querySelector('.booking-form');
+const pageTitle = document.getElementById('pageTitle');
+const bookingDate = document.getElementById('bookingDate');
+const timeslot = document.getElementById('timeslot');
+const firstName = document.getElementById('firstName');
+const lastName = document.getElementById('lastName');
+const phoneNumber = document.getElementById('phoneNumber');
+const totalPax = document.getElementById('totalPax');
+const adultPax = document.getElementById('adultPax');
+const childPax = document.getElementById('childPax');
+const hcPax = document.getElementById('hcPax');
+const preference = document.getElementById('preference');
+const email = document.getElementById('email');
+const additionalDetails = document.getElementById('additionalDetails');
+
+populateTimeslotSelect(timeslot);
+
+const editId = new URLSearchParams(window.location.search).get('edit');
+let editingId = null;
+
+if (!bookingDate.value) {
+    bookingDate.value = new Date().toISOString().split('T')[0];
+}
+
+function updatePax() {
+    const total = parseInt(totalPax.value, 10) || 0;
+    const children = parseInt(childPax.value, 10) || 0;
+    const hc = parseInt(hcPax.value, 10) || 0;
+    let adults = total - children - hc;
+    if (adults < 0) adults = 0;
+    adultPax.value = adults;
+}
+
+totalPax.addEventListener('change', updatePax);
+childPax.addEventListener('change', updatePax);
+hcPax.addEventListener('change', updatePax);
+
+async function loadBookingForEdit(id) {
+    const booking = await getBookingById(db, id);
+    if (!booking) {
+        window.location.href = 'manager.html';
+        return;
+    }
+
+    editingId = id;
+    pageTitle.textContent = 'Edit Booking';
+    bookingDate.value = getDateFromDatetime(booking.datetime);
+    timeslot.value = getTimeslotFromDatetime(booking.datetime);
+    firstName.value = booking.first_name;
+    lastName.value = booking.last_name;
+    phoneNumber.value = booking.phone_number ?? '';
+    email.value = booking.email ?? '';
+    totalPax.value = booking.total_pax;
+    adultPax.value = booking.adult_pax;
+    childPax.value = booking.child_pax;
+    hcPax.value = booking.hc_pax;
+    preference.value = booking.preference ?? 'none';
+    additionalDetails.value = booking.notes ?? '';
+}
+
+if (editId) {
+    await loadBookingForEdit(editId);
+}
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const record = {
+        first_name: firstName.value,
+        last_name: lastName.value,
+        phone_number: phoneNumber.value,
+        email: email.value,
+        total_pax: parseInt(totalPax.value, 10),
+        adult_pax: parseInt(adultPax.value, 10),
+        child_pax: parseInt(childPax.value, 10),
+        hc_pax: parseInt(hcPax.value, 10),
+        preference: preference.value,
+        notes: additionalDetails.value,
+        datetime: buildDatetime(bookingDate.value, timeslot.value),
+        status: BOOKING_STATUS.CONFIRMED,
+    };
+
+    if (editingId) {
+        await updateBooking(db, editingId, record);
+    } else {
+        await insertBooking(db, {
+            ...record,
+            profile_id: getActiveProfileId(),
+            restaurant_id: DEFAULT_RESTAURANT_ID,
+            id: crypto.randomUUID(),
+            created_at: new Date().toISOString(),
+        });
+    }
+
+    window.location.href = 'manager.html';
+});
