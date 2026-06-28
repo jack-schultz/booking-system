@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient.js";
 import {
     addOrUpdateAccount,
+    afterAuthLock,
     getAccountDisplayName,
     getAccounts,
     getActiveAccount,
@@ -54,12 +55,16 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
                 btn.classList.add("is-active");
             }
             btn.textContent = getAccountDisplayName(account);
-            btn.addEventListener("click", async () => {
-                await setActiveAccount(account.id, supabase);
-                await syncAccountProfileFromSupabase(supabase, account.id);
-                render();
+            btn.addEventListener("click", () => {
+                const accountId = account.id;
                 dropdown.hidden = true;
-                onSwitch?.(getActiveAccount());
+                afterAuthLock(async () => {
+                    const ok = await setActiveAccount(accountId, supabase);
+                    if (!ok) return;
+                    await syncAccountProfileFromSupabase(supabase, accountId);
+                    render();
+                    onSwitch?.(getActiveAccount());
+                });
             });
             dropdown.appendChild(btn);
         }
@@ -97,11 +102,10 @@ export async function initAccountSwitcher(options = {}) {
     supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) {
             addOrUpdateAccount(session);
-            setTimeout(() => {
-                void syncAccountProfileFromSupabase(supabase, session.user.id).then(() => {
-                    dropdownRender?.();
-                });
-            }, 0);
+            afterAuthLock(async () => {
+                await syncAccountProfileFromSupabase(supabase, session.user.id);
+                dropdownRender?.();
+            });
         }
     });
 
@@ -118,24 +122,27 @@ export async function initAccountSwitcher(options = {}) {
 
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", async (e) => {
+        logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            const remaining = await removeActiveAccount(supabase);
-            if (!remaining) {
-                window.location.href = loginRedirect;
-                return;
-            }
-            dropdownRender?.();
+            afterAuthLock(async () => {
+                const remaining = await removeActiveAccount(supabase);
+                if (!remaining) {
+                    window.location.href = loginRedirect;
+                    return;
+                }
+                dropdownRender?.();
+            });
         });
     }
 
     return getActiveAccount();
 }
 
-export async function registerLoggedInSession(supabaseClient) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+export async function registerLoggedInSession(supabaseClient, session = null) {
+    const activeSession =
+        session ?? (await supabaseClient.auth.getSession()).data.session;
+    if (!activeSession) return;
 
-    addOrUpdateAccount(session);
-    await syncAccountProfileFromSupabase(supabaseClient, session.user.id);
+    addOrUpdateAccount(activeSession);
+    await syncAccountProfileFromSupabase(supabaseClient, activeSession.user.id);
 }

@@ -1,5 +1,15 @@
 import { STORAGE_KEYS } from '../config/constants.js';
 
+/**
+ * Supabase auth holds a lock while notifying onAuthStateChange listeners.
+ * Defer follow-up auth API calls (setSession, getSession, signOut) so they do not deadlock.
+ */
+export function afterAuthLock(fn) {
+    setTimeout(() => {
+        void Promise.resolve().then(fn);
+    }, 0);
+}
+
 function readAccounts() {
     try {
         const raw = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
@@ -80,16 +90,27 @@ export async function setActiveAccount(id, supabase) {
     const account = readAccounts().find((a) => a.id === id);
     if (!account) return false;
 
+    const previousActiveId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
     localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, id);
 
-    const { error } = await supabase.auth.setSession({
+    const { data, error } = await supabase.auth.setSession({
         access_token: account.access_token,
         refresh_token: account.refresh_token,
     });
-    if (error) return false;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) addOrUpdateAccount(session);
+    if (error) {
+        if (previousActiveId) {
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, previousActiveId);
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
+        }
+        console.warn('Could not switch account:', error.message);
+        return false;
+    }
+
+    if (data.session) {
+        addOrUpdateAccount(data.session);
+    }
     return true;
 }
 

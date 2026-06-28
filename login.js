@@ -16,7 +16,7 @@ form.addEventListener('submit', async (e) => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
@@ -26,7 +26,7 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
-    await registerLoggedInSession(supabase);
+    await registerLoggedInSession(supabase, data.session);
     await dbPromise;
     window.location.href = 'booking/manager.html';
 });
