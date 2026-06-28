@@ -1,0 +1,1 @@
+import{t as e}from"./db-DJNLFU5N.js";export{e as initDatabase};
