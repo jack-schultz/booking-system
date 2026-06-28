@@ -3,26 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-  <script type="module" crossorigin src="/booking-system/dev/assets/manager-Dn9Wrkgh.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/modulepreload-polyfill-Dezn_h7o.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-Dl6Gz46P.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-CyX7kZGR.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-RSDP0zsH.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-B6tAdeCP.css">
+  <script type="module" crossorigin src="/booking-system/dev/assets/manager-Cnenv7mm.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-D84SsKEL.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/navbar-DVE8mqbp.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-DcC0iyxy.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-B_cCP9qn.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-CCIJjiyn.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookingSidebar-DRkGenzl.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-D1zjvZDb.css">
 </head>
 <body>
-<div class="site-navbar">
-    <div class="site-navbar-links-primary">
-        <a href="../login.html">Login</a>
-        <a href="../index.html">Home</a>
-        <a href="manager.html">Bookings</a>
-    </div>
-    <div class="site-navbar-links-user">
-        <a id="logged_in_user">Not Logged In</a>
-        <a id="logoutBtn">Logout</a>
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
 <div class="page-content">
     <div class="booking-page-layout">
@@ -32,14 +23,10 @@
         </div>
 
         <div class="page-sidebar-panel">
-            <nav class="booking-sidebar-nav">
-                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--bookings" href="manager.html">BOOKINGS</a>
-                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--new-booking" href="create.html">NEW BOOKING</a>
-                <a class="booking-sidebar-nav-link booking-sidebar-nav-link--walk-in" href="walkin-create.html">WALK-IN</a>
-            </nav>
+            <div id="booking-sidebar-mount"></div>
         </div>
     </div>
 </div>
-</body>
 
+</body>
 </html>
