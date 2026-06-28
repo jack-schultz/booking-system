@@ -23,9 +23,38 @@ export function getActiveAccount() {
     return accounts.find((a) => a.id === activeId) ?? accounts[0] ?? null;
 }
 
+/** Display label for navbar and account switcher (uses cached profile names offline). */
+export function getAccountDisplayName(account) {
+    if (!account) return 'Not Logged In';
+
+    const name = [account.first_name, account.last_name].filter(Boolean).join(' ');
+    if (name) return name;
+
+    return account.email ?? 'Unknown user';
+}
+
+/** Merge profile fields into a saved account without touching auth tokens. */
+export function updateAccountProfile(userId, { first_name, last_name }) {
+    const accounts = readAccounts();
+    const idx = accounts.findIndex((a) => a.id === userId);
+    if (idx < 0) return false;
+
+    const updated = { ...accounts[idx] };
+    if (first_name) updated.first_name = first_name;
+    if (last_name) updated.last_name = last_name;
+    accounts[idx] = updated;
+    writeAccounts(accounts);
+    return true;
+}
+
 export function addOrUpdateAccount(session) {
     const user = session?.user;
     if (!user) return null;
+
+    const accounts = readAccounts();
+    const idx = accounts.findIndex((a) => a.id === user.id);
+    const existing = idx >= 0 ? accounts[idx] : null;
+    const metadata = user.user_metadata ?? {};
 
     const account = {
         id: user.id,
@@ -33,10 +62,9 @@ export function addOrUpdateAccount(session) {
         access_token: session.access_token,
         refresh_token: session.refresh_token,
         expires_at: session.expires_at,
+        first_name: existing?.first_name ?? metadata.first_name ?? null,
+        last_name: existing?.last_name ?? metadata.last_name ?? null,
     };
-
-    const accounts = readAccounts();
-    const idx = accounts.findIndex((a) => a.id === user.id);
     if (idx >= 0) {
         accounts[idx] = account;
     } else {

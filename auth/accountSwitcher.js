@@ -1,12 +1,14 @@
 import { supabase } from "../supabaseClient.js";
 import {
     addOrUpdateAccount,
+    getAccountDisplayName,
     getAccounts,
     getActiveAccount,
     migrateExistingSession,
     removeActiveAccount,
     setActiveAccount,
 } from "./accounts.js";
+import { syncAccountProfileFromSupabase } from "./profiles.js";
 
 let dropdownRender = null;
 
@@ -40,7 +42,7 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
 
     function render() {
         const active = getActiveAccount();
-        triggerEl.textContent = active?.email ?? "Not Logged In";
+        triggerEl.textContent = getAccountDisplayName(active);
 
         dropdown.innerHTML = "";
 
@@ -51,9 +53,10 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
             if (account.id === active?.id) {
                 btn.classList.add("is-active");
             }
-            btn.textContent = account.email;
+            btn.textContent = getAccountDisplayName(account);
             btn.addEventListener("click", async () => {
                 await setActiveAccount(account.id, supabase);
+                await syncAccountProfileFromSupabase(supabase, account.id);
                 render();
                 dropdown.hidden = true;
                 onSwitch?.(getActiveAccount());
@@ -88,17 +91,22 @@ export async function initAccountSwitcher(options = {}) {
 
     dropdownRender = setupDropdown(triggerEl, { loginRedirect, onSwitch });
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
         if (session && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) {
             addOrUpdateAccount(session);
+            await syncAccountProfileFromSupabase(supabase, session.user.id);
             dropdownRender?.();
         }
     });
 
     await migrateExistingSession(supabase);
-    dropdownRender?.();
 
     const active = getActiveAccount();
+    if (active) {
+        await syncAccountProfileFromSupabase(supabase, active.id);
+    }
+    dropdownRender?.();
+
     if (requireAuth && !active) {
         window.location.href = loginRedirect;
         return null;
@@ -117,10 +125,13 @@ export async function initAccountSwitcher(options = {}) {
         });
     }
 
-    return active;
+    return getActiveAccount();
 }
 
 export async function registerLoggedInSession(supabaseClient) {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) addOrUpdateAccount(session);
+    if (!session) return;
+
+    addOrUpdateAccount(session);
+    await syncAccountProfileFromSupabase(supabaseClient, session.user.id);
 }
