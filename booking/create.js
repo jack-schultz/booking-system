@@ -1,4 +1,3 @@
-import { initDatabase } from '../db/index.js';
 import {
     buildDatetime,
     getBookingById,
@@ -7,7 +6,6 @@ import {
     insertBooking,
     updateBooking,
 } from '../db/bookings.js';
-import { getActiveProfileId, initAccountSwitcher } from '../auth/accountSwitcher.js';
 import { BOOKING_STATUS, DEFAULT_RESTAURANT_ID } from '../config/constants.js';
 import { populateTimeslotSelect } from '../config/timeslots.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
@@ -18,10 +16,6 @@ mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     showAuthControls: true,
 });
 mountBookingSidebar(document.getElementById('booking-sidebar-mount'), { showSaveButton: true });
-
-await initAccountSwitcher({ requireAuth: true, loginRedirect: '../login.html' });
-
-const db = await initDatabase();
 
 const form = document.querySelector('.booking-form');
 const pageTitle = document.getElementById('pageTitle');
@@ -38,6 +32,7 @@ const preference = document.getElementById('preference');
 const email = document.getElementById('email');
 const additionalDetails = document.getElementById('additionalDetails');
 
+// Populate static form controls immediately — do not wait on auth or PowerSync init.
 populateTimeslotSelect(timeslot);
 
 const editId = new URLSearchParams(window.location.search).get('edit');
@@ -59,6 +54,18 @@ function updatePax() {
 totalPax.addEventListener('change', updatePax);
 childPax.addEventListener('change', updatePax);
 hcPax.addEventListener('change', updatePax);
+
+const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId }] = await Promise.all([
+    import('../db/index.js'),
+    import('../auth/accountSwitcher.js'),
+]);
+
+const switcherPromise = initAccountSwitcher({
+    requireAuth: true,
+    loginRedirect: '../login.html',
+});
+const db = await initDatabase();
+await switcherPromise;
 
 async function loadBookingForEdit(id) {
     const booking = await getBookingById(db, id);
