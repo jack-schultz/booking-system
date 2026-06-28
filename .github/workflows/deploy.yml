@@ -41,6 +41,8 @@ jobs:
         working-directory: main
         env:
           VITE_BASE_PATH: /booking-system/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           npm ci
           npm run build
@@ -49,6 +51,8 @@ jobs:
         working-directory: dev
         env:
           VITE_BASE_PATH: /booking-system/dev/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           npm ci
           npm run build
