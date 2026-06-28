@@ -1,0 +1,1 @@
+import"./style-D84SsKEL.js";import{t as e}from"./navbar-8TJY0WqY.js";import{n as t}from"./accountSwitcher-DSipr2h4.js";e(document.getElementById(`site-navbar-mount`),{showAuthControls:!0}),t({loginRedirect:`login.html`});

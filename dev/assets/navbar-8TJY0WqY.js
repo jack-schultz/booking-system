@@ -1,4 +1,4 @@
-import{createClient as e}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";var t=`https://qknvowhqqsdtyogkgbsb.supabase.co`,n=`sb_publishable_EfcdZ0SGBth4VNdPzBorpA_jVybXP1I`,r=t,i=n;console.warn(`Using default Supabase project config. Copy .env.example to .env to override.`);var a=e(r,i);function o(e,{basePath:t=``,showAuthControls:n=!1}={}){e.outerHTML=`
+import{createClient as e}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";var t=``,n=``;console.warn(`Using default Supabase project config. Copy .env.example to .env to override.`);var r=e(t,n);function i(e,{basePath:t=``,showAuthControls:n=!1}={}){e.outerHTML=`
         <div class="site-navbar">
             <div class="site-navbar-links-primary">
                 <a href="${t}login.html">Login</a>
@@ -11,4 +11,4 @@ import{createClient as e}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js
                 <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
             </div>
         </div>
-    `}export{a as n,o as t};
+    `}export{r as n,i as t};
