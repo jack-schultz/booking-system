@@ -373,6 +373,8 @@ Booking manager list
 }
 
 .booking-actions-row button {
+    width: 100%;
+    min-height: 100px;
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
