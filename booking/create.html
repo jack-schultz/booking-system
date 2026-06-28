@@ -3,150 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-  <script type="module" crossorigin src="/booking-system/assets/create-BBYNiYd4.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/modulepreload-polyfill-Dezn_h7o.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/supabaseClient-DjUpQpsA.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CFDL6b_O.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/bookings-RSDP0zsH.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-jpfcui-6.css">
+  <script type="module" crossorigin src="/booking-system/assets/create-KWY2FWnG.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-D84SsKEL.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/navbar-8TJY0WqY.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/accountSwitcher-DSipr2h4.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CAIJAptv.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/bookings-PBa46hCe.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/bookingSidebar-DRkGenzl.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-D1zjvZDb.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
-        <a href="../login.html">Login</a>
-        <a href="../index.html">Home</a>
-        <a href="manager.html">Bookings</a>
-    </div>
-    <div class="nav-right">
-        <a id="logged_in_user">Not Logged In</a>
-        <a id="logoutBtn">Logout</a>
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
-<div class="main">
-    <div class="booking-wrapper">
-        <div class="primary-content-card">
+<div class="page-content">
+    <div class="booking-page-layout">
+        <div class="page-primary-panel">
             <h1 id="pageTitle">New Booking</h1>
-            <form id="bookingForm" class="form">
-                <div class="booking-row">
-                    <!-- Date -->
-                    <div class="booking-column">
+            <form id="bookingForm" class="booking-form">
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <label for="bookingDate">Date</label>
                         <input type="date" id="bookingDate" name="bookingDate">
                     </div>
 
-                    <!-- Timeslot -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="timeslot">Timeslot</label>
                         <select id="timeslot" name="timeslot" required>
                             <option value="" disabled selected>Select Timeslot</option>
-                            <option value="0900">9:00am</option>
-                            <option value="0915">9:15am</option>
-                            <option value="0930">9:30am</option>
-                            <option value="0945">9:45am</option>
-
-                            <option value="1000">10:00am</option>
-                            <option value="1015">10:15am</option>
-                            <option value="1030">10:30am</option>
-                            <option value="1045">10:45am</option>
-
-                            <option value="1100">11:00am</option>
-                            <option value="1115">11:15am</option>
-                            <option value="1130">11:30am</option>
-                            <option value="1145">11:45am</option>
-
-                            <option value="1200">12:00pm</option>
-                            <option value="1215">12:15pm</option>
-                            <option value="1230">12:30pm</option>
-                            <option value="1245">12:45pm</option>
-
-                            <option value="1300">1:00pm</option>
-                            <option value="1315">1:15pm</option>
-                            <option value="1330">1:30pm</option>
-                            <option value="1345">1:45pm</option>
-
-                            <option value="1400">2:00pm</option>
-                            <option value="1415">2:15pm</option>
-                            <option value="1430">2:30pm</option>
-                            <option value="1445">2:45pm</option>
-
-                            <option value="1500">3:00pm</option>
-                            <option value="1515">3:15pm</option>
-                            <option value="1530">3:30pm</option>
-                            <option value="1545">3:45pm</option>
-
-                            <option value="1600">4:00pm</option>
-                            <option value="1615">4:15pm</option>
-                            <option value="1630">4:30pm</option>
-                            <option value="1645">4:45pm</option>
-
-                            <option value="1700">5:00pm</option>
-                            <option value="1715">5:15pm</option>
-                            <option value="1730">5:30pm</option>
-                            <option value="1745">5:45pm</option>
-
-                            <option value="1800">6:00pm</option>
-                            <option value="1815">6:15pm</option>
-                            <option value="1830">6:30pm</option>
-                            <option value="1845">6:45pm</option>
-
-                            <option value="1900">7:00pm</option>
-                            <option value="1915">7:15pm</option>
-                            <option value="1930">7:30pm</option>
-                            <option value="1945">7:45pm</option>
-
-                            <option value="2000">8:00pm</option>
-                            <option value="2015">8:15pm</option>
-                            <option value="2030">8:30pm</option>
-                            <option value="2045">8:45pm</option>
-
-                            <option value="2100">9:00pm</option>
-                            <option value="2115">9:15pm</option>
-                            <option value="2130">9:30pm</option>
-                            <option value="2145">9:45pm</option>
-
-                            <option value="2200">10:00pm</option>
-                            <option value="2215">10:15pm</option>
-                            <option value="2230">10:30pm</option>
-                            <option value="2245">10:45pm</option>
-
-                            <option value="2300">11:00pm</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <!-- First Name -->
-                    <div class="booking-column">
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="firstName" placeholder="John" required>
                     </div>
 
-                    <!-- Last Name -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="lastName">Last Name</label>
                         <input type="text" id="lastName" name="lastName" placeholder="Smith" required>
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <!-- Phone Number -->
-                    <div class="booking-column">
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <label for="phoneNumber">Phone Number</label>
                         <input type="text" id="phoneNumber" name="phoneNumber" placeholder="04XXXXXXXX" inputmode="numeric" pattern="[0-9]*" required>
                     </div>
 
-                    <!-- Email -->
-                    <div class="booking-column">
+                    <div class="booking-form-column">
                         <label for="email">Email</label>
                         <input type="text" id="email" name="email" placeholder="john.smith@email.com">
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <div class="booking-column">
-                        <!-- Total Pax -->
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <label for="totalPax">Total Pax</label>
                         <select id="totalPax" name="totalPax" required>
                             <option value=0 disabled selected>Select Pax</option>
@@ -168,8 +81,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
-                        <!-- Adult Pax -->
+                    <div class="booking-form-column">
                         <label for="adultPax">Adults</label>
                         <select id="adultPax" name="adultPax" required>
                             <option value=0>0</option>
@@ -191,8 +103,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
-                        <!-- Child Pax -->
+                    <div class="booking-form-column">
                         <label for="childPax">Children</label>
                         <select id="childPax" name="childPax" required>
                             <option value=0>None</option>
@@ -214,8 +125,7 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
-                        <!-- HC Pax -->
+                    <div class="booking-form-column">
                         <label for="hcPax">HighChairs Required</label>
                         <select id="hcPax" name="hcPax" required>
                             <option value=0>None</option>
@@ -238,9 +148,8 @@
                     </div>
                 </div>
 
-                <div class="booking-row">
-                    <div class="booking-column">
-                        <!-- Preference -->
+                <div class="booking-form-row">
+                    <div class="booking-form-column">
                         <label for="preference">Preference</label>
                         <select id="preference" name="preference" required>
                             <option value="none">None</option>
@@ -250,28 +159,21 @@
                         </select>
                     </div>
 
-                    <div class="booking-column">
-                        <!-- Additional Details -->
+                    <div class="booking-form-column">
                         <label for="additionalDetails">Any Additional Notes</label>
                         <textarea id="additionalDetails" name="additionalDetails" placeholder="" rows="2"></textarea>
                     </div>
                 </div>
 
-                <!-- Submit button -->
                 <button type="submit">SAVE BOOKING</button>
             </form>
         </div>
 
-        <div class="secondary-content-card">
-            <nav class="button-bar">
-                <a class="bookings" href="manager.html">BOOKINGS</a>
-                <a class="new" href="create.html">NEW BOOKING</a>
-                <a class="walk-in" href="walkin-create.html">WALK-IN</a>
-                <button type="submit" form="bookingForm">SAVE BOOKING</button>
-            </nav>
+        <div class="page-sidebar-panel">
+            <div id="booking-sidebar-mount"></div>
         </div>
     </div>
 </div>
-</body>
 
+</body>
 </html>

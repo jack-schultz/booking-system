@@ -3,47 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Signup</title>
-  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-jpfcui-6.css">
+  <script type="module" crossorigin src="/booking-system/assets/signup-BO4fd2nM.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-D84SsKEL.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/navbar-8TJY0WqY.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-D1zjvZDb.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
-        <a href="login.html">Login</a>
-        <a href="index.html">Home</a>
-        <a href="booking/manager.html">Bookings</a>
-    </div>
-    <div class="nav-right">
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
-<form id="signupForm">
+<h1>Sign Up</h1>
+
+<form id="signupForm" class="auth-form">
+    <label for="firstName">First Name</label>
+    <input type="text" id="firstName" autocomplete="given-name" required>
+
+    <label for="lastName">Last Name</label>
+    <input type="text" id="lastName" autocomplete="family-name" required>
+
     <label for="email">Email</label>
-    <input type="email" id="email" required>
+    <input type="email" id="email" autocomplete="email" required>
 
     <label for="password">Password</label>
-    <input type="password" id="password" required>
-    <button>Create Account</button>
+    <input type="password" id="password" required minlength="6">
+
+    <button type="submit">Create Account</button>
 </form>
+
+<p id="message" class="auth-message"></p>
+<p>Already have an account? <a href="login.html">Log in</a></p>
+
 </body>
-
-
-<script>
-    signupForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const { error } = await supabase.auth.signUp({
-            email: email.value,
-            password: password.value
-        });
-
-        if (error) {
-            alert(error.message);
-            return;
-        }
-
-        alert("Account created");
-    });
-</script>
-
 </html>

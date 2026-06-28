@@ -3,48 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-  <script type="module" crossorigin src="/booking-system/assets/login-gPSCu_Q1.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/modulepreload-polyfill-Dezn_h7o.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/supabaseClient-DjUpQpsA.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CFDL6b_O.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-jpfcui-6.css">
+  <script type="module" crossorigin src="/booking-system/assets/login-BYf2NuEF.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-D84SsKEL.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/navbar-8TJY0WqY.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/accountSwitcher-DSipr2h4.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CAIJAptv.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-D1zjvZDb.css">
 </head>
 <body>
-<div class="navbar">
-    <div class="nav-left">
-        <a href="login.html">Login</a>
-        <a href="index.html">Home</a>
-        <a href="booking/manager.html">Bookings</a>
-    </div>
-    <div class="nav-right">
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
 <h1>Login</h1>
 
-<form id="loginForm">
+<form id="loginForm" class="auth-form">
     <label for="email">Email</label>
-    <input
-            type="email"
-            id="email"
-            placeholder="Email"
-            required
-    >
+    <input type="email" id="email" placeholder="Email" required>
 
     <label for="password">Password</label>
-    <input
-            type="password"
-            id="password"
-            placeholder="Password"
-            required
-    >
+    <input type="password" id="password" placeholder="Password" required>
 
     <button type="submit">Login</button>
 </form>
 
-<p id="error"></p>
+<p id="error" class="auth-message auth-message--error"></p>
+<p>Need an account? <a href="signup.html">Sign up here</a></p>
 
 </body>
-
 </html>

@@ -1,9 +1,0 @@
-function e(e,t){let n=t.toString().padStart(4,`0`);return`${e}T${n.slice(0,2)}:${n.slice(2)}:00`}function t(e){if(!e)return``;let t=e.match(/T(\d{2}):(\d{2})/);if(t)return t[1]+t[2];let n=new Date(e);return Number.isNaN(n.getTime())?e:`${String(n.getHours()).padStart(2,`0`)}${String(n.getMinutes()).padStart(2,`0`)}`}function n(e){return e?e.split(`T`)[0]:``}function r(e){let n=t(e);if(!n)return``;let r=n.toString().padStart(4,`0`),i=parseInt(r.slice(0,2),10),a=r.slice(2),o=i>=12?`pm`:`am`;return i>12&&(i-=12),i===0&&(i=12),`${i}:${a} ${o}`}async function i(e,t){return e.getAll(`SELECT * FROM bookings WHERE date(datetime) = date(?) ORDER BY datetime, last_name`,[t])}async function a(e,t){return e.get(`SELECT * FROM bookings WHERE id = ?`,[t])}async function o(e,t){await e.execute(`INSERT INTO bookings (
-            id, created_at, restaurant_id, first_name, last_name, preference,
-            datetime, profile_id, status, phone_number, email,
-            total_pax, adult_pax, child_pax, hc_pax, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,[t.id,t.created_at,t.restaurant_id,t.first_name,t.last_name,t.preference,t.datetime,t.profile_id??null,t.status??`confirmed`,t.phone_number,t.email??null,t.total_pax,t.adult_pax,t.child_pax,t.hc_pax,t.notes??null])}async function s(e,t,n){await e.execute(`UPDATE bookings SET
-            first_name = ?, last_name = ?, preference = ?, datetime = ?,
-            phone_number = ?, email = ?, total_pax = ?, adult_pax = ?,
-            child_pax = ?, hc_pax = ?, notes = ?, status = ?
-        WHERE id = ?`,[n.first_name,n.last_name,n.preference,n.datetime,n.phone_number,n.email??null,n.total_pax,n.adult_pax,n.child_pax,n.hc_pax,n.notes??null,n.status??`confirmed`,t])}async function c(e,t){await e.execute(`DELETE FROM bookings WHERE id = ?`,[t])}export{i as a,o as c,a as i,s as l,c as n,n as o,r,t as s,e as t};
