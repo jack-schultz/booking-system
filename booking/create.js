@@ -5,6 +5,7 @@ import {
     getDateFromDatetime,
     getTimeslotFromDatetime,
     insertBooking,
+    toTimestamptz,
     updateBooking,
 } from '../db/bookings.js';
 import { BOOKING_STATUS } from '../config/constants.js';
@@ -122,7 +123,7 @@ form.addEventListener('submit', async (e) => {
             profile_id: getActiveProfileId(),
             restaurant_id: getActiveRestaurantId(),
             id: crypto.randomUUID(),
-            created_at: new Date().toISOString(),
+            created_at: toTimestamptz(new Date()),
         });
     }
 
