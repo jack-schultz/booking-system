@@ -1,0 +1,1 @@
+import"./style-CQrKHbsN.js";import{t as e}from"./navbar-BSSVuDwV.js";import{r as t}from"./accountSwitcher-BFZqxLUk.js";import{t as n}from"./bookingSidebar-DRkGenzl.js";e(document.getElementById(`site-navbar-mount`),{basePath:`../`,showAuthControls:!0}),n(document.getElementById(`booking-sidebar-mount`)),t({requireAuth:!0,loginRedirect:`../login.html`});

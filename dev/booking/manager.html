@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-  <script type="module" crossorigin src="/booking-system/dev/assets/manager-CGZTz1cI.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-J9WVJV5r.js">
+  <script type="module" crossorigin src="/booking-system/dev/assets/manager-DnUbO6yT.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-CQrKHbsN.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/preload-helper-j_ZwnIYB.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/navbar-BSSVuDwV.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Cll7b3zd.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/constants-CItcl7GZ.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-BFZqxLUk.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-DJNLFU5N.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-C-Wy-PGC.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-CVhNZL2x.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-D6RdzCQS.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookingSidebar-DRkGenzl.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-DKJOAj_s.css">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-BkCynw78.css">
 <link rel="manifest" href="/booking-system/dev/manifest.webmanifest"></head>
 <body>
 <div id="site-navbar-mount"></div>
@@ -21,7 +21,11 @@
 <div class="page-content">
     <div class="booking-page-layout">
         <div class="page-primary-panel">
-            <h1>Booking Manager</h1>
+            <div class="booking-header-group">
+                <button type="button" class="booking-list-date-left" id="booking-list-date-left" aria-label="Previous day">‹</button>
+                <h1 id="booking-list-header">Loading...</h1>
+                <button type="button" class="booking-list-date-right" id="booking-list-date-right" aria-label="Next day">›</button>
+            </div>
             <div class="booking-manager-list" id="booking-list">loading...</div>
         </div>
 
