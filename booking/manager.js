@@ -24,9 +24,22 @@ const switcherPromise = initAccountSwitcher({
 });
 const db = await initDatabase();
 
-function getTodayDate() {
-    return new Date().toISOString().split('T')[0];
+function getTodayDateWithOffset(offset = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    date.setHours(0, 0, 0, 0);
+    return date;
 }
+
+let dateOffset = 0
+document.getElementById("booking-list-date-left").addEventListener("click", () => {
+    dateOffset -= 1
+    loadBookings();
+});
+document.getElementById("booking-list-date-right").addEventListener("click", () => {
+    dateOffset += 1
+    loadBookings();
+});
 
 function getOrCreateTimeslotGroup(timeslot, datetime) {
     const groupId = `timeslot-group-${timeslot}`;
@@ -52,7 +65,16 @@ function getOrCreateTimeslotGroup(timeslot, datetime) {
 }
 
 async function loadBookings() {
-    const bookings = await getBookingsForDate(db, getTodayDate(), getActiveRestaurantId());
+    const date = getTodayDateWithOffset(dateOffset);
+    const bookings = await getBookingsForDate(db, date, getActiveRestaurantId());
+
+    const header = document.getElementById("booking-list-header");
+    header.textContent = date.toLocaleDateString("en-AU", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    });
 
     if (bookings.length === 0) {
         bookingList.innerHTML = '<p>No bookings for today</p>';
