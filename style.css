@@ -106,6 +106,38 @@ Site navbar
 
 /*
 =============================================================================
+Site footer
+=============================================================================
+*/
+
+.site-footer {
+    background-color: #333;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 20px;
+    margin-top: auto;
+}
+
+.site-footer a {
+    color: #f2f2f2;
+    text-decoration: none;
+    padding: 14px 16px;
+    display: block;
+}
+
+.site-footer a:hover {
+    background-color: #575757;
+}
+
+.site-footer-links {
+    display: flex;
+    align-items: stretch;
+}
+
+
+/*
+=============================================================================
 Navbar account switcher
 =============================================================================
 */

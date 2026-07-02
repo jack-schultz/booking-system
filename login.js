@@ -3,8 +3,10 @@ import { supabase } from './supabaseClient.js';
 import { initDatabase } from './db/index.js';
 import { registerLoggedInSession } from './auth/accountSwitcher.js';
 import { mountSiteNavbar } from './ui/navbar.js';
+import { mountSiteFooter } from './ui/footer.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'));
+mountSiteFooter(document.getElementById('site-footer-mount'));
 
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');
