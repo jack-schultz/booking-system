@@ -6,7 +6,9 @@ export const STORAGE_KEYS = {
 
 /** Default booking status for new and updated bookings */
 export const BOOKING_STATUS = {
-    CONFIRMED: 'confirmed',
+    PENDING: 'pending',
+    SET: 'set',
+    SEATED: 'seated',
 };
 
 /**

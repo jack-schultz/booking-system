@@ -87,7 +87,7 @@ export async function insertBooking(db, booking) {
             booking.preference,
             booking.datetime,
             booking.profile_id ?? null,
-            booking.status ?? BOOKING_STATUS.CONFIRMED,
+            booking.status ?? BOOKING_STATUS.PENDING,
             booking.phone_number,
             booking.email ?? null,
             booking.total_pax,
@@ -118,7 +118,7 @@ export async function updateBooking(db, id, booking, restaurantId) {
             booking.child_pax,
             booking.hc_pax,
             booking.notes ?? null,
-            booking.status ?? BOOKING_STATUS.CONFIRMED,
+            booking.status ?? BOOKING_STATUS.PENDING,
             id,
             restaurantId,
         ]
@@ -129,5 +129,51 @@ export async function deleteBooking(db, id, restaurantId) {
     await db.execute(
         `DELETE FROM bookings WHERE id = ? AND restaurant_id = ?`,
         [id, restaurantId]
+    );
+}
+
+export function getNextBookingStatus(status) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return BOOKING_STATUS.SET;
+        case BOOKING_STATUS.SET:
+            return BOOKING_STATUS.SEATED;
+        case BOOKING_STATUS.SEATED:
+            return BOOKING_STATUS.PENDING;
+        default:
+            return BOOKING_STATUS.PENDING;
+    }
+}
+
+export function getBookingStatusLabel(status) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return 'Unset';
+        case BOOKING_STATUS.SET:
+            return 'Set';
+        case BOOKING_STATUS.SEATED:
+            return 'Seated';
+        default:
+            return 'Unset';
+    }
+}
+
+export function getBookingStatusClass(status, tableSet = null) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return 'is-pending';
+        case BOOKING_STATUS.SET:
+            return 'is-set';
+        case BOOKING_STATUS.SEATED:
+            return 'is-seated';
+        default:
+            return 'is-pending';
+    }
+}
+
+export async function updateBookingStatus(db, id, restaurantId, status) {
+    await db.execute(
+        `UPDATE bookings SET status = ? WHERE id = ? AND restaurant_id = ?`,
+        [status, id, restaurantId]
     );
 }
