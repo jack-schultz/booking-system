@@ -47,7 +47,7 @@ async function login() {
 login();
 ```
 
-`booking/manager.html` and `booking/create.html` use this pattern with the shared client. `booking/walkin-create.html` duplicates inline Supabase setup instead of importing `supabaseClient.js`.
+`booking/manager.html` and `booking/create.html` use this pattern with the shared client. `booking/walkin.html` duplicates inline Supabase setup instead of importing `supabaseClient.js`.
 
 ## Logout
 
@@ -70,7 +70,7 @@ Supabase stores the session in `localStorage` by default. Refreshing a protected
 
 ## Planned improvements
 
-- [ ] Use `supabaseClient.js` on `signup.html` and `booking/walkin-create.html`
+- [ ] Use `supabaseClient.js` on `signup.html` and `booking/walkin.html`
 - [ ] Centralize `protectPage()` in a shared `auth.js` module
 - [ ] Link `profile_id` on bookings to `auth.users` / a `profiles` table
 - [ ] Add RLS policies in Supabase before production use
