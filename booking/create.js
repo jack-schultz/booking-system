@@ -43,9 +43,10 @@ populateTimeslotSelect(timeslot);
 
 const editId = new URLSearchParams(window.location.search).get('edit');
 let editingId = null;
+let editingStatus = BOOKING_STATUS.PENDING;
 
 if (!bookingDate.value) {
-    bookingDate.value = new Date().toISOString().split('T')[0];
+    bookingDate.value = getDateFromDatetime(Date());
 }
 
 function updatePax() {
@@ -82,6 +83,7 @@ async function loadBookingForEdit(id) {
     }
 
     editingId = id;
+    editingStatus = booking.status;
     pageTitle.textContent = 'Edit Booking';
     bookingDate.value = getDateFromDatetime(booking.datetime);
     timeslot.value = getTimeslotFromDatetime(booking.datetime);
@@ -116,7 +118,7 @@ form.addEventListener('submit', async (e) => {
         preference: preference.value,
         notes: additionalDetails.value,
         datetime: buildDatetime(bookingDate.value, timeslot.value),
-        status: BOOKING_STATUS.CONFIRMED,
+        status: editingId ? editingStatus : BOOKING_STATUS.PENDING,
     };
 
     if (editingId) {

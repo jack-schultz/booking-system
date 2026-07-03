@@ -5,6 +5,10 @@ import {
     formatTimeslot,
     getBookingsForDate,
     getTimeslotFromDatetime,
+    getNextBookingStatus,
+    getBookingStatusClass,
+    getBookingStatusLabel,
+    updateBookingStatus,
 } from '../db/bookings.js';
 import { initAccountSwitcher, getActiveRestaurantId } from '../auth/accountSwitcher.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
@@ -68,6 +72,12 @@ function getOrCreateTimeslotGroup(timeslot, datetime) {
     return group.querySelector('.booking-timeslot-items');
 }
 
+async function advanceBookingStatus(bookingId, status, tableSet) {
+    const nextStatus = getNextBookingStatus(status, tableSet);
+    await updateBookingStatus(db, bookingId, getActiveRestaurantId(), nextStatus);
+    await loadBookings();
+}
+
 async function loadBookings() {
     const date = getTodayDateWithOffset(dateOffset);
     const bookings = await getBookingsForDate(db, date, getActiveRestaurantId());
@@ -91,13 +101,22 @@ async function loadBookings() {
         const timeslot = getTimeslotFromDatetime(booking.datetime);
         const timeslotItems = getOrCreateTimeslotGroup(timeslot, booking.datetime);
 
+        let preference = '';
+        if (booking.preference !== 'none') {
+            preference = `<div class="booking-detail-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</div>`;
+        }
+
+        const statusClass = getBookingStatusClass(booking.status, booking.table_set);
+        const statusLabel = getBookingStatusLabel(booking.status, booking.table_set);
+        const status = `<button type="button" class="booking-detail-status ${statusClass}" data-id="${booking.id}">${statusLabel}</button>`;
+
         const bookingDiv = document.createElement('div');
         bookingDiv.className = 'booking-list-item-card';
         bookingDiv.innerHTML = `
             <div class="booking-summary-primary">
                 <div class="booking-detail-time-preference">
                     <span class="booking-summary-name">${booking.first_name} ${booking.last_name}</span>
-                    <div class="booking-detail-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</div>
+                    ${preference}
                 </div>
                 <span class="booking-summary-time">${formatTimeslot(booking.datetime)}</span>
                 <span class="booking-summary-pax">
@@ -107,6 +126,7 @@ async function loadBookings() {
                         <span>${booking.child_pax}C</span>
                         <span>${booking.hc_pax}HC</span>
                     </span>
+                    ${status}
                 </span>
             </div>
 
@@ -133,6 +153,15 @@ async function loadBookings() {
 
         bookingDiv.addEventListener('click', () => {
             bookingDiv.querySelector('.booking-list-item-details').classList.toggle('is-expanded');
+        });
+
+        bookingDiv.querySelector('.booking-detail-status').addEventListener('click', async (event) => {
+            event.stopPropagation();
+            await advanceBookingStatus(
+                event.currentTarget.getAttribute('data-id'),
+                booking.status,
+                booking.table_set
+            );
         });
 
         bookingDiv.querySelector('.booking-action-delete').addEventListener('click', async (event) => {

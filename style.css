@@ -595,7 +595,7 @@ Booking manager list
     align-items: center;
     justify-content: left;
     text-align: right;
-    gap: 16px;
+    gap: 4px;
 }
 
 .booking-detail-pax-total {
@@ -676,18 +676,48 @@ a.booking-detail-email:hover {
     content: none;
 }
 
+.booking-detail-preference,
+.booking-detail-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    text-transform: capitalize;
+    opacity: 0.85;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.booking-detail-status {
+    margin: 0;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 .booking-detail-preference {
     grid-column: 1 / -1;
     justify-self: center;
-    padding: 8px 20px;
-    border-radius: 999px;
-    max-height: 20px;
-    font-size: 18px;
-    font-weight: bold;
-    text-transform: capitalize;
-    opacity: 0.85;
     background-color: rgba(255, 255, 255, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.booking-detail-status.is-pending {
+    background-color: rgba(192, 57, 43, 0.55);
+}
+
+.booking-detail-status.is-set {
+    background-color: rgba(230, 126, 34, 0.55);
+}
+
+.booking-detail-status.is-seated {
+    background-color: rgba(46, 125, 50, 0.55);
 }
 
 .booking-detail-notes {
