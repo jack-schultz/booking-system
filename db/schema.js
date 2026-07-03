@@ -4,7 +4,7 @@ import { Schema, Table, column } from '@powersync/web';
  * Domain glossary (also in CONTRIBUTING.md):
  * - total_pax / adult_pax / child_pax: party size breakdown (PAX = guests)
  * - hc_pax: high chair count
- * - datetime: ISO local string built from date + compact timeslot (e.g. "0900")
+ * - datetime / created_at / applied_at: timestamptz stored as ISO 8601 UTC text (…Z)
  * - restaurant_id: tenant scope for SaaS multi-restaurant sync (temporary default in config/constants.js)
  */
 export const AppSchema = new Schema({
@@ -31,6 +31,7 @@ export const AppSchema = new Schema({
         {
             indexes: {
                 idx_bookings_profile_id: ['profile_id'],
+                idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
             },
         }

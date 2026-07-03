@@ -7,22 +7,14 @@
     <link rel="stylesheet" href="docs.css">
 </head>
 <body>
-<div class="site-navbar">
-    <div class="site-navbar-links-primary">
-        <a href="../login.html">Login</a>
-        <a href="../index.html">Home</a>
-        <a href="../booking/manager.html">Bookings</a>
-        <a href="index.html">Docs</a>
-    </div>
-    <div class="site-navbar-links-user">
-        <a href="https://github.com/jack-schultz/booking-system">GitHub</a>
-    </div>
-</div>
+<div id="site-navbar-mount"></div>
 
 <div class="docs-layout">
     <nav class="docs-sidebar" id="docs-sidebar"></nav>
     <article class="docs-content" id="doc-content"><p class="docs-loading">Loading…</p></article>
 </div>
+
+<div id="site-footer-mount"></div>
 
 <script type="module">
     import { initDocPage } from './docs.js';

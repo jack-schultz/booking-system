@@ -1,26 +1,42 @@
 import { BOOKING_STATUS } from '../config/constants.js';
 
+/** Serialize a Date to PowerSync timestamptz text (ISO 8601 UTC, …Z). */
+export function toTimestamptz(date) {
+    return date.toISOString();
+}
+
+/** Parse a timestamptz or legacy local ISO string into a Date, or null if invalid. */
+export function fromTimestamptz(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** Combine a date input (YYYY-MM-DD) and compact timeslot (HHMM) into timestamptz. */
 export function buildDatetime(dateStr, timeslot) {
     const str = timeslot.toString().padStart(4, '0');
-    return `${dateStr}T${str.slice(0, 2)}:${str.slice(2)}:00`;
+    const date = new Date(`${dateStr}T${str.slice(0, 2)}:${str.slice(2)}:00`);
+    return toTimestamptz(date);
 }
 
+/** Extract a compact timeslot (HHMM) from timestamptz for form fields. */
 export function getTimeslotFromDatetime(datetime) {
-    if (!datetime) return '';
-    const match = datetime.match(/T(\d{2}):(\d{2})/);
-    if (match) return match[1] + match[2];
-    const d = new Date(datetime);
-    if (!Number.isNaN(d.getTime())) {
-        return `${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
-    }
-    return datetime;
+    const date = fromTimestamptz(datetime);
+    if (!date) return '';
+    return `${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
+/** Extract a local date (YYYY-MM-DD) from timestamptz for form fields. */
 export function getDateFromDatetime(datetime) {
-    if (!datetime) return '';
-    return datetime.split('T')[0];
+    const date = fromTimestamptz(datetime);
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
+/** Format timestamptz as a display time (e.g. "9:00 am"). */
 export function formatTimeslot(datetime) {
     const timeslot = getTimeslotFromDatetime(datetime);
     if (!timeslot) return '';
@@ -33,15 +49,26 @@ export function formatTimeslot(datetime) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-export async function getBookingsForDate(db, dateStr) {
+/** List bookings for a local calendar day (date is a Date at local midnight). */
+export async function getBookingsForDate(db, date, restaurantId) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+
     return db.getAll(
-        `SELECT * FROM bookings WHERE date(datetime) = date(?) ORDER BY datetime, last_name`,
-        [dateStr]
+        `SELECT * FROM bookings
+         WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?
+         ORDER BY datetime, last_name`,
+        [restaurantId, toTimestamptz(start), toTimestamptz(end)]
     );
 }
 
-export async function getBookingById(db, id) {
-    return db.get(`SELECT * FROM bookings WHERE id = ?`, [id]);
+export async function getBookingById(db, id, restaurantId) {
+    return db.get(
+        `SELECT * FROM bookings WHERE id = ? AND restaurant_id = ?`,
+        [id, restaurantId]
+    );
 }
 
 export async function insertBooking(db, booking) {
@@ -60,7 +87,7 @@ export async function insertBooking(db, booking) {
             booking.preference,
             booking.datetime,
             booking.profile_id ?? null,
-            booking.status ?? BOOKING_STATUS.CONFIRMED,
+            booking.status ?? BOOKING_STATUS.PENDING,
             booking.phone_number,
             booking.email ?? null,
             booking.total_pax,
@@ -72,13 +99,13 @@ export async function insertBooking(db, booking) {
     );
 }
 
-export async function updateBooking(db, id, booking) {
+export async function updateBooking(db, id, booking, restaurantId) {
     await db.execute(
         `UPDATE bookings SET
             first_name = ?, last_name = ?, preference = ?, datetime = ?,
             phone_number = ?, email = ?, total_pax = ?, adult_pax = ?,
             child_pax = ?, hc_pax = ?, notes = ?, status = ?
-        WHERE id = ?`,
+        WHERE id = ? AND restaurant_id = ?`,
         [
             booking.first_name,
             booking.last_name,
@@ -91,12 +118,62 @@ export async function updateBooking(db, id, booking) {
             booking.child_pax,
             booking.hc_pax,
             booking.notes ?? null,
-            booking.status ?? BOOKING_STATUS.CONFIRMED,
+            booking.status ?? BOOKING_STATUS.PENDING,
             id,
+            restaurantId,
         ]
     );
 }
 
-export async function deleteBooking(db, id) {
-    await db.execute(`DELETE FROM bookings WHERE id = ?`, [id]);
+export async function deleteBooking(db, id, restaurantId) {
+    await db.execute(
+        `DELETE FROM bookings WHERE id = ? AND restaurant_id = ?`,
+        [id, restaurantId]
+    );
+}
+
+export function getNextBookingStatus(status) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return BOOKING_STATUS.SET;
+        case BOOKING_STATUS.SET:
+            return BOOKING_STATUS.SEATED;
+        case BOOKING_STATUS.SEATED:
+            return BOOKING_STATUS.PENDING;
+        default:
+            return BOOKING_STATUS.PENDING;
+    }
+}
+
+export function getBookingStatusLabel(status) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return 'Unset';
+        case BOOKING_STATUS.SET:
+            return 'Set';
+        case BOOKING_STATUS.SEATED:
+            return 'Seated';
+        default:
+            return 'Unset';
+    }
+}
+
+export function getBookingStatusClass(status, tableSet = null) {
+    switch (status) {
+        case BOOKING_STATUS.PENDING:
+            return 'is-pending';
+        case BOOKING_STATUS.SET:
+            return 'is-set';
+        case BOOKING_STATUS.SEATED:
+            return 'is-seated';
+        default:
+            return 'is-pending';
+    }
+}
+
+export async function updateBookingStatus(db, id, restaurantId, status) {
+    await db.execute(
+        `UPDATE bookings SET status = ? WHERE id = ? AND restaurant_id = ?`,
+        [status, id, restaurantId]
+    );
 }

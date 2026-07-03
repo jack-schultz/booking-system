@@ -1,6 +1,9 @@
 import { supabase } from "../supabaseClient.js";
+import { DEFAULT_RESTAURANT_ID } from "../config/constants.js";
+import { isOnline } from "../config/connectivity.js";
 import {
     addOrUpdateAccount,
+    afterAuthLock,
     getAccountDisplayName,
     getAccounts,
     getActiveAccount,
@@ -11,6 +14,19 @@ import {
 import { syncAccountProfileFromSupabase } from "./profiles.js";
 
 let dropdownRender = null;
+
+function setupOnlineSync() {
+    window.addEventListener("online", () => {
+        afterAuthLock(async () => {
+            await migrateExistingSession(supabase);
+            const active = getActiveAccount();
+            if (active) {
+                await syncAccountProfileFromSupabase(supabase, active.id);
+                dropdownRender?.();
+            }
+        });
+    });
+}
 
 function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
     const wrapper = document.createElement("div");
@@ -54,12 +70,18 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
                 btn.classList.add("is-active");
             }
             btn.textContent = getAccountDisplayName(account);
-            btn.addEventListener("click", async () => {
-                await setActiveAccount(account.id, supabase);
-                await syncAccountProfileFromSupabase(supabase, account.id);
-                render();
+            btn.addEventListener("click", () => {
+                const accountId = account.id;
                 dropdown.hidden = true;
-                onSwitch?.(getActiveAccount());
+                afterAuthLock(async () => {
+                    const ok = await setActiveAccount(accountId, supabase);
+                    if (!ok) return;
+                    if (isOnline()) {
+                        await syncAccountProfileFromSupabase(supabase, accountId);
+                    }
+                    render();
+                    onSwitch?.(getActiveAccount());
+                });
             });
             dropdown.appendChild(btn);
         }
@@ -79,6 +101,10 @@ export function getActiveProfileId() {
     return getActiveAccount()?.id ?? null;
 }
 
+export function getActiveRestaurantId() {
+    return getActiveAccount()?.restaurant_id ?? DEFAULT_RESTAURANT_ID;
+}
+
 export async function initAccountSwitcher(options = {}) {
     const {
         requireAuth = false,
@@ -91,18 +117,23 @@ export async function initAccountSwitcher(options = {}) {
 
     dropdownRender = setupDropdown(triggerEl, { loginRedirect, onSwitch });
 
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    setupOnlineSync();
+
+    // getSession() must run before onAuthStateChange is registered
+    await migrateExistingSession(supabase);
+
+    supabase.auth.onAuthStateChange((event, session) => {
         if (session && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) {
             addOrUpdateAccount(session);
-            await syncAccountProfileFromSupabase(supabase, session.user.id);
-            dropdownRender?.();
+            afterAuthLock(async () => {
+                await syncAccountProfileFromSupabase(supabase, session.user.id);
+                dropdownRender?.();
+            });
         }
     });
 
-    await migrateExistingSession(supabase);
-
     const active = getActiveAccount();
-    if (active) {
+    if (active && isOnline()) {
         await syncAccountProfileFromSupabase(supabase, active.id);
     }
     dropdownRender?.();
@@ -114,24 +145,27 @@ export async function initAccountSwitcher(options = {}) {
 
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", async (e) => {
+        logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            const remaining = await removeActiveAccount(supabase);
-            if (!remaining) {
-                window.location.href = loginRedirect;
-                return;
-            }
-            dropdownRender?.();
+            afterAuthLock(async () => {
+                const remaining = await removeActiveAccount(supabase);
+                if (!remaining) {
+                    window.location.href = loginRedirect;
+                    return;
+                }
+                dropdownRender?.();
+            });
         });
     }
 
     return getActiveAccount();
 }
 
-export async function registerLoggedInSession(supabaseClient) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+export async function registerLoggedInSession(supabaseClient, session = null) {
+    const activeSession =
+        session ?? (await supabaseClient.auth.getSession()).data.session;
+    if (!activeSession) return;
 
-    addOrUpdateAccount(session);
-    await syncAccountProfileFromSupabase(supabaseClient, session.user.id);
+    addOrUpdateAccount(activeSession);
+    await syncAccountProfileFromSupabase(supabaseClient, activeSession.user.id);
 }

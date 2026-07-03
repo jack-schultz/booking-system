@@ -6,14 +6,15 @@ export const STORAGE_KEYS = {
 
 /** Default booking status for new and updated bookings */
 export const BOOKING_STATUS = {
-    CONFIRMED: 'confirmed',
+    PENDING: 'pending',
+    SET: 'set',
+    SEATED: 'seated',
 };
 
 /**
- * Temporary default until user profiles sync from Supabase.
- * Replace with profile.restaurant_id per logged-in user.
+ * Fallback when a profile has not synced restaurant_id from Supabase yet.
  */
-export const DEFAULT_RESTAURANT_ID = 1;
+export const DEFAULT_RESTAURANT_ID = 0;
 
 /** Local SQLite filename used by PowerSync in the browser */
 export const DB_FILENAME = 'bookings.db';

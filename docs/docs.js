@@ -1,4 +1,6 @@
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/+esm';
+import { mountSiteFooter } from '../ui/footer.js';
+import {mountSiteNavbar} from "../ui/navbar.js";
 
 export const DOC_PAGES = [
     { slug: 'index', title: 'Documentation', md: 'index.md' },
@@ -40,6 +42,14 @@ function rewriteMdLinks(container) {
 }
 
 export async function initDocPage(mdPath, title) {
+    mountSiteNavbar(document.getElementById('site-navbar-mount'), {
+        basePath: '../',
+        showAuthControls: false,
+    });
+    mountSiteFooter(document.getElementById('site-footer-mount'), {
+        basePath: '../',
+    });
+
     document.title = `${title} — Booking System Docs`;
     renderSidebar();
 

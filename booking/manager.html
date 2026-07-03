@@ -11,8 +11,12 @@
 <div class="page-content">
     <div class="booking-page-layout">
         <div class="page-primary-panel">
-            <h1>Booking Manager</h1>
-            <div class="booking-manager-list" id="booking-list"></div>
+            <div class="booking-header-group">
+                <button type="button" class="booking-list-date-left" id="booking-list-date-left" aria-label="Previous day">‹</button>
+                <h1 id="booking-list-header">Loading...</h1>
+                <button type="button" class="booking-list-date-right" id="booking-list-date-right" aria-label="Next day">›</button>
+            </div>
+            <div class="booking-manager-list" id="booking-list">loading...</div>
         </div>
 
         <div class="page-sidebar-panel">
@@ -20,6 +24,8 @@
         </div>
     </div>
 </div>
+
+<div id="site-footer-mount"></div>
 
 <script type="module" src="./manager.js"></script>
 </body>

@@ -28,7 +28,7 @@ Short guide for where code belongs in this project. Full setup and architecture 
 ## Intentional stubs as of writing
 
 - `db/migrations/001.js`, `002.js` — only migration framework exists. Once db is live and needs migration, this lays out how it will work.
-- `booking/walkin-create.html` — placeholder page, not in scope yet.
+- `booking/walkin.html` — placeholder page, not in scope yet.
 - PowerSync `connect()` — not wired yet; data is local-only until sync is implemented (see `docs/powersync-supabase.md`).
 - `DEFAULT_RESTAURANT_ID` in `config/constants.js` — temporary until profiles sync from Supabase.
 

@@ -1,19 +1,25 @@
+import '../pwa/register.js';
 import {
     buildDatetime,
     getBookingById,
     getDateFromDatetime,
     getTimeslotFromDatetime,
     insertBooking,
+    toTimestamptz,
     updateBooking,
 } from '../db/bookings.js';
-import { BOOKING_STATUS, DEFAULT_RESTAURANT_ID } from '../config/constants.js';
+import { BOOKING_STATUS } from '../config/constants.js';
 import { populateTimeslotSelect } from '../config/timeslots.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
+import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
     showAuthControls: true,
+});
+mountSiteFooter(document.getElementById('site-footer-mount'), {
+    basePath: '../',
 });
 mountBookingSidebar(document.getElementById('booking-sidebar-mount'), { showSaveButton: true });
 
@@ -37,9 +43,10 @@ populateTimeslotSelect(timeslot);
 
 const editId = new URLSearchParams(window.location.search).get('edit');
 let editingId = null;
+let editingStatus = BOOKING_STATUS.PENDING;
 
 if (!bookingDate.value) {
-    bookingDate.value = new Date().toISOString().split('T')[0];
+    bookingDate.value = getDateFromDatetime(Date());
 }
 
 function updatePax() {
@@ -55,7 +62,7 @@ totalPax.addEventListener('change', updatePax);
 childPax.addEventListener('change', updatePax);
 hcPax.addEventListener('change', updatePax);
 
-const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId }] = await Promise.all([
+const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId, getActiveRestaurantId }] = await Promise.all([
     import('../db/index.js'),
     import('../auth/accountSwitcher.js'),
 ]);
@@ -68,13 +75,15 @@ const db = await initDatabase();
 await switcherPromise;
 
 async function loadBookingForEdit(id) {
-    const booking = await getBookingById(db, id);
+    const restaurantId = getActiveRestaurantId();
+    const booking = await getBookingById(db, id, restaurantId);
     if (!booking) {
         window.location.href = 'manager.html';
         return;
     }
 
     editingId = id;
+    editingStatus = booking.status;
     pageTitle.textContent = 'Edit Booking';
     bookingDate.value = getDateFromDatetime(booking.datetime);
     timeslot.value = getTimeslotFromDatetime(booking.datetime);
@@ -109,18 +118,18 @@ form.addEventListener('submit', async (e) => {
         preference: preference.value,
         notes: additionalDetails.value,
         datetime: buildDatetime(bookingDate.value, timeslot.value),
-        status: BOOKING_STATUS.CONFIRMED,
+        status: editingId ? editingStatus : BOOKING_STATUS.PENDING,
     };
 
     if (editingId) {
-        await updateBooking(db, editingId, record);
+        await updateBooking(db, editingId, record, getActiveRestaurantId());
     } else {
         await insertBooking(db, {
             ...record,
             profile_id: getActiveProfileId(),
-            restaurant_id: DEFAULT_RESTAURANT_ID,
+            restaurant_id: getActiveRestaurantId(),
             id: crypto.randomUUID(),
-            created_at: new Date().toISOString(),
+            created_at: toTimestamptz(new Date()),
         });
     }
 

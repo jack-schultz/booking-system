@@ -1,4 +1,15 @@
 import { STORAGE_KEYS } from '../config/constants.js';
+import { isOnline } from '../config/connectivity.js';
+
+/**
+ * Supabase auth holds a lock while notifying onAuthStateChange listeners.
+ * Defer follow-up auth API calls (setSession, getSession, signOut) so they do not deadlock.
+ */
+export function afterAuthLock(fn) {
+    setTimeout(() => {
+        void Promise.resolve().then(fn);
+    }, 0);
+}
 
 function readAccounts() {
     try {
@@ -34,7 +45,7 @@ export function getAccountDisplayName(account) {
 }
 
 /** Merge profile fields into a saved account without touching auth tokens. */
-export function updateAccountProfile(userId, { first_name, last_name }) {
+export function updateAccountProfile(userId, { first_name, last_name, restaurant_id }) {
     const accounts = readAccounts();
     const idx = accounts.findIndex((a) => a.id === userId);
     if (idx < 0) return false;
@@ -42,6 +53,7 @@ export function updateAccountProfile(userId, { first_name, last_name }) {
     const updated = { ...accounts[idx] };
     if (first_name) updated.first_name = first_name;
     if (last_name) updated.last_name = last_name;
+    if (restaurant_id != null) updated.restaurant_id = restaurant_id;
     accounts[idx] = updated;
     writeAccounts(accounts);
     return true;
@@ -64,6 +76,7 @@ export function addOrUpdateAccount(session) {
         expires_at: session.expires_at,
         first_name: existing?.first_name ?? metadata.first_name ?? null,
         last_name: existing?.last_name ?? metadata.last_name ?? null,
+        restaurant_id: existing?.restaurant_id ?? null,
     };
     if (idx >= 0) {
         accounts[idx] = account;
@@ -80,16 +93,31 @@ export async function setActiveAccount(id, supabase) {
     const account = readAccounts().find((a) => a.id === id);
     if (!account) return false;
 
+    const previousActiveId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
     localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, id);
 
-    const { error } = await supabase.auth.setSession({
+    if (!isOnline()) {
+        return true;
+    }
+
+    const { data, error } = await supabase.auth.setSession({
         access_token: account.access_token,
         refresh_token: account.refresh_token,
     });
-    if (error) return false;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) addOrUpdateAccount(session);
+    if (error) {
+        if (previousActiveId) {
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, previousActiveId);
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
+        }
+        console.warn('Could not switch account:', error.message);
+        return false;
+    }
+
+    if (data.session) {
+        addOrUpdateAccount(data.session);
+    }
     return true;
 }
 
@@ -103,7 +131,11 @@ export async function migrateExistingSession(supabase) {
     if (accounts.length === 0) return;
 
     const active = getActiveAccount();
-    if (active) await setActiveAccount(active.id, supabase);
+    if (!active) return;
+
+    if (!isOnline()) return;
+
+    await setActiveAccount(active.id, supabase);
 }
 
 export async function removeActiveAccount(supabase) {

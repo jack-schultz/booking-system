@@ -1,7 +1,10 @@
+import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { mountSiteNavbar } from './ui/navbar.js';
+import { mountSiteFooter } from './ui/footer.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'));
+mountSiteFooter(document.getElementById('site-footer-mount'));
 
 const form = document.getElementById('signupForm');
 const messageEl = document.getElementById('message');
