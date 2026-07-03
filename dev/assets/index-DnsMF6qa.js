@@ -1,1 +1,0 @@
-import{n as e,t}from"./footer-BJLgmvBQ.js";import"./register-BJSMtJEJ.js";import{r as n}from"./accountSwitcher-BFZqxLUk.js";e(document.getElementById(`site-navbar-mount`),{showAuthControls:!0}),t(document.getElementById(`site-footer-mount`)),n({loginRedirect:`login.html`});

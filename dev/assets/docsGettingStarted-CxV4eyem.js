@@ -1,1 +1,0 @@
-import"./footer-BJLgmvBQ.js";import{t as e}from"./docs-C6_J7CAQ.js";e(`./getting-started.md`,`Getting Started`);

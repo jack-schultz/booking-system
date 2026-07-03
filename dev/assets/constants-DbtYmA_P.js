@@ -1,0 +1,1 @@
+var e={ACCOUNTS:`booking_system_accounts`,ACTIVE_ACCOUNT_ID:`booking_system_active_account_id`},t={PENDING:`pending`,SET:`set`,SEATED:`seated`},n=`bookings.db`;export{n,e as r,t};

@@ -48,7 +48,7 @@ A client-side restaurant booking app with no backend server of its own. The brow
 | `signup.html` | Create account | No |
 | `booking/manager.html` | List today's bookings (expand/collapse, edit, delete) | Yes |
 | `booking/create.html` | New or edit booking (`?edit=<id>`) | Yes |
-| `booking/walkin-create.html` | Walk-in placeholder | Yes |
+| `booking/walkin.html` | Walk-in placeholder | Yes |
 
 All booking pages share a nav bar with links to manager, new booking, and walk-in flows.
 
@@ -100,7 +100,7 @@ Helper functions (`buildDatetime`, `formatTimeslot`, `getTimeslotFromDatetime`, 
 ## Module types
 
 - **ES modules** (`type="module"`): `login.html`, `booking/manager.html`, `booking/create.html`, `db/*`, `supabaseClient.js` — resolved by Vite.
-- **Classic scripts + inline CDN**: `booking/walkin-create.html`, `signup.html` still load Supabase inline (or reference it without importing `supabaseClient.js`).
+- **Classic scripts + inline CDN**: `booking/walkin.html`, `signup.html` still load Supabase inline (or reference it without importing `supabaseClient.js`).
 
 Long term, consolidate on `supabaseClient.js` imports everywhere for consistency.
 
