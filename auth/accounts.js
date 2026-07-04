@@ -3,7 +3,7 @@ import { isOnline } from '../config/connectivity.js';
 
 /**
  * Supabase auth holds a lock while notifying onAuthStateChange listeners.
- * Defer follow-up auth API calls (setSession, getSession, signOut) so they do not deadlock.
+ * Calling setSession/signOut inside that callback can deadlock — setTimeout(0) runs after the lock is released.
  */
 export function afterAuthLock(fn) {
     setTimeout(() => {
@@ -32,6 +32,11 @@ export function getActiveAccount() {
     const accounts = readAccounts();
     const activeId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
     return accounts.find((a) => a.id === activeId) ?? accounts[0] ?? null;
+}
+
+/** True when the active account has an admin-assigned restaurant_id. */
+export function hasAssignedRestaurant(account = getActiveAccount()) {
+    return account?.restaurant_id != null;
 }
 
 /** Display label for navbar and account switcher (uses cached profile names offline). */
@@ -94,6 +99,7 @@ export async function setActiveAccount(id, supabase) {
     if (!account) return false;
 
     const previousActiveId = localStorage.getItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID);
+    // Update localStorage first so the UI feels instant; roll back below if setSession fails.
     localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, id);
 
     if (!isOnline()) {
@@ -106,6 +112,7 @@ export async function setActiveAccount(id, supabase) {
     });
 
     if (error) {
+        // setSession failed — put the previous active account back so we're not in a half-switched state.
         if (previousActiveId) {
             localStorage.setItem(STORAGE_KEYS.ACTIVE_ACCOUNT_ID, previousActiveId);
         } else {
@@ -135,6 +142,7 @@ export async function migrateExistingSession(supabase) {
 
     if (!isOnline()) return;
 
+    // Page refresh can wipe Supabase's in-memory session even though we still have tokens in localStorage.
     await setActiveAccount(active.id, supabase);
 }
 

@@ -158,7 +158,7 @@ export function getBookingStatusLabel(status) {
     }
 }
 
-export function getBookingStatusClass(status, tableSet = null) {
+export function getBookingStatusClass(status) {
     switch (status) {
         case BOOKING_STATUS.PENDING:
             return 'is-pending';

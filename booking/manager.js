@@ -1,16 +1,20 @@
 import '../pwa/register.js';
-import { initDatabase } from '../db/index.js';
+import { initDatabaseAndSync, ensureSyncConnected } from '../db/index.js';
 import {
     deleteBooking,
     formatTimeslot,
-    getBookingsForDate,
     getTimeslotFromDatetime,
     getNextBookingStatus,
     getBookingStatusClass,
     getBookingStatusLabel,
+    toTimestamptz,
     updateBookingStatus,
 } from '../db/bookings.js';
-import { initAccountSwitcher, getActiveRestaurantId } from '../auth/accountSwitcher.js';
+import {
+    initAccountSwitcher,
+    getActiveRestaurantId,
+    hasAssignedRestaurant,
+} from '../auth/accountSwitcher.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
@@ -25,12 +29,15 @@ mountSiteFooter(document.getElementById('site-footer-mount'), {
 mountBookingSidebar(document.getElementById('booking-sidebar-mount'));
 
 const bookingList = document.getElementById('booking-list');
+const bookingNotice = document.getElementById('booking-notice');
+
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
     loginRedirect: '../login.html',
-    onSwitch: () => loadBookings(),
+    onSwitch: () => subscribeBookings(),
 });
-const db = await initDatabase();
+
+const db = await initDatabaseAndSync();
 
 function getTodayDateWithOffset(offset = 0) {
     const date = new Date();
@@ -39,14 +46,24 @@ function getTodayDateWithOffset(offset = 0) {
     return date;
 }
 
-let dateOffset = 0
-document.getElementById("booking-list-date-left").addEventListener("click", () => {
-    dateOffset -= 1
-    loadBookings();
+function getDateRange(date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return { start, end };
+}
+
+let dateOffset = 0;
+let activeWatch = null;
+
+document.getElementById('booking-list-date-left').addEventListener('click', () => {
+    dateOffset -= 1;
+    subscribeBookings();
 });
-document.getElementById("booking-list-date-right").addEventListener("click", () => {
-    dateOffset += 1
-    loadBookings();
+document.getElementById('booking-list-date-right').addEventListener('click', () => {
+    dateOffset += 1;
+    subscribeBookings();
 });
 
 function getOrCreateTimeslotGroup(timeslot, datetime) {
@@ -72,22 +89,18 @@ function getOrCreateTimeslotGroup(timeslot, datetime) {
     return group.querySelector('.booking-timeslot-items');
 }
 
-async function advanceBookingStatus(bookingId, status, tableSet) {
-    const nextStatus = getNextBookingStatus(status, tableSet);
+async function advanceBookingStatus(bookingId, status) {
+    const nextStatus = getNextBookingStatus(status);
     await updateBookingStatus(db, bookingId, getActiveRestaurantId(), nextStatus);
-    await loadBookings();
 }
 
-async function loadBookings() {
-    const date = getTodayDateWithOffset(dateOffset);
-    const bookings = await getBookingsForDate(db, date, getActiveRestaurantId());
-
-    const header = document.getElementById("booking-list-header");
-    header.textContent = date.toLocaleDateString("en-AU", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+function renderBookings(bookings, date) {
+    const header = document.getElementById('booking-list-header');
+    header.textContent = date.toLocaleDateString('en-AU', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
     });
 
     if (bookings.length === 0) {
@@ -106,8 +119,8 @@ async function loadBookings() {
             preference = `<div class="booking-detail-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</div>`;
         }
 
-        const statusClass = getBookingStatusClass(booking.status, booking.table_set);
-        const statusLabel = getBookingStatusLabel(booking.status, booking.table_set);
+        const statusClass = getBookingStatusClass(booking.status);
+        const statusLabel = getBookingStatusLabel(booking.status);
         const status = `<button type="button" class="booking-detail-status ${statusClass}" data-id="${booking.id}">${statusLabel}</button>`;
 
         const bookingDiv = document.createElement('div');
@@ -159,8 +172,7 @@ async function loadBookings() {
             event.stopPropagation();
             await advanceBookingStatus(
                 event.currentTarget.getAttribute('data-id'),
-                booking.status,
-                booking.table_set
+                booking.status
             );
         });
 
@@ -168,7 +180,6 @@ async function loadBookings() {
             event.stopPropagation();
             if (confirm('Are you sure you want to delete this booking?')) {
                 await deleteBooking(db, booking.id, getActiveRestaurantId());
-                await loadBookings();
             }
         });
 
@@ -182,5 +193,47 @@ async function loadBookings() {
     });
 }
 
+function showUnassignedNotice() {
+    bookingNotice.hidden = false;
+    bookingNotice.textContent =
+        'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant, then refresh this page.';
+    bookingList.innerHTML = '';
+    document.getElementById('booking-list-header').textContent = 'Bookings unavailable';
+}
+
+async function subscribeBookings() {
+    // Tear down the old watcher when date or account changes — otherwise we leak listeners and render twice.
+    if (activeWatch) {
+        await activeWatch.close();
+        activeWatch = null;
+    }
+
+    if (!hasAssignedRestaurant()) {
+        showUnassignedNotice();
+        return;
+    }
+
+    bookingNotice.hidden = true;
+
+    const date = getTodayDateWithOffset(dateOffset);
+    const { start, end } = getDateRange(date);
+    const restaurantId = getActiveRestaurantId();
+
+    activeWatch = db
+        .query({
+            sql: `SELECT * FROM bookings
+                  WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?
+                  ORDER BY datetime, last_name`,
+            parameters: [restaurantId, toTimestamptz(start), toTimestamptz(end)],
+        })
+        .watch();
+
+    // query().watch() uses onData (not onResult) — fires whenever local SQLite or sync updates the query.
+    activeWatch.registerListener({
+        onData: (bookings) => renderBookings(bookings, date),
+    });
+}
+
 await switcherPromise;
-await loadBookings();
+await ensureSyncConnected(db);
+await subscribeBookings();

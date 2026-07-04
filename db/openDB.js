@@ -6,7 +6,7 @@ let db;
 
 /**
  * Opens the local PowerSync database (browser SQLite).
- * Note: db.connect() is not called yet — data stays local until sync is wired up.
+ * Call connectSync() after login to stream data from Supabase via PowerSync Cloud.
  * See docs/powersync-supabase.md.
  */
 export async function openDB() {

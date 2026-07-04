@@ -1,6 +1,6 @@
 import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
-import { initDatabase } from './db/index.js';
+import { initDatabase, connectSync } from './db/index.js';
 import { registerLoggedInSession } from './auth/accountSwitcher.js';
 import { mountSiteNavbar } from './ui/navbar.js';
 import { mountSiteFooter } from './ui/footer.js';
@@ -30,6 +30,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     await registerLoggedInSession(supabase, data.session);
-    await dbPromise;
+    const db = await dbPromise;
+    await connectSync(db);
     window.location.href = 'booking/manager.html';
 });

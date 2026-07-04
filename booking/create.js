@@ -25,6 +25,7 @@ mountBookingSidebar(document.getElementById('booking-sidebar-mount'), { showSave
 
 const form = document.querySelector('.booking-form');
 const pageTitle = document.getElementById('pageTitle');
+const bookingNotice = document.getElementById('booking-notice');
 const bookingDate = document.getElementById('bookingDate');
 const timeslot = document.getElementById('timeslot');
 const firstName = document.getElementById('firstName');
@@ -38,7 +39,6 @@ const preference = document.getElementById('preference');
 const email = document.getElementById('email');
 const additionalDetails = document.getElementById('additionalDetails');
 
-// Populate static form controls immediately — do not wait on auth or PowerSync init.
 populateTimeslotSelect(timeslot);
 
 const editId = new URLSearchParams(window.location.search).get('edit');
@@ -62,17 +62,33 @@ totalPax.addEventListener('change', updatePax);
 childPax.addEventListener('change', updatePax);
 hcPax.addEventListener('change', updatePax);
 
-const [{ initDatabase }, { initAccountSwitcher, getActiveProfileId, getActiveRestaurantId }] = await Promise.all([
-    import('../db/index.js'),
-    import('../auth/accountSwitcher.js'),
-]);
+const [{ initDatabaseAndSync, ensureSyncConnected }, { initAccountSwitcher, getActiveProfileId, getActiveRestaurantId, hasAssignedRestaurant }] =
+    await Promise.all([
+        import('../db/index.js'),
+        import('../auth/accountSwitcher.js'),
+    ]);
 
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
     loginRedirect: '../login.html',
 });
-const db = await initDatabase();
+const db = await initDatabaseAndSync();
 await switcherPromise;
+await ensureSyncConnected(db);
+
+function applyRestaurantGuard() {
+    if (hasAssignedRestaurant()) {
+        return true;
+    }
+
+    bookingNotice.hidden = false;
+    bookingNotice.textContent =
+        'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant before creating bookings.';
+    form.querySelectorAll('input, select, textarea, button').forEach((el) => {
+        el.disabled = true;
+    });
+    return false;
+}
 
 async function loadBookingForEdit(id) {
     const restaurantId = getActiveRestaurantId();
@@ -99,12 +115,18 @@ async function loadBookingForEdit(id) {
     additionalDetails.value = booking.notes ?? '';
 }
 
-if (editId) {
+if (!applyRestaurantGuard()) {
+    // Blocked until admin assigns restaurant.
+} else if (editId) {
     await loadBookingForEdit(editId);
 }
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    if (!hasAssignedRestaurant()) {
+        return;
+    }
 
     const record = {
         first_name: firstName.value,
