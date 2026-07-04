@@ -1,1 +1,0 @@
-import"./footer-yOzlH7E3.js";import{t as e}from"./docs-DaNmVe96.js";e(`./database.md`,`Database`);

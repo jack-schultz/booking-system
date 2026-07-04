@@ -146,16 +146,18 @@ Pushing to either `main` or `dev` triggers a full redeploy of **both** environme
 
 ## Environment and secrets
 
-Supabase URL and anon key are public (anon) credentials, safe for client-side use. They can be set in three places:
+Supabase URL, anon key, and PowerSync endpoint URL are public client-side config values. Set them in:
 
 | Context | Where to set |
 |---------|----------------|
 | Local dev | Copy `.env.example` → `.env` |
-| GitHub Pages build | **Repository secrets** named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` |
+| GitHub Pages build | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
 
 **Important:** The deploy workflow reads **repository** secrets (`Settings → Secrets and variables → Actions → Repository secrets`).
 
-When adding PowerSync Cloud, store the PowerSync endpoint URL in config; JWTs come from Supabase at runtime.
+**`VITE_POWERSYNC_URL`:** Copy from PowerSync Dashboard → select your instance → **Connect** → instance URL (e.g. `https://xxxxxxxx.powersync.journeyapps.com`). Not the dashboard URL and not Supabase.
+
+PowerSync authentication uses the user's Supabase JWT at runtime — no separate PowerSync secret is needed in the frontend.
 
 ## Manual deploy trigger
 
