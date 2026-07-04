@@ -1,5 +1,5 @@
 import '../pwa/register.js';
-import { initDatabaseAndSync, ensureSyncConnected } from '../db/index.js';
+import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import {
     deleteBooking,
     formatTimeslot,
@@ -37,7 +37,7 @@ const switcherPromise = initAccountSwitcher({
     onSwitch: () => subscribeBookings(),
 });
 
-const db = await initDatabaseAndSync();
+const db = await initDatabase();
 
 function getTodayDateWithOffset(offset = 0) {
     const date = new Date();
@@ -235,5 +235,5 @@ async function subscribeBookings() {
 }
 
 await switcherPromise;
-await ensureSyncConnected(db);
 await subscribeBookings();
+void ensureSyncConnected(db);

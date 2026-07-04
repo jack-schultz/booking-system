@@ -4,10 +4,27 @@ import { connectSync, reconnectSync, disconnectSync } from './sync.js';
 
 export { connectSync, reconnectSync, disconnectSync };
 
+let databaseInitPromise = null;
+
 export async function initDatabase() {
-    const db = await openDB();
-    await runMigrations(db);
-    return db;
+    if (databaseInitPromise) {
+        await databaseInitPromise;
+        return openDB();
+    }
+
+    databaseInitPromise = (async () => {
+        const db = await openDB();
+        await runMigrations(db);
+    })();
+
+    try {
+        await databaseInitPromise;
+    } catch (err) {
+        databaseInitPromise = null;
+        throw err;
+    }
+
+    return openDB();
 }
 
 /** Open the local DB and connect to PowerSync when online and assigned to a restaurant. */
