@@ -43,6 +43,7 @@ export default defineConfig({
                 manager: resolve(__dirname, 'booking/manager.html'),
                 create: resolve(__dirname, 'booking/create.html'),
                 walkin: resolve(__dirname, 'booking/walkin.html'),
+                syncStatus: resolve(__dirname, 'sync-status.html'),
                 docsIndex: resolve(__dirname, 'docs/index.html'),
                 docsGettingStarted: resolve(__dirname, 'docs/getting-started.html'),
                 docsArchitecture: resolve(__dirname, 'docs/architecture.html'),

@@ -103,6 +103,62 @@ Site navbar
     font-weight: bold;
 }
 
+.sync-indicator {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.sync-indicator-graphic {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    overflow: visible;
+}
+
+.sync-indicator-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-color: #16a34a;
+    z-index: 0;
+}
+
+.sync-indicator-icon {
+    position: relative;
+    z-index: 1;
+    display: block;
+    color: #f2f2f2;
+    overflow: visible;
+}
+
+.sync-indicator--offline .sync-indicator-core {
+    background-color: #dc2626;
+    animation: sync-indicator-core-breathe 1.5s ease-in-out infinite;
+}
+
+.sync-indicator--warning .sync-indicator-core {
+    background-color: #ca8a04;
+    animation: sync-indicator-core-breathe 1.5s ease-in-out infinite;
+}
+
+.sync-indicator--ok .sync-indicator-core {
+    background-color: #16a34a;
+}
+
+@keyframes sync-indicator-core-breathe {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+}
 
 /*
 =============================================================================
@@ -252,6 +308,15 @@ Auth forms (login, signup)
 
 .auth-message--success {
     color: #1e7e34;
+}
+
+.booking-notice {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
 }
 
 
@@ -767,4 +832,297 @@ a.booking-detail-email:hover {
 
 .booking-action-delete:hover {
     background-color: #a93226;
+}
+
+/*
+=============================================================================
+Sync status page
+=============================================================================
+*/
+
+.sync-status-page {
+    background-color: whitesmoke;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sync-status-page h1 {
+    margin-bottom: 1.5rem;
+}
+
+.sync-status-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    padding: 16px;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.sync-status-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sync-status-metric-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 0.03em;
+}
+
+.sync-status-metric-value {
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.sync-status-metric--offline .sync-status-metric-value {
+    color: #dc2626;
+}
+
+.sync-status-metric--warning .sync-status-metric-value {
+    color: #ca8a04;
+}
+
+.sync-status-metric--ok .sync-status-metric-value {
+    color: #16a34a;
+}
+
+.sync-status-message {
+    grid-column: 1 / -1;
+    margin: 8px 0 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.sync-status-loading {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: #666;
+}
+
+.sync-status-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .sync-status-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sync-status-panel {
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+}
+
+.sync-status-panel h2 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+}
+
+.sync-status-panel-subtitle {
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.sync-status-panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 360px;
+    padding-right: 4px;
+}
+
+.sync-status-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background-color: #f8f8f8;
+    border-radius: 6px;
+    border-left: 3px solid #94a3b8;
+}
+
+.sync-status-item--summary {
+    border-left-color: #16a34a;
+}
+
+.sync-status-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sync-status-item-id {
+    font-size: 0.75rem;
+    color: #888;
+    word-break: break-all;
+}
+
+.sync-status-item-detail {
+    margin: 2px 0;
+    font-size: 0.9rem;
+}
+
+.sync-status-item-meta {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.sync-status-op-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.sync-status-op-badge--put {
+    background-color: #2563eb;
+}
+
+.sync-status-op-badge--patch {
+    background-color: #ca8a04;
+}
+
+.sync-status-op-badge--delete {
+    background-color: #dc2626;
+}
+
+.sync-status-empty {
+    margin: 0;
+    color: #888;
+    font-style: italic;
+}
+
+.sync-status-queue-size {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.sync-status-download-progress {
+    margin-bottom: 12px;
+}
+
+.sync-status-download-progress p {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+}
+
+.sync-status-progress-bar {
+    height: 8px;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sync-status-progress-bar-fill {
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.sync-status-active-label {
+    margin: 0 0 8px;
+    font-weight: bold;
+    color: #ca8a04;
+}
+
+.sync-status-activity-heading {
+    margin: 12px 0 8px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.sync-status-issues {
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 16px;
+}
+
+.sync-status-issues-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.sync-status-issues-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.sync-status-reconnect-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: steelblue;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.sync-status-reconnect-btn:hover:not(:disabled) {
+    background-color: #4a7dab;
+}
+
+.sync-status-reconnect-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sync-status-issue {
+    padding: 10px 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border-left: 3px solid #94a3b8;
+}
+
+.sync-status-issue--error {
+    background-color: #fef2f2;
+    border-left-color: #dc2626;
+}
+
+.sync-status-issue--warning {
+    background-color: #fffbeb;
+    border-left-color: #ca8a04;
+}
+
+.sync-status-issue-type {
+    margin: 0 0 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.sync-status-issue-message {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.sync-status-issue-meta {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: #888;
 }

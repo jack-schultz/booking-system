@@ -31,5 +31,7 @@ form.addEventListener('submit', async (e) => {
 
     await registerLoggedInSession(supabase, data.session);
     await dbPromise;
+
+    // Sync connects on the manager page — don't block redirect on db.connect() here.
     window.location.href = 'booking/manager.html';
 });

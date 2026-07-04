@@ -41,11 +41,16 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
         run: |
           if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
             echo "::warning::Repository secrets VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are missing or empty."
             echo "Add them under Settings → Secrets and variables → Actions → Repository secrets (not Environment secrets)."
             echo "The build will fall back to default values in supabaseClient.js."
+          fi
+          if [ -z "$VITE_POWERSYNC_URL" ]; then
+            echo "::warning::Repository secret VITE_POWERSYNC_URL is missing or empty."
+            echo "The deployed app will run in local-only mode without cloud sync."
           fi
 
       - name: Build main
@@ -54,6 +59,7 @@ jobs:
           VITE_BASE_PATH: /booking-system/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
         run: |
           npm ci
           npm run build
@@ -64,6 +70,7 @@ jobs:
           VITE_BASE_PATH: /booking-system/dev/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
         run: |
           npm ci
           npm run build

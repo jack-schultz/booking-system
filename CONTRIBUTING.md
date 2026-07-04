@@ -6,12 +6,15 @@ Short guide for where code belongs in this project. Full setup and architecture 
 
 | Change | Location |
 |--------|----------|
-| Page UI logic (forms, lists, clicks) | `booking/*.js`, `login.js`, `signup.js`, `index.js` |
+| Page UI logic (forms, lists, clicks) | `booking/*.js`, `login.js`, `signup.js`, `index.js`, `sync-status.js` |
 | Page markup only | Matching `.html` file — keep scripts in separate `.js` files |
 | Shared navbar / booking sidebar | `ui/navbar.js`, `ui/bookingSidebar.js` |
+| Sync status icon + dashboard | `ui/syncIndicator.js`, `sync-status.html`, `sync-status.js`, `db/syncStatus.js` |
 | SQL and booking CRUD | `db/bookings.js` |
-| Database schema | `db/schema.js` |
-| Schema migrations | `db/migrations/` (add numbered file + register in `index.js`) |
+| Database schema (local) | `db/schema.js` |
+| Database schema (Supabase) | `supabase/migrations/` |
+| Local schema migrations | `db/migrations/` (add numbered file + register in `index.js`) |
+| PowerSync connector / sync | `db/supabaseConnector.js`, `db/sync.js` |
 | Auth / account switching | `auth/accountSwitcher.js`, `auth/accounts.js`, `auth/profiles.js` |
 | App-wide constants | `config/constants.js`, `config/timeslots.js` |
 | Styles | `style.css` |
@@ -29,8 +32,7 @@ Short guide for where code belongs in this project. Full setup and architecture 
 
 - `db/migrations/001.js`, `002.js` — only migration framework exists. Once db is live and needs migration, this lays out how it will work.
 - `booking/walkin.html` — placeholder page, not in scope yet.
-- PowerSync `connect()` — not wired yet; data is local-only until sync is implemented (see `docs/powersync-supabase.md`).
-- `DEFAULT_RESTAURANT_ID` in `config/constants.js` — temporary until profiles sync from Supabase.
+- `DEFAULT_RESTAURANT_ID` in `config/constants.js` — fallback when profile has not synced `restaurant_id` yet.
 
 ## Domain terms
 
