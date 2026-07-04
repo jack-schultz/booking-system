@@ -236,7 +236,7 @@ const db = await initDatabase();
 | PowerSync Test Connection works but client won't sync | Missing `VITE_POWERSYNC_URL`, no restaurant assigned, or offline | Set env var; assign `profiles.restaurant_id`; check browser online |
 | Manager stuck on "loading..." | Blocking on `connectSync` / `db.init()` race during HMR, or wrong watch API | Manager uses `initDatabase()` then `void ensureSyncConnected()`; use `registerListener({ onData })` on `query().watch()` — hard-refresh after HMR; see [Database](./database.md) |
 | "Account not assigned to a restaurant" | `profiles.restaurant_id` is NULL | Admin sets restaurant in Supabase; user refreshes while online |
-| Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant |
+| Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant; open [sync status dashboard](../sync-status.html) for queue and errors |
 | `All replication slots are in use` (Supabase) | Max 4 logical replication slots | Drop inactive slots — see [PowerSync Supabase troubleshooting](https://docs.powersync.com/configuration/source-db/connection#troubleshooting) |
 
 `db.connected === false` in the browser is normal when offline, when `VITE_POWERSYNC_URL` is unset, or when the user has no assigned restaurant — local SQLite still works.
@@ -249,6 +249,7 @@ const db = await initDatabase();
 4. **Unassigned user:** Profile with `restaurant_id = NULL` → notice shown, no sync/connect.
 5. **Account switch:** Two users, two restaurants → correct bookings per account.
 6. **Reconnect:** Offline changes upload when back online.
+7. **Sync status UI:** Navbar icon turns yellow when uploads are pending or sync needs attention; `/sync-status.html` shows queue details and a manual **Reconnect** button.
 
 ## References
 

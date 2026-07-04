@@ -80,6 +80,9 @@ export async function disconnectSync(db) {
  * PowerSync does not detect those auth changes on its own.
  */
 export async function reconnectSync(db) {
+    if (!isOnline()) {
+        return false;
+    }
     await disconnectSync(db);
     return connectSync(db);
 }

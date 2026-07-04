@@ -90,12 +90,17 @@ booking-system/
 ├── booking/           # Booking manager, create, walk-in pages
 ├── db/                # PowerSync schema, connector, sync, booking helpers
 │   ├── supabaseConnector.js
-│   ├── sync.js
+│   ├── sync.js        # connectSync / disconnectSync (database sync)
+│   ├── syncStatus.js  # sync status dashboard data + navbar health
 │   └── bookings.js
+├── ui/                # Shared navbar, sync indicator, footer, booking sidebar
+│   ├── navbar.js
+│   └── syncIndicator.js
 ├── supabase/
 │   └── migrations/    # Postgres schema for Supabase
 ├── docs/              # Documentation (markdown + HTML shells)
-├── login.html         # Login (initializes local DB + sync)
+├── login.html         # Login (initializes local DB; sync connects on booking pages)
+├── sync-status.html   # Sync status dashboard (auth required)
 ├── signup.html        # Account creation
 ├── supabaseClient.js  # Shared Supabase client (ES module)
 └── vite.config.js
@@ -107,6 +112,7 @@ booking-system/
 2. Start `npm run dev`.
 3. Log in at `/login.html` — Supabase auth and local DB init, then redirect to the manager.
 4. Use booking pages under `/booking/` — manager lists bookings from local SQLite immediately and syncs in the background; create saves to local SQLite and uploads when online.
+5. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
 
 ## Troubleshooting
 

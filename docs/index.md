@@ -29,4 +29,5 @@ Open http://localhost:5173/login.html
 - **Bookings UI:** Manager (live watch query) and create pages read/write via PowerSync (`db/bookings.js`).
 - **Data:** Local-first SQLite in the browser; offline reads/writes work without network.
 - **Sync:** PowerSync Cloud + Supabase connector; Sync Streams (edition 3) scope bookings per restaurant (RLS + streams).
+- **Sync status UI:** Navbar icon + [`sync-status.html`](../sync-status.html) dashboard for connection health, upload queue, and issues.
 - **Multi-restaurant:** Each account has one `restaurant_id` (admin-assigned); users only see and edit their restaurant's bookings.

@@ -6,9 +6,10 @@ Short guide for where code belongs in this project. Full setup and architecture 
 
 | Change | Location |
 |--------|----------|
-| Page UI logic (forms, lists, clicks) | `booking/*.js`, `login.js`, `signup.js`, `index.js` |
+| Page UI logic (forms, lists, clicks) | `booking/*.js`, `login.js`, `signup.js`, `index.js`, `sync-status.js` |
 | Page markup only | Matching `.html` file — keep scripts in separate `.js` files |
 | Shared navbar / booking sidebar | `ui/navbar.js`, `ui/bookingSidebar.js` |
+| Sync status icon + dashboard | `ui/syncIndicator.js`, `sync-status.html`, `sync-status.js`, `db/syncStatus.js` |
 | SQL and booking CRUD | `db/bookings.js` |
 | Database schema (local) | `db/schema.js` |
 | Database schema (Supabase) | `supabase/migrations/` |

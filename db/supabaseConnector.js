@@ -1,5 +1,6 @@
 import { UpdateType } from '@powersync/web';
 import { supabase } from '../supabaseClient.js';
+import { recordSyncIssue } from './syncStatus.js';
 
 const POWERSYNC_URL = import.meta.env.VITE_POWERSYNC_URL;
 
@@ -101,11 +102,21 @@ async function uploadData(database) {
     } catch (ex) {
         if (typeof ex.code === 'string' && FATAL_RESPONSE_CODES.some((re) => re.test(ex.code))) {
             console.error('Data upload error - discarding transaction:', lastOp, ex);
+            recordSyncIssue({
+                type: 'upload_discarded',
+                message: `Upload discarded: ${ex.message ?? 'fatal Postgres error'}`,
+                detail: { op: lastOp, code: ex.code },
+            });
             // Still complete() so PowerSync drops this transaction from the queue instead of retrying.
             await transaction.complete();
             return;
         }
 
+        recordSyncIssue({
+            type: 'upload_error',
+            message: ex.message ?? 'Upload failed',
+            detail: { op: lastOp, code: ex.code },
+        });
         throw ex;
     }
 }

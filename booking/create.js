@@ -17,6 +17,7 @@ import { mountBookingSidebar } from '../ui/bookingSidebar.js';
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
     showAuthControls: true,
+    showSyncIndicator: true,
 });
 mountSiteFooter(document.getElementById('site-footer-mount'), {
     basePath: '../',

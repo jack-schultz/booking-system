@@ -39,6 +39,7 @@ db/
 ├── index.js             # initDatabase(), initDatabaseAndSync()
 ├── supabaseConnector.js # fetchCredentials + uploadData
 ├── sync.js              # connectSync, disconnectSync, reconnectSync
+├── syncStatus.js        # Sync status health, snapshots, issue log (UI dashboard)
 ├── bookings.js          # Booking CRUD and datetime helpers
 ├── migrate.js           # db.init() + migration runner
 └── migrations/          # Named migration hooks
@@ -80,6 +81,20 @@ Login only runs steps 1 and profile registration, then redirects — it does not
 [`initDatabase()`](../db/index.js) uses a shared promise so concurrent callers (e.g. login and a booking page) wait on a single `db.init()` instead of racing.
 
 See [PowerSync + Supabase sync](./powersync-supabase.md) for dashboard setup and Sync Streams configuration.
+
+## Sync status UI
+
+The app exposes sync **status** (connection health, queue, errors) separately from sync **control** ([`db/sync.js`](../db/sync.js)).
+
+| File | Role |
+|------|------|
+| [`db/syncStatus.js`](../db/syncStatus.js) | `computeSyncHealth()`, `getSyncSnapshot()`, `subscribeSyncStatus()`, issue log |
+| [`ui/syncIndicator.js`](../ui/syncIndicator.js) | Navbar icon; red / yellow / green from health state |
+| [`sync-status.html`](../sync-status.html) | Full dashboard — metrics, upload queue, download activity, reconnect |
+
+The status module reads PowerSync SDK APIs (`currentStatus`, `registerListener`, `getUploadQueueStats`, `getCrudBatch`) and combines them with `navigator.onLine` and account/restaurant checks. Upload failures recorded in [`db/supabaseConnector.js`](../db/supabaseConnector.js) appear in the issue log.
+
+There is no client-side conflict resolution UI — Postgres uses last-write-wins.
 
 ## Booking helpers (`bookings.js`)
 

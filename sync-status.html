@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sync Status — Booking System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="site-navbar-mount"></div>
+
+<div class="page-content">
+    <div class="sync-status-page">
+        <h1>Database Sync Status</h1>
+
+        <section class="sync-status-summary" id="sync-status-summary" aria-live="polite">
+            <p class="sync-status-loading">Loading sync status…</p>
+        </section>
+
+        <div class="sync-status-panels">
+            <section class="sync-status-panel">
+                <h2>Uploads</h2>
+                <p class="sync-status-panel-subtitle">Pending changes waiting to upload to the server</p>
+                <div class="sync-status-panel-scroll" id="sync-status-uploads-list"></div>
+            </section>
+
+            <section class="sync-status-panel">
+                <h2>Downloads</h2>
+                <p class="sync-status-panel-subtitle">Incoming sync activity from the server</p>
+                <div class="sync-status-panel-scroll" id="sync-status-downloads-list"></div>
+            </section>
+        </div>
+
+        <section class="sync-status-issues">
+            <div class="sync-status-issues-header">
+                <h2>Issues</h2>
+                <button type="button" class="sync-status-reconnect-btn" id="sync-status-reconnect-btn">Reconnect</button>
+            </div>
+            <p class="sync-status-panel-subtitle">Errors and sync problems. Conflicts are not tracked. Server accepts <strong>last-write-wins</strong>.</p>
+            <div id="sync-status-issues-list"></div>
+        </section>
+    </div>
+</div>
+
+<div id="site-footer-mount"></div>
+
+<script type="module" src="./sync-status.js"></script>
+</body>
+</html>

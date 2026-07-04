@@ -55,8 +55,11 @@ A client-side restaurant booking app with no backend server of its own. The brow
 | `booking/manager.html` | List bookings by day (live watch query) | Yes |
 | `booking/create.html` | New or edit booking (`?edit=<id>`) | Yes |
 | `booking/walkin.html` | Walk-in placeholder | Yes |
+| `sync-status.html` | Database sync status dashboard (upload queue, download activity, issues) | Yes |
 
-All booking pages share a nav bar with links to manager, new booking, and walk-in flows.
+All pages share a top navbar ([`ui/navbar.js`](../ui/navbar.js)) with Home, Booking Manager, an **Offline** badge when the browser is offline, a **sync status icon** (links to the dashboard), and account controls when logged in.
+
+Booking pages also use a sidebar ([`ui/bookingSidebar.js`](../ui/bookingSidebar.js)) with links to manager, new booking, and walk-in flows.
 
 ## Multi-restaurant model
 
@@ -108,6 +111,7 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 | `index.js` | `initDatabase()`, `initDatabaseAndSync()` |
 | `supabaseConnector.js` | PowerSync backend connector (JWT + upload) |
 | `sync.js` | Connect/disconnect/reconnect helpers |
+| `syncStatus.js` | Sync status snapshots, health state, issue log (for UI dashboard) |
 | `bookings.js` | Booking CRUD and datetime helpers |
 | `migrate.js` | Runs `db.init()` and applies migration records |
 | `migrations/` | Versioned one-off SQL hooks |
@@ -119,6 +123,17 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 | `accounts.js` | Multi-account localStorage cache, `hasAssignedRestaurant()` |
 | `profiles.js` | Fetch profile from Supabase; cache `restaurant_id` offline |
 | `accountSwitcher.js` | Navbar switcher; reconnects sync on switch / online / token refresh |
+
+## UI module (`ui/`)
+
+| File | Role |
+|------|------|
+| `navbar.js` | Shared top nav; mounts offline badge and optional sync status icon (`showSyncIndicator`) |
+| `syncIndicator.js` | Navbar sync icon — color reflects health (red offline, yellow attention, green up to date) |
+| `footer.js` | Shared footer |
+| `bookingSidebar.js` | Booking sub-nav on manager / create / walk-in pages |
+
+The sync status icon links to [`sync-status.html`](../sync-status.html). Status is computed in [`db/syncStatus.js`](../db/syncStatus.js) from PowerSync `currentStatus`, upload queue stats, and browser connectivity — separate from [`db/sync.js`](../db/sync.js), which handles PowerSync connect/disconnect.
 
 ## Module types
 
