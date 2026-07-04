@@ -1,6 +1,6 @@
 # Database (PowerSync)
 
-Local-first SQLite in the browser via [PowerSync Web](https://docs.powersync.com/client-sdk-references/js-web).
+Local-first SQLite in the browser via [PowerSync Web](https://docs.powersync.com/client-sdk-references/js-web), synced to Supabase Postgres when online.
 
 ## Requirements
 
@@ -17,25 +17,69 @@ See [Getting started](./getting-started.md) for full setup.
 ## Usage
 
 ```javascript
-import { initDatabase } from './db/index.js';
+import { initDatabase, ensureSyncConnected } from './db/index.js';
 
 const db = await initDatabase();
-await db.get('SELECT 1 as ok');
+// Read/write local SQLite immediately; connect sync without blocking the UI:
+void ensureSyncConnected(db);
 ```
 
-`login.html` calls this on page load. Other pages should import the same singleton via `openDB.js` rather than creating new instances.
+Booking pages open the local DB with `initDatabase()`, render from SQLite, then call `ensureSyncConnected()` without awaiting it so a slow or hanging `db.connect()` does not block the UI.
+
+`initDatabaseAndSync()` is still available when you need to open the DB and wait for sync in one step (e.g. some booking forms).
+
+For local-only dev without PowerSync Cloud, use `initDatabase()` only — no `connectSync`.
 
 ## File structure
 
 ```
 db/
-├── schema.js       # AppSchema — tables, columns, indexes
-├── openDB.js       # PowerSyncDatabase singleton
-├── index.js        # initDatabase()
-├── bookings.js     # Booking CRUD and datetime helpers
-├── migrate.js      # db.init() + migration runner
-└── migrations/     # Named migration hooks
+├── schema.js            # AppSchema — tables, columns, indexes
+├── openDB.js            # PowerSyncDatabase singleton
+├── index.js             # initDatabase(), initDatabaseAndSync()
+├── supabaseConnector.js # fetchCredentials + uploadData
+├── sync.js              # connectSync, disconnectSync, reconnectSync
+├── bookings.js          # Booking CRUD and datetime helpers
+├── migrate.js           # db.init() + migration runner
+└── migrations/          # Named migration hooks
 ```
+
+## Sync lifecycle
+
+| Function | When |
+|----------|------|
+| `initDatabase()` | Open local SQLite + run migrations |
+| `initDatabaseAndSync()` | Above + await `connectSync()` if configured and online |
+| `ensureSyncConnected(db)` | Start sync when ready; booking manager calls this without `await` |
+| `connectSync(db)` | Start PowerSync stream (requires session + restaurant) |
+| `reconnectSync(db)` | Disconnect then connect (account switch, online, token refresh) |
+| `disconnectSync(db)` | Stop sync (last account logout) |
+
+When connected, PowerSync:
+
+1. **Downloads** bookings for the user's restaurant (Sync Streams).
+2. **Uploads** local CRUD via `uploadData()` in [`db/supabaseConnector.js`](../db/supabaseConnector.js).
+
+When offline, reads and writes use local SQLite only. The upload queue drains automatically on reconnect.
+
+### Page load order (manager)
+
+The manager page follows an offline-first load sequence:
+
+1. `initDatabase()` — open local SQLite (do not block on sync).
+2. `initAccountSwitcher()` — auth and profile cache.
+3. `subscribeBookings()` — `db.query(...).watch()` renders from local data immediately.
+4. `void ensureSyncConnected(db)` — PowerSync connects in the background; `onData` fires again when remote rows arrive.
+
+Login only runs steps 1 and profile registration, then redirects — it does not call `connectSync()`.
+
+### DB singleton and init
+
+[`openDB.js`](../db/openDB.js) stores the `PowerSyncDatabase` instance on `globalThis` so Vite hot module reload does not create a second instance that deadlocks on IndexedDB / navigator locks.
+
+[`initDatabase()`](../db/index.js) uses a shared promise so concurrent callers (e.g. login and a booking page) wait on a single `db.init()` instead of racing.
+
+See [PowerSync + Supabase sync](./powersync-supabase.md) for dashboard setup and Sync Streams configuration.
 
 ## Booking helpers (`bookings.js`)
 
@@ -52,12 +96,32 @@ import {
     formatTimeslot,
 } from './db/bookings.js';
 
-const db = await initDatabase();
-const today = new Date().toISOString().split('T')[0];
-const bookings = await getBookingsForDate(db, today);
+const db = await initDatabaseAndSync();
+const today = new Date();
+const bookings = await getBookingsForDate(db, today, restaurantId);
 ```
 
-`buildDatetime(dateStr, timeslot)` converts a date (`YYYY-MM-DD`) and timeslot (`HHMM`, e.g. `1900`) into an ISO datetime string stored in the `datetime` column.
+All list/get/update/delete helpers include `restaurant_id` in their WHERE clauses.
+
+## Watched queries (live UI)
+
+The manager page uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first.
+
+```javascript
+const watched = db.query({
+    sql: `SELECT * FROM bookings WHERE restaurant_id = ? AND datetime >= ? AND datetime < ? ORDER BY datetime, last_name`,
+    parameters: [restaurantId, start, end],
+}).watch();
+
+watched.registerListener({
+    onData: (bookings) => renderBookings(bookings),
+});
+
+// When changing date or account:
+await watched.close();
+```
+
+**API note:** `onResult` is only valid on the lower-level `db.watch(sql, params, { onResult })` API. For `db.query(...).watch()`, you must call `.watch()` with no callback, then `registerListener({ onData })`.
 
 ## Schema
 
@@ -72,30 +136,17 @@ export const AppSchema = new Schema({
             id: column.text,
             created_at: column.text,
             restaurant_id: column.integer,
-            first_name: column.text,
-            last_name: column.text,
-            phone_number: column.text,
-            email: column.text,
-            total_pax: column.integer,
-            adult_pax: column.integer,
-            child_pax: column.integer,
-            hc_pax: column.integer,
-            preference: column.text,
-            datetime: column.text,
-            profile_id: column.text,
-            status: column.text,
-            notes: column.text,
+            // ...
         },
         {
             indexes: {
+                idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
             },
         }
     ),
 });
 ```
-
-PowerSync expects `{ type: ColumnType.TEXT }` objects using `column.text`.
 
 PowerSync applies the schema automatically on `db.init()`.
 
@@ -120,14 +171,7 @@ migrations: new Table(
 
 Most migrations are currently no-ops because schema changes belong in `schema.js`. Use migrations for one-time data backfills or raw SQL that cannot be expressed declaratively.
 
-## Local-only vs sync (phases)
-
-| Phase | API | Description |
-|-------|-----|-------------|
-| **Now** | `initDatabase()` | Local SQLite only; no network sync |
-| **Later** | `db.connect(connector)` | Stream data from Supabase via PowerSync Cloud |
-
-See [PowerSync + Supabase roadmap](./powersync-supabase.md) for the full sync plan.
+Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migrations/) and must stay aligned with `db/schema.js`.
 
 ## Vite configuration
 
@@ -151,7 +195,10 @@ PowerSync stores data in IndexedDB (via WA-SQLite's default VFS). To reset durin
 - Chrome DevTools → Application → IndexedDB → delete the database files, or
 - Use an incognito window
 
+If the manager stays on "Loading..." after a code change during `npm run dev`, hard-refresh the page — a stale HMR reload can leave a half-initialized DB instance until you refresh.
+
 ## Related docs
 
 - [Architecture](./architecture.md) — how the DB fits with auth and booking pages
-- [Authentication](./authentication.md) — login initializes the DB
+- [Authentication](./authentication.md) — login initializes the local DB; sync connects on booking pages
+- [PowerSync + Supabase sync](./powersync-supabase.md) — cloud setup and security

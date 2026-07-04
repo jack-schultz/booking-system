@@ -97,14 +97,14 @@ All booking CRUD goes through `db/bookings.js` and interacts with the **local** 
 
 Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote changes download via PowerSync Sync Streams.
 
-`login.html` and booking pages call `initDatabaseAndSync()` (or `connectSync` after login) so sync starts when the user is authenticated, online, and assigned to a restaurant.
+`login.html` initializes the local DB on load and redirects after auth. Booking pages call `initDatabase()`, subscribe to local data, then start `ensureSyncConnected()` in the background when the user is authenticated, online, and assigned to a restaurant.
 
 ## Database module (`db/`)
 
 | File | Role |
 |------|------|
 | `schema.js` | PowerSync `AppSchema` — tables and indexes |
-| `openDB.js` | Singleton `PowerSyncDatabase` instance |
+| `openDB.js` | Singleton `PowerSyncDatabase` instance (`globalThis`, HMR-safe) |
 | `index.js` | `initDatabase()`, `initDatabaseAndSync()` |
 | `supabaseConnector.js` | PowerSync backend connector (JWT + upload) |
 | `sync.js` | Connect/disconnect/reconnect helpers |
