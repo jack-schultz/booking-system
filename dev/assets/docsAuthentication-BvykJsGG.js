@@ -1,1 +1,0 @@
-import"./footer-CutqEWSr.js";import{t as e}from"./docs-ChHOOAOA.js";e(`./authentication.md`,`Authentication`);
