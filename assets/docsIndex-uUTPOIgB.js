@@ -1,0 +1,1 @@
+import"./footer-Ddu4Rxgf.js";import{t as e}from"./docs-CHXSrYAq.js";e(`./index.md`,`Documentation`);

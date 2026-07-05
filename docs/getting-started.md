@@ -4,7 +4,8 @@
 
 - Node.js 18+ (20+ recommended)
 - npm
-- A Supabase project (for auth; see [Authentication](./authentication.md))
+- A Supabase project (auth + Postgres)
+- A PowerSync Cloud instance connected to that Supabase project (for sync; optional for local-only dev)
 
 ## Install
 
@@ -13,6 +14,55 @@ npm install
 ```
 
 Peer dependency `@journeyapps/wa-sqlite` is listed in `devDependencies` and is required by `@powersync/web`.
+
+## Environment
+
+Copy `.env.example` to `.env` and set:
+
+| Variable | Purpose | Where to get it |
+|----------|---------|-----------------|
+| `VITE_SUPABASE_URL` | Supabase project URL | Supabase → Project Settings → API |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon/publishable key | Supabase → Project Settings → API Keys |
+| `VITE_POWERSYNC_URL` | PowerSync Cloud instance endpoint | PowerSync Dashboard → **Connect** (omit for local-only dev) |
+
+Example:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_POWERSYNC_URL=https://xxxxxxxx.powersync.journeyapps.com
+```
+
+Restart `npm run dev` after editing `.env`.
+
+## PowerSync + Supabase setup checklist
+
+Complete these steps once per environment (Development or Production instance):
+
+1. **Supabase schema** — Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) in the SQL editor.
+2. **PowerSync role** — Create `powersync_role`, grants, and `powersync` publication (see [PowerSync + Supabase sync](./powersync-supabase.md)).
+3. **Connect PowerSync to Postgres** — PowerSync Dashboard → Database Connections → Supabase **direct** connection URI, username `powersync_role`, database `postgres`, SSL `verify-full`.
+4. **Enable Supabase Auth** — PowerSync Dashboard → Client Auth → **Use Supabase Auth**.
+5. **Deploy Sync Streams** — Paste the `restaurant_bookings` stream YAML (edition 3) from [PowerSync + Supabase sync](./powersync-supabase.md).
+6. **Set `VITE_POWERSYNC_URL`** — PowerSync Dashboard → **Connect** → copy instance URL into `.env`.
+7. **Assign a test user** — Create a restaurant and set `profiles.restaurant_id` for your user.
+
+## Supabase database
+
+Run the initial migration in the Supabase SQL editor:
+
+```
+supabase/migrations/001_initial.sql
+```
+
+Then seed a test restaurant and assign your user:
+
+```sql
+insert into public.restaurants (name) values ('Demo Restaurant');
+update public.profiles set restaurant_id = 1 where id = '<your-user-uuid>';
+```
+
+See [PowerSync + Supabase sync](./powersync-supabase.md) for full schema, RLS, Sync Streams, and troubleshooting.
 
 ## Development server
 
@@ -36,26 +86,37 @@ Vite opens http://localhost:5173/login.html by default.
 
 ```
 booking-system/
+├── auth/              # Account switcher, profiles, offline account cache
 ├── booking/           # Booking manager, create, walk-in pages
-├── db/                # PowerSync schema, open/init, migrations, booking helpers
-│   ├── bookings.js    # CRUD helpers (get, insert, update, delete)
-│   └── ...
-├── docs/              # Documentation (markdown + HTML shells; see Deployment for how to add pages)
-├── login.html         # Login (initializes local DB)
+├── db/                # PowerSync schema, connector, sync, booking helpers
+│   ├── supabaseConnector.js
+│   ├── sync.js        # connectSync / disconnectSync (database sync)
+│   ├── syncStatus.js  # sync status dashboard data + navbar health
+│   └── bookings.js
+├── ui/                # Shared navbar, sync indicator, footer, booking sidebar
+│   ├── navbar.js
+│   └── syncIndicator.js
+├── supabase/
+│   └── migrations/    # Postgres schema for Supabase
+├── docs/              # Documentation (markdown + HTML shells)
+├── login.html         # Login (initializes local DB; sync connects on booking pages)
+├── sync-status.html   # Sync status dashboard (auth required)
 ├── signup.html        # Account creation
-├── index.html         # Home
 ├── supabaseClient.js  # Shared Supabase client (ES module)
-├── style.css          # Global styles
-└── vite.config.js     # Dev/build config; lists every HTML page that ships to GitHub Pages
+└── vite.config.js
 ```
 
 ## Typical dev flow
 
-1. Start `npm run dev`.
-2. Log in at `/login.html` — this runs Supabase auth and initializes the local PowerSync database.
-3. Use the booking pages under `/booking/` — manager lists today's bookings; create saves to local SQLite.
+1. Complete the [PowerSync + Supabase setup checklist](#powersync--supabase-setup-checklist) above.
+2. Start `npm run dev`.
+3. Log in at `/login.html` — Supabase auth and local DB init, then redirect to the manager.
+4. Use booking pages under `/booking/` — manager lists bookings from local SQLite immediately and syncs in the background; create saves to local SQLite and uploads when online.
+5. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
 
 ## Troubleshooting
+
+See the full [troubleshooting table](./powersync-supabase.md#troubleshooting) in the PowerSync + Supabase doc. Common issues:
 
 ### `db.init()` hangs forever
 
@@ -67,4 +128,25 @@ Imports like `@powersync/web` and `./db/index.js` are resolved by Vite. They wil
 
 ### Supabase auth errors
 
-Confirm your project URL and anon/publishable key in `supabaseClient.js`. Check the Supabase dashboard for auth settings (email provider enabled, redirect URLs if using magic links).
+Confirm your project URL and anon key in `.env`. Check the Supabase dashboard for auth settings (email provider enabled, redirect URLs if using magic links).
+
+### "Account not assigned to a restaurant"
+
+Your `profiles.restaurant_id` is null. An admin must set it in Supabase, then refresh while online.
+
+### Sync not connecting
+
+Check `VITE_POWERSYNC_URL` (PowerSync Dashboard → Connect), Supabase session, assigned restaurant, and PowerSync dashboard (Supabase Auth enabled, Sync Streams deployed). See [PowerSync + Supabase sync](./powersync-supabase.md).
+
+### Manager stuck on "loading..."
+
+Common causes:
+
+1. **Not using Vite** — `db.init()` hangs without a worker/WASM bundler. Use `npm run dev`.
+2. **Blocking on sync** — awaiting `connectSync()` or `initDatabaseAndSync()` before rendering. The manager calls `initDatabase()`, subscribes to the watched query, then runs `void ensureSyncConnected(db)`.
+3. **HMR during dev** — a hot reload can leave a half-initialized DB; hard-refresh the page.
+4. **Wrong watch API** — use `registerListener({ onData })`, not `onResult` on `query().watch()`. See [Database — Watched queries](./database.md#watched-queries-live-ui).
+
+### Login does not redirect to manager
+
+Login must not `await connectSync()` before redirect — a slow PowerSync connection blocks navigation. Sync starts on the manager page instead.

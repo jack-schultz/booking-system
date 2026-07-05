@@ -1,0 +1,1 @@
+import"./footer-Ddu4Rxgf.js";import{t as e}from"./docs-CHXSrYAq.js";e(`./powersync-supabase.md`,`PowerSync + Supabase`);
