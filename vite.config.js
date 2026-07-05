@@ -34,11 +34,6 @@ export default defineConfig({
     worker: {
         format: 'es',
     },
-    workbox: {
-        navigateFallback: null,  // disable SPA fallback. each .html page is its own entry to stop conflicts between main and dev branches' sw.js
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-    },
     build: {
         rollupOptions: {
             input: {
@@ -73,6 +68,7 @@ export default defineConfig({
                 start_url: './login.html',
             },
             workbox: {
+                navigateFallback: null,
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
                 maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
             },
