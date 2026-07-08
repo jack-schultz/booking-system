@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Test Bookings</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="page-content">
+    <div class="page-primary-panel" style="max-width: 640px; margin: 2rem auto;">
+        <h1>Seed Test Bookings</h1>
+        <p class="booking-notice">
+            Dev-only tool. Inserts random bookings into your local PowerSync database for the
+            logged-in restaurant. Data uploads to Supabase when sync is connected.
+        </p>
+
+        <div class="booking-form-row">
+            <div class="booking-form-column">
+                <label for="booking-count">Booking count</label>
+                <input type="number" id="booking-count" min="1" max="1000" value="200">
+            </div>
+            <div class="booking-form-column">
+                <label for="day-span">Day span (centered on today)</label>
+                <input type="number" id="day-span" min="1" max="90" value="20">
+            </div>
+        </div>
+
+        <p id="seed-status">Loading…</p>
+        <button type="button" id="run-seed">Seed database</button>
+
+        <div id="seed-log" style="margin-top: 1.5rem; max-height: 240px; overflow-y: auto;"></div>
+
+        <p style="margin-top: 1.5rem;">
+            <a href="./booking/manager.html">Back to manager</a>
+        </p>
+    </div>
+</div>
+
+<script type="module" src="./scripts/seed-bookings.js"></script>
+</body>
+</html>
