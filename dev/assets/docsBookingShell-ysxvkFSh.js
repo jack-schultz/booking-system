@@ -1,1 +1,0 @@
-import"./style-D45hxnZ4.js";import{t as e}from"./docs-_2VFr4U1.js";e(`./booking-shell.md`,`Booking shell`);
