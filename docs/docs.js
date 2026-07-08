@@ -6,6 +6,7 @@ export const DOC_PAGES = [
     { slug: 'index', title: 'Documentation', md: 'index.md' },
     { slug: 'getting-started', title: 'Getting started', md: 'getting-started.md' },
     { slug: 'architecture', title: 'Architecture', md: 'architecture.md' },
+    { slug: 'booking-shell', title: 'Booking shell', md: 'booking-shell.md' },
     { slug: 'authentication', title: 'Authentication', md: 'authentication.md' },
     { slug: 'database', title: 'Database', md: 'database.md' },
     { slug: 'powersync-supabase', title: 'PowerSync + Supabase', md: 'powersync-supabase.md' },

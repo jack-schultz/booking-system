@@ -409,8 +409,16 @@ Booking sidebar navigation
     font-weight: bold;
     text-decoration: none;
     color: #fff;
+    border: none;
     border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
     transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.booking-sidebar-nav-link.is-active {
+    outline: 3px solid #fff;
+    outline-offset: -3px;
 }
 
 .booking-sidebar-nav-link:hover {
@@ -435,8 +443,6 @@ Booking sidebar navigation
 
 .booking-sidebar-nav-link--save {
     background-color: #333;
-    border: none;
-    cursor: pointer;
 }
 
 

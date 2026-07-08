@@ -1,5 +1,3 @@
-import '../pwa/register.js';
-import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import {
     aggregateBookingsByDay,
     addBookingToDayTotals,
@@ -15,45 +13,27 @@ import {
     getBookingStatusLabel,
     toTimestamptz,
     updateBookingStatus,
-} from '../db/bookings.js';
+} from '../../db/bookings.js';
 import {
-    initAccountSwitcher,
     getActiveRestaurantId,
     hasAssignedRestaurant,
-} from '../auth/accountSwitcher.js';
-import { mountSiteNavbar } from '../ui/navbar.js';
-import { mountSiteFooter } from '../ui/footer.js';
-import { mountBookingSidebar } from '../ui/bookingSidebar.js';
-import { formatMealPaxSummary, formatPaxBreakdown, formatPaxSummary } from '../ui/paxSummary.js';
-import { STORAGE_KEYS } from '../config/constants.js';
-
-mountSiteNavbar(document.getElementById('site-navbar-mount'), {
-    basePath: '../',
-    showAuthControls: true,
-    showSyncIndicator: true,
-});
-mountSiteFooter(document.getElementById('site-footer-mount'), {
-    basePath: '../',
-});
-mountBookingSidebar(document.getElementById('booking-sidebar-mount'));
-
-const bookingList = document.getElementById('booking-list');
-const bookingNotice = document.getElementById('booking-notice');
-const bookingHeaderPax = document.getElementById('booking-header-pax');
-const datePicker = document.getElementById('booking-date-picker');
-const dateDropdown = document.getElementById('booking-date-dropdown');
-const dateDropdownList = document.getElementById('booking-date-dropdown-list');
-const dateTodayButton = document.getElementById('booking-date-today');
+} from '../../auth/accountSwitcher.js';
+import { formatMealPaxSummary, formatPaxBreakdown, formatPaxSummary } from '../../ui/paxSummary.js';
+import { STORAGE_KEYS } from '../../config/constants.js';
 
 const DATE_PICKER_RANGE = 14;
 
-const switcherPromise = initAccountSwitcher({
-    requireAuth: true,
-    loginRedirect: '../login.html',
-    onSwitch: () => subscribeBookings(),
-});
+/** @type {AbortController | null} */
+let abortController = null;
+/** @type {import('@powersync/web').SyncStreamSubscription | null} */
+let activeWatch = null;
+/** @type {(() => void) | null} */
+let unregisterAccountSwitch = null;
+let db = null;
+let onNavigate = null;
+let selectedDate = null;
 
-const db = await initDatabase();
+const root = () => document.getElementById('view-manager');
 
 function getTodayDate() {
     const date = new Date();
@@ -117,18 +97,18 @@ function getDateRange(date) {
     return { start, end };
 }
 
-let selectedDate = loadSelectedDate();
-let activeWatch = null;
-
-updateTodayButton();
-
 function closeDateDropdown() {
-    dateDropdown.hidden = true;
-    datePicker.setAttribute('aria-expanded', 'false');
+    const dateDropdown = root()?.querySelector('#booking-date-dropdown');
+    const datePicker = root()?.querySelector('#booking-date-picker');
+    if (dateDropdown) dateDropdown.hidden = true;
+    datePicker?.setAttribute('aria-expanded', 'false');
 }
 
 function updateTodayButton() {
-    dateTodayButton.disabled = isSameCalendarDay(selectedDate, getTodayDate());
+    const dateTodayButton = root()?.querySelector('#booking-date-today');
+    if (dateTodayButton) {
+        dateTodayButton.disabled = isSameCalendarDay(selectedDate, getTodayDate());
+    }
 }
 
 function buildPaxByDateMap(bookings, centerDate) {
@@ -161,6 +141,10 @@ async function fetchDropdownBookings(centerDate) {
 }
 
 async function renderDateDropdown() {
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const dateDropdownList = viewRoot.querySelector('#booking-date-dropdown-list');
     const today = getTodayDate();
     const selectedKey = formatDateKey(selectedDate);
     let paxByDate = new Map();
@@ -206,14 +190,23 @@ async function renderDateDropdown() {
 }
 
 async function openDateDropdown() {
+    const viewRoot = root();
+    if (!viewRoot) return;
+
     await renderDateDropdown();
+    const dateDropdown = viewRoot.querySelector('#booking-date-dropdown');
+    const datePicker = viewRoot.querySelector('#booking-date-picker');
+    const dateDropdownList = viewRoot.querySelector('#booking-date-dropdown-list');
     dateDropdown.hidden = false;
     datePicker.setAttribute('aria-expanded', 'true');
-    const selectedOption = dateDropdownList.querySelector('.booking-date-option.is-selected');
-    selectedOption?.scrollIntoView({ block: 'nearest' });
+    dateDropdownList.querySelector('.booking-date-option.is-selected')?.scrollIntoView({ block: 'nearest' });
 }
 
 async function toggleDateDropdown() {
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const dateDropdown = viewRoot.querySelector('#booking-date-dropdown');
     if (dateDropdown.hidden) {
         await openDateDropdown();
     } else {
@@ -226,52 +219,12 @@ function setSelectedDate(date) {
     saveSelectedDate(selectedDate);
     updateTodayButton();
     closeDateDropdown();
-    subscribeBookings();
+    void subscribeBookings();
 }
 
 function goToToday() {
     setSelectedDate(getTodayDate());
 }
-
-datePicker.addEventListener('click', (event) => {
-    event.stopPropagation();
-    void toggleDateDropdown();
-});
-
-datePicker.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        void toggleDateDropdown();
-    } else if (event.key === 'Escape') {
-        closeDateDropdown();
-    }
-});
-
-dateDropdown.addEventListener('click', (event) => {
-    event.stopPropagation();
-});
-
-dateTodayButton.addEventListener('click', (event) => {
-    event.stopPropagation();
-    goToToday();
-});
-
-document.addEventListener('click', () => {
-    closeDateDropdown();
-});
-
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-        closeDateDropdown();
-    }
-});
-
-document.getElementById('booking-list-date-left').addEventListener('click', () => {
-    setSelectedDate(addDays(selectedDate, -1));
-});
-document.getElementById('booking-list-date-right').addEventListener('click', () => {
-    setSelectedDate(addDays(selectedDate, 1));
-});
 
 function getTimeslotPaxTotals(bookings) {
     const totals = new Map();
@@ -286,7 +239,7 @@ function getTimeslotPaxTotals(bookings) {
     return totals;
 }
 
-function getOrCreateTimeslotGroup(timeslot, datetime, paxTotals) {
+function getOrCreateTimeslotGroup(timeslot, datetime, paxTotals, bookingList) {
     const groupId = `timeslot-group-${timeslot}`;
     let group = document.getElementById(groupId);
 
@@ -320,7 +273,11 @@ async function advanceBookingStatus(bookingId, status) {
 }
 
 function renderDayHeader(date, bookings) {
-    const header = document.getElementById('booking-list-header');
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const header = viewRoot.querySelector('#booking-list-header');
+    const bookingHeaderPax = viewRoot.querySelector('#booking-header-pax');
     header.textContent = date.toLocaleDateString('en-AU', {
         weekday: 'long',
         day: 'numeric',
@@ -334,6 +291,10 @@ function renderDayHeader(date, bookings) {
 }
 
 function renderBookings(bookings, date) {
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const bookingList = viewRoot.querySelector('#booking-list');
     renderDayHeader(date, bookings);
 
     if (bookings.length === 0) {
@@ -351,6 +312,7 @@ function renderBookings(bookings, date) {
             timeslot,
             booking.datetime,
             timeslotPaxTotals.get(timeslot),
+            bookingList,
         );
 
         let preference = '';
@@ -406,7 +368,7 @@ function renderBookings(bookings, date) {
             event.stopPropagation();
             await advanceBookingStatus(
                 event.currentTarget.getAttribute('data-id'),
-                booking.status
+                booking.status,
             );
         });
 
@@ -420,7 +382,7 @@ function renderBookings(bookings, date) {
         bookingDiv.querySelector('.booking-action-edit').addEventListener('click', (event) => {
             event.stopPropagation();
             const id = event.target.getAttribute('data-id');
-            window.location.href = `create.html?edit=${id}`;
+            onNavigate?.('create', { edit: id });
         });
 
         timeslotItems.appendChild(bookingDiv);
@@ -453,17 +415,22 @@ function renderBookings(bookings, date) {
 }
 
 function showUnassignedNotice() {
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const bookingNotice = viewRoot.querySelector('#booking-notice');
+    const bookingList = viewRoot.querySelector('#booking-list');
+    const bookingHeaderPax = viewRoot.querySelector('#booking-header-pax');
     bookingNotice.hidden = false;
     bookingNotice.textContent =
         'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant, then refresh this page.';
     bookingList.innerHTML = '';
-    document.getElementById('booking-list-header').textContent = 'Bookings unavailable';
+    viewRoot.querySelector('#booking-list-header').textContent = 'Bookings unavailable';
     bookingHeaderPax.hidden = true;
     bookingHeaderPax.innerHTML = '';
 }
 
 async function subscribeBookings() {
-    // Tear down the old watcher when date or account changes — otherwise we leak listeners and render twice.
     if (activeWatch) {
         await activeWatch.close();
         activeWatch = null;
@@ -474,6 +441,10 @@ async function subscribeBookings() {
         return;
     }
 
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const bookingNotice = viewRoot.querySelector('#booking-notice');
     bookingNotice.hidden = true;
 
     const date = selectedDate;
@@ -489,12 +460,89 @@ async function subscribeBookings() {
         })
         .watch();
 
-    // query().watch() uses onData (not onResult) — fires whenever local SQLite or sync updates the query.
     activeWatch.registerListener({
         onData: (bookings) => renderBookings(bookings, date),
     });
 }
 
-await switcherPromise;
-await subscribeBookings();
-void ensureSyncConnected(db);
+/**
+ * @param {{ db: import('@powersync/web').PowerSyncDatabase, onNavigate: Function, registerOnAccountSwitch: Function }} ctx
+ */
+export async function mountManagerView(ctx) {
+    db = ctx.db;
+    onNavigate = ctx.onNavigate;
+    selectedDate = loadSelectedDate();
+    abortController = new AbortController();
+    const { signal } = abortController;
+
+    const viewRoot = root();
+    if (!viewRoot) return;
+
+    const datePicker = viewRoot.querySelector('#booking-date-picker');
+    const dateDropdown = viewRoot.querySelector('#booking-date-dropdown');
+    const dateTodayButton = viewRoot.querySelector('#booking-date-today');
+
+    updateTodayButton();
+
+    datePicker.addEventListener('click', (event) => {
+        event.stopPropagation();
+        void toggleDateDropdown();
+    }, { signal });
+
+    datePicker.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            void toggleDateDropdown();
+        } else if (event.key === 'Escape') {
+            closeDateDropdown();
+        }
+    }, { signal });
+
+    dateDropdown.addEventListener('click', (event) => {
+        event.stopPropagation();
+    }, { signal });
+
+    dateTodayButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        goToToday();
+    }, { signal });
+
+    document.addEventListener('click', () => {
+        closeDateDropdown();
+    }, { signal });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeDateDropdown();
+        }
+    }, { signal });
+
+    viewRoot.querySelector('#booking-list-date-left').addEventListener('click', () => {
+        setSelectedDate(addDays(selectedDate, -1));
+    }, { signal });
+
+    viewRoot.querySelector('#booking-list-date-right').addEventListener('click', () => {
+        setSelectedDate(addDays(selectedDate, 1));
+    }, { signal });
+
+    unregisterAccountSwitch = ctx.registerOnAccountSwitch(() => {
+        void subscribeBookings();
+    });
+
+    await subscribeBookings();
+}
+
+export async function unmountManagerView() {
+    if (activeWatch) {
+        await activeWatch.close();
+        activeWatch = null;
+    }
+
+    abortController?.abort();
+    abortController = null;
+    unregisterAccountSwitch?.();
+    unregisterAccountSwitch = null;
+    closeDateDropdown();
+    db = null;
+    onNavigate = null;
+}

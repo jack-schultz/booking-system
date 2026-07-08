@@ -19,3 +19,6 @@ export const DEFAULT_RESTAURANT_ID = 0;
 
 /** Local SQLite filename used by PowerSync in the browser */
 export const DB_FILENAME = 'bookings.db';
+
+/** Skip Supabase profile fetch when cache is fresher than this (ms). */
+export const PROFILE_SYNC_TTL_MS = 5 * 60 * 1000;
