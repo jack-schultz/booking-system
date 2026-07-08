@@ -1,6 +1,5 @@
 import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
-import { initDatabase } from './db/index.js';
 import { registerLoggedInSession } from './auth/accountSwitcher.js';
 import { mountSiteNavbar } from './ui/navbar.js';
 import { mountSiteFooter } from './ui/footer.js';
@@ -10,7 +9,6 @@ mountSiteFooter(document.getElementById('site-footer-mount'));
 
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');
-const dbPromise = initDatabase();
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -30,8 +28,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     await registerLoggedInSession(supabase, data.session);
-    await dbPromise;
 
-    // Sync connects on the manager page — don't block redirect on db.connect() here.
+    // DB init happens on booking pages — starting it here orphans the worker on redirect.
     window.location.href = 'booking/manager.html';
 });

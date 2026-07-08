@@ -211,8 +211,8 @@ async function ensureDbSubscribed() {
         return;
     }
 
-    const { openDB } = await import('./openDB.js');
-    dbInstance = await openDB();
+    const { initDatabase } = await import('./index.js');
+    dbInstance = await initDatabase();
 
     statusListenerDispose = dbInstance.registerListener({
         statusChanged: (status) => {

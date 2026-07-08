@@ -3,6 +3,10 @@ import { DB_FILENAME } from '../config/constants.js';
 import { AppSchema } from './schema.js';
 
 const GLOBAL_DB_KEY = '__booking_system_powersync_db__';
+const GLOBAL_DB_OPEN_KEY = '__booking_system_powersync_db_open__';
+
+/** In dev, run SQLite on the main thread — avoids SharedWorker + exclusive IndexedDB deadlocks from Vite HMR / multiple tabs. */
+const DEV_DB_FLAGS = import.meta.env.DEV ? { useWebWorker: false } : undefined;
 
 /**
  * Opens the local PowerSync database (browser SQLite).
@@ -11,19 +15,29 @@ const GLOBAL_DB_KEY = '__booking_system_powersync_db__';
  *
  * Singleton is stored on globalThis so Vite HMR does not create a second instance
  * that deadlocks on the same IndexedDB / navigator lock while the old one is still initing.
+ *
+ * Prefer initDatabase() — it runs db.init() and migrations. openDB() alone returns an
+ * instance that may not be ready yet.
  */
 export async function openDB() {
     if (globalThis[GLOBAL_DB_KEY]) {
         return globalThis[GLOBAL_DB_KEY];
     }
 
-    const db = new PowerSyncDatabase({
-        schema: AppSchema,
-        database: {
-            dbFilename: DB_FILENAME,
-        },
-    });
+    if (!globalThis[GLOBAL_DB_OPEN_KEY]) {
+        globalThis[GLOBAL_DB_OPEN_KEY] = (async () => {
+            if (!globalThis[GLOBAL_DB_KEY]) {
+                globalThis[GLOBAL_DB_KEY] = new PowerSyncDatabase({
+                    schema: AppSchema,
+                    database: {
+                        dbFilename: DB_FILENAME,
+                    },
+                    flags: DEV_DB_FLAGS,
+                });
+            }
+        })();
+    }
 
-    globalThis[GLOBAL_DB_KEY] = db;
-    return db;
+    await globalThis[GLOBAL_DB_OPEN_KEY];
+    return globalThis[GLOBAL_DB_KEY];
 }

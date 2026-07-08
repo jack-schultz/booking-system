@@ -4,26 +4,22 @@ import { connectSync, reconnectSync, disconnectSync } from './sync.js';
 
 export { connectSync, reconnectSync, disconnectSync };
 
-let databaseInitPromise = null;
+const GLOBAL_DB_INIT_KEY = '__booking_system_powersync_db_init__';
 
 export async function initDatabase() {
-    if (databaseInitPromise) {
-        await databaseInitPromise;
-        return openDB();
+    if (!globalThis[GLOBAL_DB_INIT_KEY]) {
+        globalThis[GLOBAL_DB_INIT_KEY] = (async () => {
+            try {
+                const db = await openDB();
+                await runMigrations(db);
+            } catch (err) {
+                globalThis[GLOBAL_DB_INIT_KEY] = null;
+                throw err;
+            }
+        })();
     }
 
-    databaseInitPromise = (async () => {
-        const db = await openDB();
-        await runMigrations(db);
-    })();
-
-    try {
-        await databaseInitPromise;
-    } catch (err) {
-        databaseInitPromise = null;
-        throw err;
-    }
-
+    await globalThis[GLOBAL_DB_INIT_KEY];
     return openDB();
 }
 

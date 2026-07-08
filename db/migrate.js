@@ -1,7 +1,9 @@
 import { migrations } from './migrations/index.js';
 
 export async function runMigrations(db) {
-    await db.init();
+    if (!db.ready) {
+        await db.init();
+    }
 
     const rows = await db.getAll(`SELECT name FROM migrations`);
     const applied = new Set(rows.map((r) => r.name));

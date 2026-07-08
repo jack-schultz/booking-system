@@ -3,7 +3,8 @@ import { initAccountSwitcher } from './auth/accountSwitcher.js';
 import { mountSiteNavbar } from './ui/navbar.js';
 import { mountSiteFooter } from './ui/footer.js';
 import {
-    initDatabaseAndSync,
+    initDatabase,
+    ensureSyncConnected,
     reconnectSync,
 } from './db/index.js';
 import {
@@ -23,7 +24,8 @@ const reconnectBtn = document.getElementById('sync-status-reconnect-btn');
 
 await initAccountSwitcher({ requireAuth: true, loginRedirect: 'login.html' });
 
-const db = await initDatabaseAndSync();
+const db = await initDatabase();
+void ensureSyncConnected(db);
 
 function setReconnectButtonIdle(reconnectResult) {
     reconnectBtn.disabled = false;

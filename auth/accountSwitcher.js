@@ -17,17 +17,16 @@ import { syncAccountProfileFromSupabase } from "./profiles.js";
 let dropdownRender = null;
 
 async function reconnectPowerSync() {
-    // Lazy-import to avoid circular deps at module load (accountSwitcher <-> sync <-> accounts).
-    const { openDB } = await import("../db/openDB.js");
+    const { initDatabase } = await import("../db/index.js");
     const { reconnectSync } = await import("../db/sync.js");
-    const db = await openDB();
+    const db = await initDatabase();
     await reconnectSync(db);
 }
 
 async function disconnectPowerSync() {
-    const { openDB } = await import("../db/openDB.js");
+    const { initDatabase } = await import("../db/index.js");
     const { disconnectSync } = await import("../db/sync.js");
-    const db = await openDB();
+    const db = await initDatabase();
     await disconnectSync(db);
 }
 
