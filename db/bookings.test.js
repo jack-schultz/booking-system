@@ -138,8 +138,11 @@ describe('aggregateBookingsByDay', () => {
 
         const { lunch, dinner, dayTotal } = aggregateBookingsByDay(bookings);
 
+        expect(lunch.booking_count).toBe(1);
         expect(lunch.total_pax).toBe(4);
+        expect(dinner.booking_count).toBe(1);
         expect(dinner.total_pax).toBe(2);
+        expect(dayTotal.booking_count).toBe(2);
         expect(dayTotal.total_pax).toBe(6);
     });
 });

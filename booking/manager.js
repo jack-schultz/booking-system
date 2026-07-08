@@ -2,10 +2,13 @@ import '../pwa/register.js';
 import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import {
     aggregateBookingsByDay,
+    addBookingToDayTotals,
+    createDayPaxTotals,
     createEmptyPaxTotals,
     addPaxTotals,
     deleteBooking,
     formatTimeslot,
+    getDateFromDatetime,
     getTimeslotFromDatetime,
     getNextBookingStatus,
     getBookingStatusClass,
@@ -22,6 +25,7 @@ import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
 import { formatMealPaxSummary, formatPaxBreakdown, formatPaxSummary } from '../ui/paxSummary.js';
+import { STORAGE_KEYS } from '../config/constants.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
@@ -36,6 +40,12 @@ mountBookingSidebar(document.getElementById('booking-sidebar-mount'));
 const bookingList = document.getElementById('booking-list');
 const bookingNotice = document.getElementById('booking-notice');
 const bookingHeaderPax = document.getElementById('booking-header-pax');
+const datePicker = document.getElementById('booking-date-picker');
+const dateDropdown = document.getElementById('booking-date-dropdown');
+const dateDropdownList = document.getElementById('booking-date-dropdown-list');
+const dateTodayButton = document.getElementById('booking-date-today');
+
+const DATE_PICKER_RANGE = 14;
 
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
@@ -45,11 +55,58 @@ const switcherPromise = initAccountSwitcher({
 
 const db = await initDatabase();
 
-function getTodayDateWithOffset(offset = 0) {
+function getTodayDate() {
     const date = new Date();
-    date.setDate(date.getDate() + offset);
     date.setHours(0, 0, 0, 0);
     return date;
+}
+
+function normalizeDate(date) {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+}
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function formatDateKey(date) {
+    const normalized = normalizeDate(date);
+    const year = normalized.getFullYear();
+    const month = String(normalized.getMonth() + 1).padStart(2, '0');
+    const day = String(normalized.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function parseDateKey(key) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+    const date = new Date(`${key}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isSameCalendarDay(left, right) {
+    return formatDateKey(left) === formatDateKey(right);
+}
+
+function loadSelectedDate() {
+    const stored = localStorage.getItem(STORAGE_KEYS.MANAGER_SELECTED_DATE);
+    return parseDateKey(stored) ?? getTodayDate();
+}
+
+function saveSelectedDate(date) {
+    localStorage.setItem(STORAGE_KEYS.MANAGER_SELECTED_DATE, formatDateKey(date));
+}
+
+function formatDropdownDateLabel(date) {
+    return date.toLocaleDateString('en-AU', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
 }
 
 function getDateRange(date) {
@@ -60,16 +117,160 @@ function getDateRange(date) {
     return { start, end };
 }
 
-let dateOffset = 0;
+let selectedDate = loadSelectedDate();
 let activeWatch = null;
 
-document.getElementById('booking-list-date-left').addEventListener('click', () => {
-    dateOffset -= 1;
+updateTodayButton();
+
+function closeDateDropdown() {
+    dateDropdown.hidden = true;
+    datePicker.setAttribute('aria-expanded', 'false');
+}
+
+function updateTodayButton() {
+    dateTodayButton.disabled = isSameCalendarDay(selectedDate, getTodayDate());
+}
+
+function buildPaxByDateMap(bookings, centerDate) {
+    const paxByDate = new Map();
+
+    for (let offset = -DATE_PICKER_RANGE; offset <= DATE_PICKER_RANGE; offset += 1) {
+        paxByDate.set(formatDateKey(addDays(centerDate, offset)), createDayPaxTotals());
+    }
+
+    for (const booking of bookings) {
+        const dateKey = getDateFromDatetime(booking.datetime);
+        const dayTotals = paxByDate.get(dateKey);
+        if (dayTotals) {
+            addBookingToDayTotals(dayTotals, booking);
+        }
+    }
+
+    return paxByDate;
+}
+
+async function fetchDropdownBookings(centerDate) {
+    const start = addDays(centerDate, -DATE_PICKER_RANGE);
+    const end = addDays(centerDate, DATE_PICKER_RANGE + 1);
+    return db.getAll(
+        `SELECT * FROM bookings
+         WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?
+         ORDER BY datetime`,
+        [getActiveRestaurantId(), toTimestamptz(start), toTimestamptz(end)],
+    );
+}
+
+async function renderDateDropdown() {
+    const today = getTodayDate();
+    const selectedKey = formatDateKey(selectedDate);
+    let paxByDate = new Map();
+
+    if (hasAssignedRestaurant()) {
+        const bookings = await fetchDropdownBookings(selectedDate);
+        paxByDate = buildPaxByDateMap(bookings, selectedDate);
+    }
+
+    dateDropdownList.innerHTML = '';
+
+    for (let offset = -DATE_PICKER_RANGE; offset <= DATE_PICKER_RANGE; offset += 1) {
+        const date = addDays(selectedDate, offset);
+        const dateKey = formatDateKey(date);
+        const { dayTotal, lunch, dinner } = paxByDate.get(dateKey) ?? createDayPaxTotals();
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'booking-date-option';
+        btn.role = 'option';
+        btn.innerHTML = `
+            <span class="booking-date-option-label">${formatDropdownDateLabel(date)}</span>
+            <span class="booking-date-option-pax">${formatMealPaxSummary({ dayTotal, lunch, dinner })}</span>
+        `;
+
+        if (dateKey === selectedKey) {
+            btn.classList.add('is-selected');
+            btn.setAttribute('aria-selected', 'true');
+        } else {
+            btn.setAttribute('aria-selected', 'false');
+        }
+
+        if (isSameCalendarDay(date, today)) {
+            btn.classList.add('is-today');
+        }
+
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            setSelectedDate(date);
+        });
+
+        dateDropdownList.appendChild(btn);
+    }
+}
+
+async function openDateDropdown() {
+    await renderDateDropdown();
+    dateDropdown.hidden = false;
+    datePicker.setAttribute('aria-expanded', 'true');
+    const selectedOption = dateDropdownList.querySelector('.booking-date-option.is-selected');
+    selectedOption?.scrollIntoView({ block: 'nearest' });
+}
+
+async function toggleDateDropdown() {
+    if (dateDropdown.hidden) {
+        await openDateDropdown();
+    } else {
+        closeDateDropdown();
+    }
+}
+
+function setSelectedDate(date) {
+    selectedDate = normalizeDate(date);
+    saveSelectedDate(selectedDate);
+    updateTodayButton();
+    closeDateDropdown();
     subscribeBookings();
+}
+
+function goToToday() {
+    setSelectedDate(getTodayDate());
+}
+
+datePicker.addEventListener('click', (event) => {
+    event.stopPropagation();
+    void toggleDateDropdown();
+});
+
+datePicker.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        void toggleDateDropdown();
+    } else if (event.key === 'Escape') {
+        closeDateDropdown();
+    }
+});
+
+dateDropdown.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+dateTodayButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    goToToday();
+});
+
+document.addEventListener('click', () => {
+    closeDateDropdown();
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeDateDropdown();
+    }
+});
+
+document.getElementById('booking-list-date-left').addEventListener('click', () => {
+    setSelectedDate(addDays(selectedDate, -1));
 });
 document.getElementById('booking-list-date-right').addEventListener('click', () => {
-    dateOffset += 1;
-    subscribeBookings();
+    setSelectedDate(addDays(selectedDate, 1));
 });
 
 function getTimeslotPaxTotals(bookings) {
@@ -231,16 +432,20 @@ function renderBookings(bookings, date) {
     section.innerHTML = `
         <div class="booking-timeslot-heading">
             <div class="booking-summary-primary">
-                <span class="booking-timeslot-time">Lunch total</span>
+                <span class="booking-timeslot-time">Lunch Total Pax</span>
                 ${formatPaxSummary(lunch)}
             </div>
             <div class="booking-summary-primary">
-                <span class="booking-timeslot-time">Dinner total</span>
+                <span class="booking-timeslot-time">Dinner Total Pax</span>
                 ${formatPaxSummary(dinner)}
             </div>
             <div class="booking-summary-primary">
-                <span class="booking-timeslot-time">Total</span>
+                <span class="booking-timeslot-time">Total Pax</span>
                 ${formatPaxSummary(dayTotal)}
+            </div>
+            <div class="booking-summary-primary">
+                <span class="booking-timeslot-time">Total Bookings</span>
+                ${bookings.length}
             </div>
         </div>
     `;
@@ -271,7 +476,7 @@ async function subscribeBookings() {
 
     bookingNotice.hidden = true;
 
-    const date = getTodayDateWithOffset(dateOffset);
+    const date = selectedDate;
     const { start, end } = getDateRange(date);
     const restaurantId = getActiveRestaurantId();
 

@@ -181,6 +181,7 @@ export async function updateBookingStatus(db, id, restaurantId, status) {
 
 export function createEmptyPaxTotals() {
     return {
+        booking_count: 0,
         total_pax: 0,
         adult_pax: 0,
         child_pax: 0,
@@ -189,6 +190,7 @@ export function createEmptyPaxTotals() {
 }
 
 export function addPaxTotals(target, source) {
+    target.booking_count += source.booking_count ?? 0;
     target.total_pax += source.total_pax;
     target.adult_pax += source.adult_pax;
     target.child_pax += source.child_pax;
@@ -205,6 +207,8 @@ export function createDayPaxTotals() {
 
 export function addBookingToDayTotals(dayTotals, booking) {
     const meal = getMealPeriodFromDatetime(booking.datetime);
+    dayTotals[meal].booking_count += 1;
+    dayTotals.dayTotal.booking_count += 1;
     addPaxTotals(dayTotals[meal], booking);
     addPaxTotals(dayTotals.dayTotal, booking);
 }

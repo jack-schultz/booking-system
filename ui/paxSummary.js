@@ -21,10 +21,10 @@ export function formatMetricsPaxCell(totals) {
 
 export function formatMealPaxBreakdown({ dayTotal, lunch, dinner }) {
     return `
-        <span class="booking-summary-pax-total">${dayTotal.total_pax}</span>
+        <span class="booking-summary-pax-total">${dayTotal.booking_count}-${dayTotal.total_pax}</span>
         <span class="booking-summary-pax-breakdown">
-            <span>${lunch.total_pax}L</span>
-            <span>${dinner.total_pax}D</span>
+            <span>L${lunch.booking_count}-${lunch.total_pax}</span>
+            <span>D${dinner.booking_count}-${dinner.total_pax}</span>
         </span>
     `;
 }

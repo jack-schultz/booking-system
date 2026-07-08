@@ -2,6 +2,7 @@
 export const STORAGE_KEYS = {
     ACCOUNTS: 'booking_system_accounts',
     ACTIVE_ACCOUNT_ID: 'booking_system_active_account_id',
+    MANAGER_SELECTED_DATE: 'booking_system_manager_selected_date',
 };
 
 /** Default booking status for new and updated bookings */

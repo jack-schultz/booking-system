@@ -451,11 +451,120 @@ Booking manager list
     align-items: center;
     gap: 12px;
     margin-bottom: 20px;
+    position: relative;
+    overflow: visible;
+    z-index: 10;
+}
+
+.booking-date-picker-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
 }
 
 .booking-day-header-panel {
-    flex: 1;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    overflow: visible;
+}
+
+.booking-day-header-panel:hover {
+    background-color: #b8b8b8;
+}
+
+.booking-date-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 6px;
+    background-color: #c8c8c8;
+    border: 2px solid #9a9a9a;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+}
+
+.booking-date-today {
+    flex-shrink: 0;
+    height: 44px;
+    padding: 0 14px;
+    border: 2px solid #9a9a9a;
+    border-radius: 8px;
+    background-color: #c8c8c8;
+    color: #111;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.booking-date-today:hover:not(:disabled) {
+    background-color: #b0b0b0;
+}
+
+.booking-date-today:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.booking-date-dropdown-list {
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+}
+
+.booking-date-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    color: #111;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.booking-date-option-label {
     min-width: 0;
+}
+
+.booking-date-option-pax {
+    flex-shrink: 0;
+}
+
+.booking-date-option-pax .booking-summary-pax-total {
+    font-size: 18px;
+}
+
+.booking-date-option-pax .booking-summary-pax-breakdown {
+    font-size: 12px;
+}
+
+.booking-date-option:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+.booking-date-option.is-selected {
+    background-color: #4a90e2;
+    color: #fff;
+    font-weight: bold;
+}
+
+.booking-date-option.is-selected:hover {
+    background-color: #3a7bc8;
+}
+
+.booking-date-option.is-today:not(.is-selected) {
+    font-weight: bold;
 }
 
 .booking-day-header-heading {
@@ -508,6 +617,10 @@ Booking manager list
     border: 2px solid #9a9a9a;
     border-radius: 12px;
     overflow: hidden;
+}
+
+.booking-day-header-panel.booking-timeslot-group {
+    overflow: visible;
 }
 
 .booking-timeslot-heading {
