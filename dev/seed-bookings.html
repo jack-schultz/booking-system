@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Weekly Metrics — Booking System</title>
-  <script type="module" crossorigin src="/booking-system/dev/assets/metrics-BcKiIMsv.js"></script>
+    <title>Seed Test Bookings</title>
+  <script type="module" crossorigin src="/booking-system/dev/assets/seedBookings-DguweELD.js"></script>
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-TQHRvbNd.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/preload-helper-j_ZwnIYB.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/register-CxERNST-.js">
@@ -11,31 +11,41 @@
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Cll7b3zd.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-CGaxRSSb.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/syncStatus-AeJF3_E8.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/footer-ChAm13O1.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/sync-F9qG1wgh.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-k0F-LcVR.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-Deon4TkP.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/paxSummary-Bwfxgj0V.js">
   <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-CqUgB6kn.css">
 <link rel="manifest" href="/booking-system/dev/manifest.webmanifest"></head>
 <body>
-<div id="site-navbar-mount"></div>
-
 <div class="page-content">
-    <div class="metrics-page-layout">
-        <div class="page-primary-panel metrics-page-panel">
-            <div class="metrics-header-group">
-                <button type="button" class="metrics-week-left" id="metrics-week-left" aria-label="Previous week">‹</button>
-                <h1 id="metrics-header">Loading...</h1>
-                <button type="button" class="metrics-week-right" id="metrics-week-right" aria-label="Next week">›</button>
+    <div class="page-primary-panel" style="max-width: 640px; margin: 2rem auto;">
+        <h1>Seed Test Bookings</h1>
+        <p class="booking-notice">
+            Dev-only tool. Inserts random bookings into your local PowerSync database for the
+            logged-in restaurant. Data uploads to Supabase when sync is connected.
+        </p>
+
+        <div class="booking-form-row">
+            <div class="booking-form-column">
+                <label for="booking-count">Booking count</label>
+                <input type="number" id="booking-count" min="1" max="1000" value="200">
             </div>
-            <p id="metrics-notice" class="booking-notice" hidden></p>
-            <div id="metrics-table" class="metrics-table-mount">loading...</div>
+            <div class="booking-form-column">
+                <label for="day-span">Day span (centered on today)</label>
+                <input type="number" id="day-span" min="1" max="90" value="20">
+            </div>
         </div>
+
+        <p id="seed-status">Loading…</p>
+        <button type="button" id="run-seed">Seed database</button>
+
+        <div id="seed-log" style="margin-top: 1.5rem; max-height: 240px; overflow-y: auto;"></div>
+
+        <p style="margin-top: 1.5rem;">
+            <a href="./booking/manager.html">Back to manager</a>
+        </p>
     </div>
 </div>
-
-<div id="site-footer-mount"></div>
 
 </body>
 </html>

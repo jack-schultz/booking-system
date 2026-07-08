@@ -1,0 +1,1 @@
+import"./style-TQHRvbNd.js";import{t as e}from"./docs-CYvshjkB.js";e(`./index.md`,`Documentation`);

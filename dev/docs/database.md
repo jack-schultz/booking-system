@@ -12,7 +12,7 @@ Always use Vite for development:
 npm run dev
 ```
 
-See [Getting started](./getting-started.md) for full setup.
+See [Getting started](./getting-started.html) for full setup.
 
 ## Usage
 
@@ -40,7 +40,8 @@ db/
 ├── supabaseConnector.js # fetchCredentials + uploadData
 ├── sync.js              # connectSync, disconnectSync, reconnectSync
 ├── syncStatus.js        # Sync status health, snapshots, issue log (UI dashboard)
-├── bookings.js          # Booking CRUD and datetime helpers
+├── bookings.js          # Booking CRUD, datetime helpers, pax aggregation, status helpers
+├── bookings.test.js     # Jest tests for bookings.js and meal-period logic
 ├── migrate.js           # db.init() + migration runner
 └── migrations/          # Named migration hooks
 ```
@@ -80,7 +81,7 @@ Login only runs steps 1 and profile registration, then redirects — it does not
 
 [`initDatabase()`](../db/index.js) uses a shared promise so concurrent callers (e.g. login and a booking page) wait on a single `db.init()` instead of racing.
 
-See [PowerSync + Supabase sync](./powersync-supabase.md) for dashboard setup and Sync Streams configuration.
+See [PowerSync + Supabase sync](./powersync-supabase.html) for dashboard setup and Sync Streams configuration.
 
 ## Sync status UI
 
@@ -106,9 +107,14 @@ import {
     getBookingById,
     insertBooking,
     updateBooking,
+    updateBookingStatus,
     deleteBooking,
     buildDatetime,
     formatTimeslot,
+    toTimestamptz,
+    aggregateBookingsByDay,
+    aggregateBookingsByWeek,
+    getWeekRange,
 } from './db/bookings.js';
 
 const db = await initDatabaseAndSync();
@@ -118,9 +124,51 @@ const bookings = await getBookingsForDate(db, today, restaurantId);
 
 All list/get/update/delete helpers include `restaurant_id` in their WHERE clauses.
 
+### Datetime helpers
+
+| Function | Purpose |
+|----------|---------|
+| `toTimestamptz(date)` | Serialize a `Date` to ISO 8601 UTC (`…Z`) for SQLite storage |
+| `fromTimestamptz(value)` | Parse timestamptz text back to a `Date` (or `null`) |
+| `buildDatetime(dateStr, timeslot)` | Combine `YYYY-MM-DD` and compact `HHMM` into timestamptz |
+| `getTimeslotFromDatetime(datetime)` | Extract compact `HHMM` for form fields |
+| `getDateFromDatetime(datetime)` | Extract local `YYYY-MM-DD` for form fields |
+| `formatTimeslot(datetime)` | Display time (e.g. `"9:00 am"`) |
+
+### Status helpers
+
+Bookings cycle through `pending` → `set` → `seated` → `pending` when the status button is clicked on the manager page:
+
+| Function | Purpose |
+|----------|---------|
+| `getNextBookingStatus(status)` | Next status in the cycle |
+| `getBookingStatusLabel(status)` | Display label (`Unset`, `Set`, `Seated`) |
+| `getBookingStatusClass(status)` | CSS class for the status button |
+| `updateBookingStatus(db, id, restaurantId, status)` | Persist a status change |
+
+Status values are defined in [`config/constants.js`](../config/constants.js) as `BOOKING_STATUS`.
+
+### Pax aggregation
+
+Pax totals sum `total_pax`, `adult_pax`, `child_pax`, and `hc_pax` across bookings. Lunch vs dinner is determined by [`config/timeslots.js`](../config/timeslots.js) — bookings at or after 5:00 PM (`1700`) count as dinner.
+
+| Function | Purpose |
+|----------|---------|
+| `createEmptyPaxTotals()` | Zeroed pax object |
+| `addPaxTotals(target, source)` | Add pax fields in place |
+| `aggregateBookingsByDay(bookings)` | Lunch, dinner, and day totals for one calendar day |
+| `getWeekRange(anchorDate, weekOffset)` | Monday 00:00 through next Monday 00:00 |
+| `aggregateBookingsByWeek(bookings, weekStart)` | Per-day lunch/dinner totals plus week and weekend summaries |
+
+The manager page shows per-timeslot pax totals in each timeslot heading and lunch/dinner/day totals at the bottom. The metrics page uses `aggregateBookingsByWeek` for a tabular week view.
+
+Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
+
 ## Watched queries (live UI)
 
 The manager page uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first.
+
+The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
 
 ```javascript
 const watched = db.query({
@@ -190,7 +238,7 @@ Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migration
 
 ## Vite configuration
 
-`vite.config.js` excludes `@powersync/web` from dependency pre-bundling:
+`vite.config.js` excludes `@powersync/web` from dependency pre-bundling and registers the PWA plugin:
 
 ```javascript
 optimizeDeps: {
@@ -199,9 +247,16 @@ optimizeDeps: {
 worker: {
     format: 'es',
 },
+plugins: [
+    VitePWA({
+        registerType: 'autoUpdate',
+        workbox: { navigateFallback: null },
+        // ...
+    }),
+],
 ```
 
-This is required for worker and WASM loading. Do not remove it.
+This is required for worker and WASM loading. Do not remove the `optimizeDeps` or `worker` settings.
 
 ## Clearing local data
 
@@ -214,6 +269,6 @@ If the manager stays on "Loading..." after a code change during `npm run dev`, h
 
 ## Related docs
 
-- [Architecture](./architecture.md) — how the DB fits with auth and booking pages
-- [Authentication](./authentication.md) — login initializes the local DB; sync connects on booking pages
-- [PowerSync + Supabase sync](./powersync-supabase.md) — cloud setup and security
+- [Architecture](./architecture.html) — how the DB fits with auth and booking pages
+- [Authentication](./authentication.html) — login initializes the local DB; sync connects on booking pages
+- [PowerSync + Supabase sync](./powersync-supabase.html) — cloud setup and security

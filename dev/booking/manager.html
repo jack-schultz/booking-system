@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking System</title>
-  <script type="module" crossorigin src="/booking-system/dev/assets/manager-BHYOs606.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/constants-B1gYVjXP.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accounts-CAIbdN4Z.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/syncStatus-BT08yccP.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/footer-CeiLeDeu.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/register-BgmyEqJt.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Do_v9ACv.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-DjqSVm1Z.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/src-DHYcPyOZ.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/openDB-vHUQ9dwd.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/sync-CMxr7sL1.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-iPnXzGMh.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-B1SyF0II.js">
+  <script type="module" crossorigin src="/booking-system/dev/assets/manager-Cdn-FPT4.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-TQHRvbNd.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/preload-helper-j_ZwnIYB.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/register-CxERNST-.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accounts-Ba5wxbSs.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Cll7b3zd.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accountSwitcher-CGaxRSSb.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/syncStatus-AeJF3_E8.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/footer-ChAm13O1.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/sync-F9qG1wgh.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/db-k0F-LcVR.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookings-Deon4TkP.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/bookingSidebar-yUJiKNtq.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/footer-CBIqXTcf.css">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/paxSummary-Bwfxgj0V.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-CqUgB6kn.css">
 <link rel="manifest" href="/booking-system/dev/manifest.webmanifest"></head>
 <body>
 <div id="site-navbar-mount"></div>
@@ -27,7 +27,20 @@
         <div class="page-primary-panel">
             <div class="booking-header-group">
                 <button type="button" class="booking-list-date-left" id="booking-list-date-left" aria-label="Previous day">‹</button>
-                <h1 id="booking-list-header">Loading...</h1>
+                <div class="booking-date-picker-wrap">
+                    <div class="booking-day-header-panel booking-timeslot-group" id="booking-date-picker" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                        <div class="booking-timeslot-heading booking-day-header-heading">
+                            <div class="booking-header-title">
+                                <h1 id="booking-list-header">Loading...</h1>
+                                <div id="booking-header-pax" class="booking-header-pax" hidden></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="booking-date-dropdown" class="booking-date-dropdown" hidden>
+                        <div id="booking-date-dropdown-list" class="booking-date-dropdown-list" role="listbox"></div>
+                    </div>
+                </div>
+                <button type="button" class="booking-date-today" id="booking-date-today">Today</button>
                 <button type="button" class="booking-list-date-right" id="booking-list-date-right" aria-label="Next day">›</button>
             </div>
             <p id="booking-notice" class="booking-notice" hidden></p>
