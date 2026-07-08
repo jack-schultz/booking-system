@@ -21,7 +21,7 @@ import {
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
-import { formatPaxBreakdown, formatPaxSummary } from '../ui/paxSummary.js';
+import { formatMealPaxSummary, formatPaxBreakdown, formatPaxSummary } from '../ui/paxSummary.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
@@ -35,6 +35,7 @@ mountBookingSidebar(document.getElementById('booking-sidebar-mount'));
 
 const bookingList = document.getElementById('booking-list');
 const bookingNotice = document.getElementById('booking-notice');
+const bookingHeaderPax = document.getElementById('booking-header-pax');
 
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
@@ -117,7 +118,7 @@ async function advanceBookingStatus(bookingId, status) {
     await updateBookingStatus(db, bookingId, getActiveRestaurantId(), nextStatus);
 }
 
-function renderBookings(bookings, date) {
+function renderDayHeader(date, bookings) {
     const header = document.getElementById('booking-list-header');
     header.textContent = date.toLocaleDateString('en-AU', {
         weekday: 'long',
@@ -125,6 +126,14 @@ function renderBookings(bookings, date) {
         month: 'long',
         year: 'numeric',
     });
+
+    const { dayTotal, lunch, dinner } = aggregateBookingsByDay(bookings);
+    bookingHeaderPax.innerHTML = formatMealPaxSummary({ dayTotal, lunch, dinner });
+    bookingHeaderPax.hidden = false;
+}
+
+function renderBookings(bookings, date) {
+    renderDayHeader(date, bookings);
 
     if (bookings.length === 0) {
         bookingList.innerHTML = '<p>No bookings for today</p>';
@@ -244,6 +253,8 @@ function showUnassignedNotice() {
         'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant, then refresh this page.';
     bookingList.innerHTML = '';
     document.getElementById('booking-list-header').textContent = 'Bookings unavailable';
+    bookingHeaderPax.hidden = true;
+    bookingHeaderPax.innerHTML = '';
 }
 
 async function subscribeBookings() {

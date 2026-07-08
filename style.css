@@ -58,6 +58,9 @@ Page layout
     padding: 20px;
     margin: 0;
     border-radius: 10px;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
 }
 
 /*
@@ -450,9 +453,27 @@ Booking manager list
     margin-bottom: 20px;
 }
 
-.booking-header-group h1 {
+.booking-day-header-panel {
     flex: 1;
-    text-align: center;
+    min-width: 0;
+}
+
+.booking-day-header-heading {
+    border-bottom: none;
+}
+
+.booking-header-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.booking-header-title h1 {
+    font-size: 24px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
 }
 
 .booking-list-date-left,
