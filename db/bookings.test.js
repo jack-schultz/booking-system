@@ -1,11 +1,14 @@
 import {
+    aggregateBookingsByWeek,
     buildDatetime,
     formatTimeslot,
     fromTimestamptz,
     getDateFromDatetime,
     getTimeslotFromDatetime,
+    getWeekRange,
     toTimestamptz,
 } from './bookings.js';
+import { getMealPeriodFromDatetime } from '../config/timeslots.js';
 
 describe('toTimestamptz / fromTimestamptz', () => {
     test('round-trips a Date as ISO UTC', () => {
@@ -86,5 +89,77 @@ describe('formatTimeslot', () => {
 
     test('returns empty string for missing datetime', () => {
         expect(formatTimeslot('')).toBe('');
+    });
+});
+
+describe('getMealPeriodFromDatetime', () => {
+    test('classifies before 5pm as lunch and 5pm onwards as dinner', () => {
+        expect(getMealPeriodFromDatetime(buildDatetime('2026-06-28', '1645'))).toBe('lunch');
+        expect(getMealPeriodFromDatetime(buildDatetime('2026-06-28', '1700'))).toBe('dinner');
+        expect(getMealPeriodFromDatetime(buildDatetime('2026-06-28', '1900'))).toBe('dinner');
+    });
+});
+
+describe('getWeekRange', () => {
+    test('returns Monday through next Monday for the containing week', () => {
+        const { start, end } = getWeekRange(new Date(2026, 6, 8));
+        expect(start.getDay()).toBe(1);
+        expect(end.getDay()).toBe(1);
+        expect(start.getDate()).toBe(6);
+        expect(end.getDate()).toBe(13);
+    });
+
+    test('shifts by weekOffset', () => {
+        const current = getWeekRange(new Date(2026, 6, 8), 0);
+        const next = getWeekRange(new Date(2026, 6, 8), 1);
+        expect(next.start.getTime() - current.start.getTime()).toBe(7 * 24 * 60 * 60 * 1000);
+    });
+});
+
+describe('aggregateBookingsByWeek', () => {
+    test('aggregates pax by day, meal period, weekend, and week totals', () => {
+        const { start } = getWeekRange(new Date(2026, 6, 8));
+        const bookings = [
+            {
+                datetime: buildDatetime('2026-07-06', '1200'),
+                total_pax: 4,
+                adult_pax: 3,
+                child_pax: 1,
+                hc_pax: 0,
+            },
+            {
+                datetime: buildDatetime('2026-07-06', '1800'),
+                total_pax: 2,
+                adult_pax: 2,
+                child_pax: 0,
+                hc_pax: 1,
+            },
+            {
+                datetime: buildDatetime('2026-07-11', '1300'),
+                total_pax: 6,
+                adult_pax: 4,
+                child_pax: 2,
+                hc_pax: 0,
+            },
+            {
+                datetime: buildDatetime('2026-07-12', '1900'),
+                total_pax: 8,
+                adult_pax: 6,
+                child_pax: 2,
+                hc_pax: 2,
+            },
+        ];
+
+        const { days, lunchTotal, dinnerTotal, weekendTotal, weekTotal } = aggregateBookingsByWeek(bookings, start);
+
+        expect(days[0].lunch.total_pax).toBe(4);
+        expect(days[0].dinner.total_pax).toBe(2);
+        expect(days[0].dayTotal.total_pax).toBe(6);
+        expect(days[5].dayTotal.total_pax).toBe(6);
+        expect(days[6].dayTotal.total_pax).toBe(8);
+        expect(lunchTotal.total_pax).toBe(10);
+        expect(dinnerTotal.total_pax).toBe(10);
+        expect(weekendTotal.total_pax).toBe(14);
+        expect(weekTotal.total_pax).toBe(20);
     });
 });

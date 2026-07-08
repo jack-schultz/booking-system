@@ -1,4 +1,5 @@
 import { BOOKING_STATUS } from '../config/constants.js';
+import { getMealPeriodFromDatetime } from '../config/timeslots.js';
 
 /** Serialize a Date to PowerSync timestamptz text (ISO 8601 UTC, …Z). */
 export function toTimestamptz(date) {
@@ -176,4 +177,84 @@ export async function updateBookingStatus(db, id, restaurantId, status) {
         `UPDATE bookings SET status = ? WHERE id = ? AND restaurant_id = ?`,
         [status, id, restaurantId]
     );
+}
+
+export function createEmptyPaxTotals() {
+    return {
+        total_pax: 0,
+        adult_pax: 0,
+        child_pax: 0,
+        hc_pax: 0,
+    };
+}
+
+export function addPaxTotals(target, source) {
+    target.total_pax += source.total_pax;
+    target.adult_pax += source.adult_pax;
+    target.child_pax += source.child_pax;
+    target.hc_pax += source.hc_pax;
+}
+
+/** Monday 00:00 through next Monday 00:00 for the week containing anchorDate. */
+export function getWeekRange(anchorDate, weekOffset = 0) {
+    const date = new Date(anchorDate);
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + weekOffset * 7);
+
+    const daysFromMonday = (date.getDay() + 6) % 7;
+    const start = new Date(date);
+    start.setDate(date.getDate() - daysFromMonday);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+
+    return { start, end };
+}
+
+export function aggregateBookingsByWeek(bookings, weekStart) {
+    const normalizedWeekStart = new Date(weekStart);
+    normalizedWeekStart.setHours(0, 0, 0, 0);
+
+    const days = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(normalizedWeekStart);
+        date.setDate(normalizedWeekStart.getDate() + index);
+        return {
+            date,
+            lunch: createEmptyPaxTotals(),
+            dinner: createEmptyPaxTotals(),
+            dayTotal: createEmptyPaxTotals(),
+        };
+    });
+
+    for (const booking of bookings) {
+        const bookingDate = fromTimestamptz(booking.datetime);
+        if (!bookingDate) continue;
+
+        const normalizedBookingDate = new Date(bookingDate);
+        normalizedBookingDate.setHours(0, 0, 0, 0);
+        const dayIndex = Math.round(
+            (normalizedBookingDate - normalizedWeekStart) / (24 * 60 * 60 * 1000)
+        );
+        if (dayIndex < 0 || dayIndex > 6) continue;
+
+        const meal = getMealPeriodFromDatetime(booking.datetime);
+        addPaxTotals(days[dayIndex][meal], booking);
+        addPaxTotals(days[dayIndex].dayTotal, booking);
+    }
+
+    const weekendTotal = createEmptyPaxTotals();
+    addPaxTotals(weekendTotal, days[5].dayTotal);
+    addPaxTotals(weekendTotal, days[6].dayTotal);
+
+    const lunchTotal = createEmptyPaxTotals();
+    const dinnerTotal = createEmptyPaxTotals();
+    const weekTotal = createEmptyPaxTotals();
+    for (const day of days) {
+        addPaxTotals(lunchTotal, day.lunch);
+        addPaxTotals(dinnerTotal, day.dinner);
+        addPaxTotals(weekTotal, day.dayTotal);
+    }
+
+    return { days, lunchTotal, dinnerTotal, weekendTotal, weekTotal };
 }

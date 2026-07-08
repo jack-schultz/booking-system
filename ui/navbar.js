@@ -24,6 +24,7 @@ export function mountSiteNavbar(
             <div class="site-navbar-links-primary">
             <a href="${basePath}index.html">Home</a>
                 <a href="${basePath}booking/manager.html">Booking Manager</a>
+                <a href="${basePath}booking/metrics.html">Weekly Metrics</a>
             </div>
             <div class="site-navbar-links-user">
                 <span id="offline-indicator" class="offline-indicator" hidden>Offline</span>

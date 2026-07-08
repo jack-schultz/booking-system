@@ -41,6 +41,7 @@ export default defineConfig({
                 login: resolve(__dirname, 'login.html'),
                 signup: resolve(__dirname, 'signup.html'),
                 manager: resolve(__dirname, 'booking/manager.html'),
+                metrics: resolve(__dirname, 'booking/metrics.html'),
                 create: resolve(__dirname, 'booking/create.html'),
                 walkin: resolve(__dirname, 'booking/walkin.html'),
                 syncStatus: resolve(__dirname, 'sync-status.html'),

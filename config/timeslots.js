@@ -1,3 +1,14 @@
+import { getTimeslotFromDatetime } from '../db/bookings.js';
+
+/** Timeslot at or after which a booking counts as dinner (5:00 PM). */
+export const DINNER_CUTOFF_TIMESLOT = '1700';
+
+/** Classify a booking datetime as lunch (before 5pm) or dinner (5pm onwards). */
+export function getMealPeriodFromDatetime(datetime) {
+    const timeslot = getTimeslotFromDatetime(datetime);
+    return timeslot >= DINNER_CUTOFF_TIMESLOT ? 'dinner' : 'lunch';
+}
+
 /** 24-hour compact timeslot value, e.g. "0900" = 9:00 AM */
 function formatTimeslotValue(hours, minutes) {
     return `${String(hours).padStart(2, '0')}${String(minutes).padStart(2, '0')}`;
