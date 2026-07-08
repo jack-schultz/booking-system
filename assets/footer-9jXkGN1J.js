@@ -15,6 +15,7 @@ import{i as e}from"./syncStatus-CXUPg7sQ.js";(function(){let e=document.createEl
             <div class="site-navbar-links-primary">
             <a href="${t}index.html">Home</a>
                 <a href="${t}booking/manager.html">Booking Manager</a>
+                <a href="${t}booking/metrics.html">Weekly Metrics</a>
             </div>
             <div class="site-navbar-links-user">
                 <span id="offline-indicator" class="offline-indicator" hidden>Offline</span>

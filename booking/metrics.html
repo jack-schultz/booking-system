@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-  <script type="module" crossorigin src="/booking-system/assets/login-DWPNe4LT.js"></script>
+    <title>Weekly Metrics — Booking System</title>
+  <script type="module" crossorigin src="/booking-system/assets/metrics-yPndMvJF.js"></script>
   <link rel="modulepreload" crossorigin href="/booking-system/assets/constants-C9d0n0X4.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/accounts-Br4GLleJ.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/syncStatus-CXUPg7sQ.js">
@@ -15,25 +15,25 @@
   <link rel="modulepreload" crossorigin href="/booking-system/assets/openDB-DWYGHzrA.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/sync-CbtMo6I0.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CovA7E6O.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/bookings-DZ1TBEMF.js">
   <link rel="stylesheet" crossorigin href="/booking-system/assets/footer-CBIqXTcf.css">
 <link rel="manifest" href="/booking-system/manifest.webmanifest"></head>
 <body>
 <div id="site-navbar-mount"></div>
 
-<h1>Login</h1>
-
-<form id="loginForm" class="auth-form">
-    <label for="email">Email</label>
-    <input type="email" id="email" placeholder="Email" required>
-
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Password" required>
-
-    <button type="submit">Login</button>
-</form>
-
-<p id="error" class="auth-message auth-message--error"></p>
-<p>Need an account? <a href="signup.html">Sign up here</a></p>
+<div class="page-content">
+    <div class="metrics-page-layout">
+        <div class="page-primary-panel metrics-page-panel">
+            <div class="metrics-header-group">
+                <button type="button" class="metrics-week-left" id="metrics-week-left" aria-label="Previous week">‹</button>
+                <h1 id="metrics-header">Loading...</h1>
+                <button type="button" class="metrics-week-right" id="metrics-week-right" aria-label="Next week">›</button>
+            </div>
+            <p id="metrics-notice" class="booking-notice" hidden></p>
+            <div id="metrics-table" class="metrics-table-mount">loading...</div>
+        </div>
+    </div>
+</div>
 
 <div id="site-footer-mount"></div>
 
