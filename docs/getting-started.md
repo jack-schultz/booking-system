@@ -40,10 +40,10 @@ Restart `npm run dev` after editing `.env`.
 Complete these steps once per environment (Development or Production instance):
 
 1. **Supabase schema** — Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) in the SQL editor.
-2. **PowerSync role** — Create `powersync_role`, grants, and `powersync` publication (see [PowerSync + Supabase sync](./powersync-supabase.md)).
+2. **PowerSync role** — Create `powersync_role`, grants, and `powersync` publication (see [PowerSync + Supabase sync](./powersync-supabase.html)).
 3. **Connect PowerSync to Postgres** — PowerSync Dashboard → Database Connections → Supabase **direct** connection URI, username `powersync_role`, database `postgres`, SSL `verify-full`.
 4. **Enable Supabase Auth** — PowerSync Dashboard → Client Auth → **Use Supabase Auth**.
-5. **Deploy Sync Streams** — Paste the `restaurant_bookings` stream YAML (edition 3) from [PowerSync + Supabase sync](./powersync-supabase.md).
+5. **Deploy Sync Streams** — Paste the `restaurant_bookings` stream YAML (edition 3) from [PowerSync + Supabase sync](./powersync-supabase.html).
 6. **Set `VITE_POWERSYNC_URL`** — PowerSync Dashboard → **Connect** → copy instance URL into `.env`.
 7. **Assign a test user** — Create a restaurant and set `profiles.restaurant_id` for your user.
 
@@ -62,7 +62,7 @@ insert into public.restaurants (name) values ('Demo Restaurant');
 update public.profiles set restaurant_id = 1 where id = '<your-user-uuid>';
 ```
 
-See [PowerSync + Supabase sync](./powersync-supabase.md) for full schema, RLS, Sync Streams, and troubleshooting.
+See [PowerSync + Supabase sync](./powersync-supabase.html) for full schema, RLS, Sync Streams, and troubleshooting.
 
 ## Development server
 
@@ -79,22 +79,31 @@ Vite opens http://localhost:5173/login.html by default.
 | Command | Purpose |
 |---------|---------|
 | `npm run build` | Production build to `dist/` |
+| `npm run build:pages` | Production build with GitHub Pages base path (`/booking-system/`) |
 | `npm run preview` | Serve the production build locally |
-| `npm test` | Run Jest tests |
+| `npm test` | Run Jest tests (`db/bookings.test.js`) |
 
 ## Project layout
 
 ```
 booking-system/
 ├── auth/              # Account switcher, profiles, offline account cache
-├── booking/           # Booking manager, create, walk-in pages
+├── booking/           # Booking manager, metrics, create, walk-in pages
+│   ├── manager.js     # Day view with timeslot groups and pax totals
+│   └── metrics.js     # Weekly lunch/dinner pax metrics
+├── config/            # Shared constants, timeslots, connectivity helpers
+│   ├── constants.js   # Booking status values, storage keys
+│   └── timeslots.js   # Bookable timeslot options, lunch/dinner cutoff
 ├── db/                # PowerSync schema, connector, sync, booking helpers
 │   ├── supabaseConnector.js
 │   ├── sync.js        # connectSync / disconnectSync (database sync)
 │   ├── syncStatus.js  # sync status dashboard data + navbar health
-│   └── bookings.js
+│   └── bookings.js    # CRUD, datetime helpers, pax aggregation
+├── pwa/               # Service worker registration (vite-plugin-pwa)
+│   └── register.js
 ├── ui/                # Shared navbar, sync indicator, footer, booking sidebar
 │   ├── navbar.js
+│   ├── paxSummary.js  # Pax breakdown markup for manager and metrics
 │   └── syncIndicator.js
 ├── supabase/
 │   └── migrations/    # Postgres schema for Supabase
@@ -103,7 +112,7 @@ booking-system/
 ├── sync-status.html   # Sync status dashboard (auth required)
 ├── signup.html        # Account creation
 ├── supabaseClient.js  # Shared Supabase client (ES module)
-└── vite.config.js
+└── vite.config.js     # Vite + PWA plugin + doc build entries
 ```
 
 ## Typical dev flow
@@ -112,15 +121,16 @@ booking-system/
 2. Start `npm run dev`.
 3. Log in at `/login.html` — Supabase auth and local DB init, then redirect to the manager.
 4. Use booking pages under `/booking/` — manager lists bookings from local SQLite immediately and syncs in the background; create saves to local SQLite and uploads when online.
-5. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
+5. Open **Weekly Metrics** from the navbar for lunch/dinner pax totals by day across the current week.
+6. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
 
 ## Troubleshooting
 
-See the full [troubleshooting table](./powersync-supabase.md#troubleshooting) in the PowerSync + Supabase doc. Common issues:
+See the full [troubleshooting table](./powersync-supabase.html#troubleshooting) in the PowerSync + Supabase doc. Common issues:
 
 ### `db.init()` hangs forever
 
-You are likely serving files without Vite (e.g. `python -m http.server` or opening HTML directly). Use `npm run dev`. See [Database](./database.md).
+You are likely serving files without Vite (e.g. `python -m http.server` or opening HTML directly). Use `npm run dev`. See [Database](./database.html).
 
 ### Module import errors in the browser
 
@@ -136,7 +146,7 @@ Your `profiles.restaurant_id` is null. An admin must set it in Supabase, then re
 
 ### Sync not connecting
 
-Check `VITE_POWERSYNC_URL` (PowerSync Dashboard → Connect), Supabase session, assigned restaurant, and PowerSync dashboard (Supabase Auth enabled, Sync Streams deployed). See [PowerSync + Supabase sync](./powersync-supabase.md).
+Check `VITE_POWERSYNC_URL` (PowerSync Dashboard → Connect), Supabase session, assigned restaurant, and PowerSync dashboard (Supabase Auth enabled, Sync Streams deployed). See [PowerSync + Supabase sync](./powersync-supabase.html).
 
 ### Manager stuck on "loading..."
 
@@ -145,7 +155,7 @@ Common causes:
 1. **Not using Vite** — `db.init()` hangs without a worker/WASM bundler. Use `npm run dev`.
 2. **Blocking on sync** — awaiting `connectSync()` or `initDatabaseAndSync()` before rendering. The manager calls `initDatabase()`, subscribes to the watched query, then runs `void ensureSyncConnected(db)`.
 3. **HMR during dev** — a hot reload can leave a half-initialized DB; hard-refresh the page.
-4. **Wrong watch API** — use `registerListener({ onData })`, not `onResult` on `query().watch()`. See [Database — Watched queries](./database.md#watched-queries-live-ui).
+4. **Wrong watch API** — use `registerListener({ onData })`, not `onResult` on `query().watch()`. See [Database — Watched queries](./database.html#watched-queries-live-ui).
 
 ### Login does not redirect to manager
 

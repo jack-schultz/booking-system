@@ -12,6 +12,26 @@ export const DOC_PAGES = [
     { slug: 'deployment', title: 'Deployment', md: 'deployment.md' },
 ];
 
+/** heading slug for anchor links (e.g. "Watched queries (live UI)" → "watched-queries-live-ui"). */
+function slugifyHeading(text) {
+    return text
+        .toLowerCase()
+        .replace(/<[^>]*>/g, '')
+        .replace(/[^\w\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+}
+
+marked.use({
+    renderer: {
+        heading({ tokens, depth }) {
+            const text = this.parser.parseInline(tokens);
+            const id = slugifyHeading(text);
+            return `<h${depth} id="${id}">${text}</h${depth}>\n`;
+        },
+    },
+});
+
 function currentSlug() {
     const page = window.location.pathname.split('/').pop() || 'index.html';
     return page.replace(/\.html$/, '') || 'index';
@@ -35,10 +55,22 @@ function rewriteMdLinks(container) {
         const href = link.getAttribute('href');
         if (!href || href.startsWith('http') || href.startsWith('#')) return;
 
-        if (href.endsWith('.md')) {
-            link.setAttribute('href', href.replace(/\.md$/, '.html'));
+        if (href.includes('.md')) {
+            link.setAttribute('href', href.replace(/\.md(?=[#?]|$)/, '.html'));
         }
     });
+}
+
+/** Scroll to a hash target after async markdown render (browser default scroll runs too early). */
+function scrollToHashTarget() {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const id = decodeURIComponent(hash.slice(1));
+    const target = document.getElementById(id);
+    if (target) {
+        target.scrollIntoView();
+    }
 }
 
 export async function initDocPage(mdPath, title) {
@@ -63,6 +95,7 @@ export async function initDocPage(mdPath, title) {
         const markdown = await response.text();
         content.innerHTML = marked.parse(markdown);
         rewriteMdLinks(content);
+        scrollToHashTarget();
     } catch (error) {
         content.innerHTML = `<p>Failed to load <code>${mdPath}</code>: ${error.message}</p>`;
     }

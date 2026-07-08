@@ -171,7 +171,7 @@ The client needs your PowerSync **instance endpoint** (not the dashboard URL, no
 VITE_POWERSYNC_URL=https://xxxxxxxx.powersync.journeyapps.com
 ```
 
-Restart the Vite dev server after changing `.env`. For GitHub Pages, add the same value as repository secret `VITE_POWERSYNC_URL` (see [Deployment](./deployment.md)).
+Restart the Vite dev server after changing `.env`. For GitHub Pages, add the same value as repository secret `VITE_POWERSYNC_URL` (see [Deployment](./deployment.html)).
 
 No separate PowerSync API key goes in the frontend — authentication uses the user's Supabase JWT at runtime.
 
@@ -199,7 +199,7 @@ Sync is skipped when offline, `VITE_POWERSYNC_URL` is unset, or the user has no 
 
 ### Live updates across devices
 
-[`booking/manager.js`](../booking/manager.js) uses `db.query(...).watch()` with `registerListener({ onData })` so the booking list re-renders when local data changes — including changes synced from other devices. See [Database](./database.md#watched-queries-live-ui).
+[`booking/manager.js`](../booking/manager.js) and [`booking/metrics.js`](../booking/metrics.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
 
 ## Environment variables
 
@@ -234,7 +234,7 @@ const db = await initDatabase();
 | `ECONNREFUSED` on IPv6 address when testing DB connection in PowerSync | Supabase direct connections use IPv6; network restrictions or IP ban | Allowlist PowerSync Cloud IPs (IPv4 + IPv6) in Supabase Network Restrictions; wait out failed-login IP bans |
 | `password authentication failed` for `powersync_role` | Wrong password or special chars not URL-encoded | Reset password with `ALTER ROLE`; URL-encode password in connection URI |
 | PowerSync Test Connection works but client won't sync | Missing `VITE_POWERSYNC_URL`, no restaurant assigned, or offline | Set env var; assign `profiles.restaurant_id`; check browser online |
-| Manager stuck on "loading..." | Blocking on `connectSync` / `db.init()` race during HMR, or wrong watch API | Manager uses `initDatabase()` then `void ensureSyncConnected()`; use `registerListener({ onData })` on `query().watch()` — hard-refresh after HMR; see [Database](./database.md) |
+| Manager stuck on "loading..." | Blocking on `connectSync` / `db.init()` race during HMR, or wrong watch API | Manager uses `initDatabase()` then `void ensureSyncConnected()`; use `registerListener({ onData })` on `query().watch()` — hard-refresh after HMR; see [Database](./database.html) |
 | "Account not assigned to a restaurant" | `profiles.restaurant_id` is NULL | Admin sets restaurant in Supabase; user refreshes while online |
 | Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant; open [sync status dashboard](../sync-status.html) for queue and errors |
 | `All replication slots are in use` (Supabase) | Max 4 logical replication slots | Drop inactive slots — see [PowerSync Supabase troubleshooting](https://docs.powersync.com/configuration/source-db/connection#troubleshooting) |

@@ -106,5 +106,5 @@ On `TOKEN_REFRESHED`, the app reconnects sync so PowerSync receives the updated 
 
 ## Related docs
 
-- [PowerSync + Supabase sync](./powersync-supabase.md) — RLS, Sync Streams, admin onboarding, troubleshooting
-- [Architecture](./architecture.md) — auth module layout
+- [PowerSync + Supabase sync](./powersync-supabase.html) — RLS, Sync Streams, admin onboarding, troubleshooting
+- [Architecture](./architecture.html) — auth module layout

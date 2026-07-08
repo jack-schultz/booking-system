@@ -73,7 +73,7 @@ Use an existing page such as `docs/getting-started.html` as a template. For a pa
 
 ### 1. Add the markdown source
 
-Create `docs/api-reference.md` with your content. Link to other docs using `.md` paths (e.g. `[Deployment](./deployment.md)`); `docs.js` rewrites those to `.html` in the browser.
+Create `docs/api-reference.md` with your content. Link to other docs using `.html` paths with heading anchors (e.g. `[Deployment](./deployment.html)` or `[Troubleshooting](./powersync-supabase.html#troubleshooting)`). Anchors are generated from heading text in `docs/docs.js` (GitHub-style slugs).
 
 ### 2. Add the HTML shell
 
@@ -128,7 +128,7 @@ The workflow builds `main` and `dev` independently. Production docs come from **
 For HTML pages that use PowerSync or other bundled modules (e.g. a new file under `booking/`):
 
 1. Create the `.html` page (and any JS it imports).
-2. Add it to `build.rollupOptions.input` in `vite.config.js` (same pattern as `manager`, `create`, etc.).
+2. Add it to `build.rollupOptions.input` in `vite.config.js` (same pattern as `manager`, `metrics`, `create`, etc.).
 3. Run `VITE_BASE_PATH=/booking-system/ npm run build` and confirm the file exists under `dist/`.
 4. Merge to `main` for production.
 
