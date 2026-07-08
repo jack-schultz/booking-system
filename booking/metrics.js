@@ -12,6 +12,7 @@ import {
 } from '../auth/accountSwitcher.js';
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
+import { formatMetricsPaxCell } from '../ui/paxSummary.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
@@ -65,20 +66,6 @@ function formatWeekLabel(start, end) {
     return `${startLabel} - ${endLabel}`;
 }
 
-function formatPaxCell(totals) {
-    const { total_pax, adult_pax, child_pax, hc_pax } = totals;
-    return `
-        <div class="metrics-pax-cell">
-            <span class="booking-summary-pax-total">${total_pax}</span>
-            <span class="booking-summary-pax-breakdown">
-                <span>${adult_pax}A</span>
-                <span>${child_pax}C</span>
-                <span>${hc_pax}HC</span>
-            </span>
-        </div>
-    `;
-}
-
 function isSameCalendarDay(left, right) {
     return (
         left.getFullYear() === right.getFullYear()
@@ -105,9 +92,9 @@ function renderMetrics(bookings, weekStart, weekEnd) {
         return `
             <tr class="${rowClass}">
                 <th scope="row">${dayLabel}</th>
-                <td>${formatPaxCell(day.lunch)}</td>
-                <td>${formatPaxCell(day.dinner)}</td>
-                <td>${formatPaxCell(day.dayTotal)}</td>
+                <td>${formatMetricsPaxCell(day.lunch)}</td>
+                <td>${formatMetricsPaxCell(day.dinner)}</td>
+                <td>${formatMetricsPaxCell(day.dayTotal)}</td>
             </tr>
         `;
     }).join('');
@@ -128,9 +115,9 @@ function renderMetrics(bookings, weekStart, weekEnd) {
             <tfoot>
                 <tr class="metrics-row--summary">
                     <th scope="row">Week total</th>
-                    <td>${formatPaxCell(lunchTotal)}</td>
-                    <td>${formatPaxCell(dinnerTotal)}</td>
-                    <td>${formatPaxCell(weekTotal)}</td>
+                    <td>${formatMetricsPaxCell(lunchTotal)}</td>
+                    <td>${formatMetricsPaxCell(dinnerTotal)}</td>
+                    <td>${formatMetricsPaxCell(weekTotal)}</td>
                 </tr>
             </tfoot>
         </table>
@@ -144,11 +131,11 @@ function renderMetrics(bookings, weekStart, weekEnd) {
             <tbody>
                 <tr class="metrics-row--summary">
                     <th scope="row">Weekend total</th>
-                    <td>${formatPaxCell(weekendTotal)}</td>
+                    <td>${formatMetricsPaxCell(weekendTotal)}</td>
                 </tr>
                 <tr class="metrics-row--summary">
                     <th scope="row">Week total</th>
-                    <td>${formatPaxCell(weekTotal)}</td>
+                    <td>${formatMetricsPaxCell(weekTotal)}</td>
                 </tr>
             </tbody>
         </table>

@@ -1,6 +1,9 @@
 import '../pwa/register.js';
 import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import {
+    aggregateBookingsByDay,
+    createEmptyPaxTotals,
+    addPaxTotals,
     deleteBooking,
     formatTimeslot,
     getTimeslotFromDatetime,
@@ -18,6 +21,7 @@ import {
 import { mountSiteNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar } from '../ui/bookingSidebar.js';
+import { formatPaxBreakdown, formatPaxSummary } from '../ui/paxSummary.js';
 
 mountSiteNavbar(document.getElementById('site-navbar-mount'), {
     basePath: '../',
@@ -72,17 +76,8 @@ function getTimeslotPaxTotals(bookings) {
 
     for (const booking of bookings) {
         const timeslot = getTimeslotFromDatetime(booking.datetime);
-        const current = totals.get(timeslot) ?? {
-            total_pax: 0,
-            adult_pax: 0,
-            child_pax: 0,
-            hc_pax: 0,
-        };
-
-        current.total_pax += booking.total_pax;
-        current.adult_pax += booking.adult_pax;
-        current.child_pax += booking.child_pax;
-        current.hc_pax += booking.hc_pax;
+        const current = totals.get(timeslot) ?? createEmptyPaxTotals();
+        addPaxTotals(current, booking);
         totals.set(timeslot, current);
     }
 
@@ -101,20 +96,11 @@ function getOrCreateTimeslotGroup(timeslot, datetime, paxTotals) {
         const heading = document.createElement('div');
         heading.className = 'booking-timeslot-heading';
 
-        const { total_pax, adult_pax, child_pax, hc_pax } = paxTotals;
-
         heading.innerHTML = `
         <div class="booking-summary-primary">
             <span class="booking-timeslot-time">${formatTimeslot(datetime)}</span>
-            <span class="booking-summary-pax">
-                <span class="booking-summary-pax-total">${total_pax}</span>
-                <span class="booking-summary-pax-breakdown">
-                    <span>${adult_pax}A</span>
-                    <span>${child_pax}C</span>
-                    <span>${hc_pax}HC</span>
-                </span>
-            </span>
-        </div>`
+            <span class="booking-summary-pax">${formatPaxBreakdown(paxTotals)}</span>
+        </div>`;
 
         const items = document.createElement('div');
         items.className = 'booking-timeslot-items';
@@ -176,12 +162,7 @@ function renderBookings(bookings, date) {
                 </div>
                 <span class="booking-summary-time">${formatTimeslot(booking.datetime)}</span>
                 <span class="booking-summary-pax">
-                    <span class="booking-summary-pax-total">${booking.total_pax}</span>
-                    <span class="booking-summary-pax-breakdown">
-                        <span>${booking.adult_pax}A</span>
-                        <span>${booking.child_pax}C</span>
-                        <span>${booking.hc_pax}HC</span>
-                    </span>
+                    ${formatPaxBreakdown(booking)}
                     ${status}
                 </span>
             </div>
@@ -234,6 +215,27 @@ function renderBookings(bookings, date) {
 
         timeslotItems.appendChild(bookingDiv);
     });
+
+    const { dayTotal, lunch, dinner } = aggregateBookingsByDay(bookings);
+    const section = document.createElement('section');
+    section.className = 'booking-timeslot-group booking-day-total';
+    section.innerHTML = `
+        <div class="booking-timeslot-heading">
+            <div class="booking-summary-primary">
+                <span class="booking-timeslot-time">Lunch total</span>
+                ${formatPaxSummary(lunch)}
+            </div>
+            <div class="booking-summary-primary">
+                <span class="booking-timeslot-time">Dinner total</span>
+                ${formatPaxSummary(dinner)}
+            </div>
+            <div class="booking-summary-primary">
+                <span class="booking-timeslot-time">Total</span>
+                ${formatPaxSummary(dayTotal)}
+            </div>
+        </div>
+    `;
+    bookingList.appendChild(section);
 }
 
 function showUnassignedNotice() {

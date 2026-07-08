@@ -499,6 +499,13 @@ Booking manager list
     color: #111;
 }
 
+.booking-day-total .booking-timeslot-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-bottom: none;
+}
+
 .booking-timeslot-items {
     display: flex;
     flex-direction: column;

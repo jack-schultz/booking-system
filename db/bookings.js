@@ -195,6 +195,30 @@ export function addPaxTotals(target, source) {
     target.hc_pax += source.hc_pax;
 }
 
+export function createDayPaxTotals() {
+    return {
+        lunch: createEmptyPaxTotals(),
+        dinner: createEmptyPaxTotals(),
+        dayTotal: createEmptyPaxTotals(),
+    };
+}
+
+export function addBookingToDayTotals(dayTotals, booking) {
+    const meal = getMealPeriodFromDatetime(booking.datetime);
+    addPaxTotals(dayTotals[meal], booking);
+    addPaxTotals(dayTotals.dayTotal, booking);
+}
+
+export function aggregateBookingsByDay(bookings) {
+    const totals = createDayPaxTotals();
+
+    for (const booking of bookings) {
+        addBookingToDayTotals(totals, booking);
+    }
+
+    return totals;
+}
+
 /** Monday 00:00 through next Monday 00:00 for the week containing anchorDate. */
 export function getWeekRange(anchorDate, weekOffset = 0) {
     const date = new Date(anchorDate);
@@ -221,9 +245,7 @@ export function aggregateBookingsByWeek(bookings, weekStart) {
         date.setDate(normalizedWeekStart.getDate() + index);
         return {
             date,
-            lunch: createEmptyPaxTotals(),
-            dinner: createEmptyPaxTotals(),
-            dayTotal: createEmptyPaxTotals(),
+            ...createDayPaxTotals(),
         };
     });
 
@@ -238,9 +260,7 @@ export function aggregateBookingsByWeek(bookings, weekStart) {
         );
         if (dayIndex < 0 || dayIndex > 6) continue;
 
-        const meal = getMealPeriodFromDatetime(booking.datetime);
-        addPaxTotals(days[dayIndex][meal], booking);
-        addPaxTotals(days[dayIndex].dayTotal, booking);
+        addBookingToDayTotals(days[dayIndex], booking);
     }
 
     const weekendTotal = createEmptyPaxTotals();

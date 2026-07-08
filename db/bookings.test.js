@@ -1,4 +1,5 @@
 import {
+    aggregateBookingsByDay,
     aggregateBookingsByWeek,
     buildDatetime,
     formatTimeslot,
@@ -113,6 +114,33 @@ describe('getWeekRange', () => {
         const current = getWeekRange(new Date(2026, 6, 8), 0);
         const next = getWeekRange(new Date(2026, 6, 8), 1);
         expect(next.start.getTime() - current.start.getTime()).toBe(7 * 24 * 60 * 60 * 1000);
+    });
+});
+
+describe('aggregateBookingsByDay', () => {
+    test('aggregates pax by meal period and day total', () => {
+        const bookings = [
+            {
+                datetime: buildDatetime('2026-07-06', '1200'),
+                total_pax: 4,
+                adult_pax: 3,
+                child_pax: 1,
+                hc_pax: 0,
+            },
+            {
+                datetime: buildDatetime('2026-07-06', '1800'),
+                total_pax: 2,
+                adult_pax: 2,
+                child_pax: 0,
+                hc_pax: 1,
+            },
+        ];
+
+        const { lunch, dinner, dayTotal } = aggregateBookingsByDay(bookings);
+
+        expect(lunch.total_pax).toBe(4);
+        expect(dinner.total_pax).toBe(2);
+        expect(dayTotal.total_pax).toBe(6);
     });
 });
 
