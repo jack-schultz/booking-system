@@ -1,0 +1,1 @@
+import"./footer-CeiLeDeu.js";import{t as e}from"./docs-CbWQiyA5.js";e(`./database.md`,`Database`);
