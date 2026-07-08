@@ -5,9 +5,6 @@ import { AppSchema } from './schema.js';
 const GLOBAL_DB_KEY = '__booking_system_powersync_db__';
 const GLOBAL_DB_OPEN_KEY = '__booking_system_powersync_db_open__';
 
-/** In dev, run SQLite on the main thread — avoids SharedWorker + exclusive IndexedDB deadlocks from Vite HMR / multiple tabs. */
-const DEV_DB_FLAGS = import.meta.env.DEV ? { useWebWorker: false } : undefined;
-
 /**
  * Opens the local PowerSync database (browser SQLite).
  * Call connectSync() after login to stream data from Supabase via PowerSync Cloud.
@@ -32,7 +29,6 @@ export async function openDB() {
                     database: {
                         dbFilename: DB_FILENAME,
                     },
-                    flags: DEV_DB_FLAGS,
                 });
             }
         })();
