@@ -23,13 +23,11 @@ import { supabase } from "../supabaseClient.js";
 
 ## Login flow (`login.html`)
 
-1. On page load, `initDatabase()` starts initializing the local PowerSync database in parallel.
-2. User submits email/password.
-3. `supabase.auth.signInWithPassword()` runs.
-4. On success:
-   - `registerLoggedInSession()` caches the account and syncs profile from Supabase.
-   - The page awaits the DB init promise (local SQLite only).
-5. Redirect to `booking/manager.html` — **sync is not started on the login page**. The manager connects PowerSync in the background after the booking list subscribes.
+1. User submits email/password.
+2. `supabase.auth.signInWithPassword()` runs.
+3. On success:
+   - `registerLoggedInSession()` caches the account and syncs profile from Supabase (forced refresh).
+4. Redirect to `booking/manager.html` — **DB init and sync start on the booking shell**, not on the login page. PowerSync connects in the background after the shell loads.
 
 ## Signup (`signup.html`)
 
@@ -48,6 +46,8 @@ await supabase
 ```
 
 Profile data is merged into the offline account cache in localStorage ([`auth/accounts.js`](../auth/accounts.js)) so `restaurant_id` is available offline after first sync.
+
+While online, profile fetches are cached for **5 minutes** (`PROFILE_SYNC_TTL_MS` in [`config/constants.js`](../config/constants.js)) to avoid a Supabase round-trip on every page load. Account switch, sign-in, token refresh, and coming back online always force a fresh fetch.
 
 ### Admin workflow
 
@@ -69,7 +69,7 @@ If `restaurant_id` is null, `hasAssignedRestaurant()` returns false. Booking pag
 
 ## Protecting routes
 
-Booking pages use `initAccountSwitcher({ requireAuth: true })` which redirects to login when no active account exists.
+The booking shell calls `initAccountSwitcher({ requireAuth: true })` in [`booking/bootstrap.js`](../booking/bootstrap.js), which redirects to login when no active account exists. [`booking/metrics.js`](../booking/metrics.js) and other protected pages use the same helper directly.
 
 ## Logout
 
@@ -107,4 +107,4 @@ On `TOKEN_REFRESHED`, the app reconnects sync so PowerSync receives the updated 
 ## Related docs
 
 - [PowerSync + Supabase sync](./powersync-supabase.html) — RLS, Sync Streams, admin onboarding, troubleshooting
-- [Architecture](./architecture.html) — auth module layout
+- [Architecture](./architecture.html) — booking sidebar shell, pages, and data flow

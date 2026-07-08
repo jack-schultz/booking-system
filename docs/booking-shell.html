@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking shell — Booking System</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<div id="site-navbar-mount"></div>
+
+<div class="docs-layout">
+    <nav class="docs-sidebar" id="docs-sidebar"></nav>
+    <article class="docs-content" id="doc-content"><p class="docs-loading">Loading…</p></article>
+</div>
+
+<div id="site-footer-mount"></div>
+
+<script type="module">
+    import { initDocPage } from './docs.js';
+    initDocPage('./booking-shell.md', 'Booking shell');
+</script>
+</body>
+</html>

@@ -37,7 +37,7 @@ function setupOnlineSync() {
             const active = getActiveAccount();
             if (active) {
                 // Admin may have assigned a restaurant while we were offline — refresh before syncing.
-                await syncAccountProfileFromSupabase(supabase, active.id);
+                await syncAccountProfileFromSupabase(supabase, active.id, { force: true });
                 dropdownRender?.();
             }
             await reconnectPowerSync();
@@ -94,7 +94,7 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
                     const ok = await setActiveAccount(accountId, supabase);
                     if (!ok) return;
                     if (isOnline()) {
-                        await syncAccountProfileFromSupabase(supabase, accountId);
+                        await syncAccountProfileFromSupabase(supabase, accountId, { force: true });
                     }
                     // Different user means different restaurant_id scope. Reconnect so PowerSync streams the right bookings.
                     await reconnectPowerSync();
@@ -147,7 +147,7 @@ export async function initAccountSwitcher(options = {}) {
         if (session && (event === "TOKEN_REFRESHED" || event === "SIGNED_IN")) {
             addOrUpdateAccount(session);
             afterAuthLock(async () => {
-                await syncAccountProfileFromSupabase(supabase, session.user.id);
+                await syncAccountProfileFromSupabase(supabase, session.user.id, { force: true });
                 dropdownRender?.();
                 if (event === "TOKEN_REFRESHED") {
                     await reconnectPowerSync();
@@ -193,5 +193,5 @@ export async function registerLoggedInSession(supabaseClient, session = null) {
     if (!activeSession) return;
 
     addOrUpdateAccount(activeSession);
-    await syncAccountProfileFromSupabase(supabaseClient, activeSession.user.id);
+    await syncAccountProfileFromSupabase(supabaseClient, activeSession.user.id, { force: true });
 }

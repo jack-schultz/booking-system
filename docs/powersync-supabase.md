@@ -181,16 +181,17 @@ No separate PowerSync API key goes in the frontend — authentication uses the u
 |------|------|
 | [`db/supabaseConnector.js`](../db/supabaseConnector.js) | `fetchCredentials()` (Supabase JWT) and `uploadData()` (CRUD queue → Supabase) |
 | [`db/sync.js`](../db/sync.js) | `connectSync`, `disconnectSync`, `reconnectSync` |
-| [`db/index.js`](../db/index.js) | `initDatabaseAndSync()` — open local DB + connect when online and assigned |
+| [`db/index.js`](../db/index.js) | `initDatabase()`, `initDatabaseAndSync()` — open local DB; optional await connect |
 
 ### Connect lifecycle
 
 | Event | Action |
 |-------|--------|
-| Login success | Redirect to manager (no `connectSync` on login page) |
-| Manager page load | `initDatabase()` → subscribe to bookings → `void ensureSyncConnected(db)` |
-| Other booking pages | `initDatabase()` / `initDatabaseAndSync()` + `ensureSyncConnected()` as needed |
-| Account switch | `reconnectSync(db)` with new JWT |
+| Login success | Redirect to booking shell (no `initDatabase` or `connectSync` on login page) |
+| Booking shell load | [`booking/bootstrap.js`](../booking/bootstrap.js): `initDatabase()` → mount initial view → `void ensureSyncConnected(db)` |
+| Sidebar navigation (manager / create / walk-in) | View swap only — DB and sync stay connected |
+| Metrics page load | Same pattern as shell bootstrap: `initDatabase()` → watch query → `void ensureSyncConnected(db)` |
+| Account switch | `reconnectSync(db)` with new JWT; shell views re-subscribe via `registerOnAccountSwitch` |
 | `window` `online` | Profile refresh + `reconnectSync(db)` |
 | `TOKEN_REFRESHED` | `reconnectSync(db)` |
 | Last account logout | `disconnectSync(db)` |
@@ -199,7 +200,7 @@ Sync is skipped when offline, `VITE_POWERSYNC_URL` is unset, or the user has no 
 
 ### Live updates across devices
 
-[`booking/manager.js`](../booking/manager.js) and [`booking/metrics.js`](../booking/metrics.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
+[`booking/views/managerView.js`](../booking/views/managerView.js) and [`booking/metrics.js`](../booking/metrics.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
 
 ## Environment variables
 
