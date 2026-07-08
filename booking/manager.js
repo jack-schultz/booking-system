@@ -67,7 +67,29 @@ document.getElementById('booking-list-date-right').addEventListener('click', () 
     subscribeBookings();
 });
 
-function getOrCreateTimeslotGroup(timeslot, datetime) {
+function getTimeslotPaxTotals(bookings) {
+    const totals = new Map();
+
+    for (const booking of bookings) {
+        const timeslot = getTimeslotFromDatetime(booking.datetime);
+        const current = totals.get(timeslot) ?? {
+            total_pax: 0,
+            adult_pax: 0,
+            child_pax: 0,
+            hc_pax: 0,
+        };
+
+        current.total_pax += booking.total_pax;
+        current.adult_pax += booking.adult_pax;
+        current.child_pax += booking.child_pax;
+        current.hc_pax += booking.hc_pax;
+        totals.set(timeslot, current);
+    }
+
+    return totals;
+}
+
+function getOrCreateTimeslotGroup(timeslot, datetime, paxTotals) {
     const groupId = `timeslot-group-${timeslot}`;
     let group = document.getElementById(groupId);
 
@@ -78,7 +100,21 @@ function getOrCreateTimeslotGroup(timeslot, datetime) {
 
         const heading = document.createElement('div');
         heading.className = 'booking-timeslot-heading';
-        heading.textContent = formatTimeslot(datetime);
+
+        const { total_pax, adult_pax, child_pax, hc_pax } = paxTotals;
+
+        heading.innerHTML = `
+        <div class="booking-summary-primary">
+            <span class="booking-timeslot-time">${formatTimeslot(datetime)}</span>
+            <span class="booking-summary-pax">
+                <span class="booking-summary-pax-total">${total_pax}</span>
+                <span class="booking-summary-pax-breakdown">
+                    <span>${adult_pax}A</span>
+                    <span>${child_pax}C</span>
+                    <span>${hc_pax}HC</span>
+                </span>
+            </span>
+        </div>`
 
         const items = document.createElement('div');
         items.className = 'booking-timeslot-items';
@@ -111,9 +147,15 @@ function renderBookings(bookings, date) {
 
     bookingList.innerHTML = '';
 
+    const timeslotPaxTotals = getTimeslotPaxTotals(bookings);
+
     bookings.forEach((booking) => {
         const timeslot = getTimeslotFromDatetime(booking.datetime);
-        const timeslotItems = getOrCreateTimeslotGroup(timeslot, booking.datetime);
+        const timeslotItems = getOrCreateTimeslotGroup(
+            timeslot,
+            booking.datetime,
+            timeslotPaxTotals.get(timeslot),
+        );
 
         let preference = '';
         if (booking.preference !== 'none') {
