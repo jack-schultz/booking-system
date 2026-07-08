@@ -26,7 +26,9 @@ void ensureSyncConnected(db);
 
 Booking pages open the local DB with `initDatabase()`, render from SQLite, then call `ensureSyncConnected()` without awaiting it so a slow or hanging `db.connect()` does not block the UI.
 
-`initDatabaseAndSync()` is still available when you need to open the DB and wait for sync in one step (e.g. some booking forms).
+The booking sidebar shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) uses this pattern. Individual view modules receive the shared `db` instance from bootstrap — they do not call `initDatabase()` again on sidebar navigation.
+
+`initDatabaseAndSync()` is still available when you need to open the DB and wait for sync in one step (e.g. legacy call sites). The booking shell and metrics page prefer non-blocking sync.
 
 For local-only dev without PowerSync Cloud, use `initDatabase()` only — no `connectSync`.
 
@@ -52,7 +54,7 @@ db/
 |----------|------|
 | `initDatabase()` | Open local SQLite + run migrations |
 | `initDatabaseAndSync()` | Above + await `connectSync()` if configured and online |
-| `ensureSyncConnected(db)` | Start sync when ready; booking manager calls this without `await` |
+| `ensureSyncConnected(db)` | Start sync when ready; booking shell calls this without `await` |
 | `connectSync(db)` | Start PowerSync stream (requires session + restaurant) |
 | `reconnectSync(db)` | Disconnect then connect (account switch, online, token refresh) |
 | `disconnectSync(db)` | Stop sync (last account logout) |
@@ -64,16 +66,20 @@ When connected, PowerSync:
 
 When offline, reads and writes use local SQLite only. The upload queue drains automatically on reconnect.
 
-### Page load order (manager)
+### Page load order (booking shell)
 
-The manager page follows an offline-first load sequence:
+The booking sidebar shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) follows an offline-first load sequence once per session:
 
-1. `initDatabase()` — open local SQLite (do not block on sync).
-2. `initAccountSwitcher()` — auth and profile cache.
-3. `subscribeBookings()` — `db.query(...).watch()` renders from local data immediately.
-4. `void ensureSyncConnected(db)` — PowerSync connects in the background; `onData` fires again when remote rows arrive.
+1. Mount navbar, footer, sidebar (chrome appears immediately).
+2. `initAccountSwitcher()` — auth and profile cache (Supabase profile fetch may be skipped if fresh; see [Authentication](./authentication.html)).
+3. `initDatabase()` — open local SQLite (do not block on sync).
+4. `void ensureSyncConnected(db)` — PowerSync connects in the background.
+5. Router mounts the initial view (`managerView`, `createView`, or `walkinView`).
+6. Manager view: `subscribeBookings()` — `db.query(...).watch()` renders from local data immediately; `onData` fires again when remote rows arrive.
 
-Login only runs steps 1 and profile registration, then redirects — it does not call `connectSync()`.
+Sidebar navigation between manager, create, and walk-in **does not repeat steps 1–4** — only the active view unmounts and the next view mounts.
+
+Login only caches the session and profile, then redirects — it does not call `initDatabase()` or `connectSync()`.
 
 ### DB singleton and init
 
@@ -117,7 +123,8 @@ import {
     getWeekRange,
 } from './db/bookings.js';
 
-const db = await initDatabaseAndSync();
+const db = await initDatabase();
+void ensureSyncConnected(db);
 const today = new Date();
 const bookings = await getBookingsForDate(db, today, restaurantId);
 ```
@@ -137,7 +144,7 @@ All list/get/update/delete helpers include `restaurant_id` in their WHERE clause
 
 ### Status helpers
 
-Bookings cycle through `pending` → `set` → `seated` → `pending` when the status button is clicked on the manager page:
+Bookings cycle through `pending` → `set` → `seated` → `pending` when the status button is clicked in the manager view:
 
 | Function | Purpose |
 |----------|---------|
@@ -160,13 +167,13 @@ Pax totals sum `total_pax`, `adult_pax`, `child_pax`, and `hc_pax` across bookin
 | `getWeekRange(anchorDate, weekOffset)` | Monday 00:00 through next Monday 00:00 |
 | `aggregateBookingsByWeek(bookings, weekStart)` | Per-day lunch/dinner totals plus week and weekend summaries |
 
-The manager page shows per-timeslot pax totals in each timeslot heading and lunch/dinner/day totals at the bottom. The metrics page uses `aggregateBookingsByWeek` for a tabular week view.
+The manager view shows per-timeslot pax totals in each timeslot heading and lunch/dinner/day totals at the bottom. The metrics page uses `aggregateBookingsByWeek` for a tabular week view.
 
 Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
 ## Watched queries (live UI)
 
-The manager page uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first.
+The manager view ([`booking/views/managerView.js`](../booking/views/managerView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the manager view calls `activeWatch.close()` so listeners do not leak.
 
 The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
 
@@ -270,5 +277,5 @@ If the manager stays on "Loading..." after a code change during `npm run dev`, h
 ## Related docs
 
 - [Architecture](./architecture.html) — how the DB fits with auth and booking pages
-- [Authentication](./authentication.html) — login initializes the local DB; sync connects on booking pages
+- [Authentication](./authentication.html) — login redirects to the booking shell; sync connects there
 - [PowerSync + Supabase sync](./powersync-supabase.html) — cloud setup and security
