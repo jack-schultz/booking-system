@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/virtual_pwa-register-DzVepOr_.js","assets/preload-helper-DVdjxgLz.js"])))=>i.map(i=>d[i]);
+import{t as e}from"./preload-helper-DVdjxgLz.js";{let{registerSW:t}=await e(async()=>{let{registerSW:e}=await import(`./virtual_pwa-register-DzVepOr_.js`);return{registerSW:e}},__vite__mapDeps([0,1]));t({immediate:!0})}

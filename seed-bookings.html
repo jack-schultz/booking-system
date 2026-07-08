@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Test Bookings</title>
+  <script type="module" crossorigin src="/booking-system/assets/seedBookings-DxuDQcuH.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-TQHRvbNd.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/preload-helper-DVdjxgLz.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/register-DSngRNPz.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/accounts-Ba5wxbSs.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/supabaseClient-BEL8yLtP.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/accountSwitcher-CP187HA-.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/syncStatus-Cux9b3oN.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/sync-DFvf8m_p.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/db-CljNRUOA.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/bookings-Deon4TkP.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-CqUgB6kn.css">
+<link rel="manifest" href="/booking-system/manifest.webmanifest"></head>
+<body>
+<div class="page-content">
+    <div class="page-primary-panel" style="max-width: 640px; margin: 2rem auto;">
+        <h1>Seed Test Bookings</h1>
+        <p class="booking-notice">
+            Dev-only tool. Inserts random bookings into your local PowerSync database for the
+            logged-in restaurant. Data uploads to Supabase when sync is connected.
+        </p>
+
+        <div class="booking-form-row">
+            <div class="booking-form-column">
+                <label for="booking-count">Booking count</label>
+                <input type="number" id="booking-count" min="1" max="1000" value="200">
+            </div>
+            <div class="booking-form-column">
+                <label for="day-span">Day span (centered on today)</label>
+                <input type="number" id="day-span" min="1" max="90" value="20">
+            </div>
+        </div>
+
+        <p id="seed-status">Loading…</p>
+        <button type="button" id="run-seed">Seed database</button>
+
+        <div id="seed-log" style="margin-top: 1.5rem; max-height: 240px; overflow-y: auto;"></div>
+
+        <p style="margin-top: 1.5rem;">
+            <a href="./booking/manager.html">Back to manager</a>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

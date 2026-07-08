@@ -26,8 +26,11 @@ Open http://localhost:5173/login.html
 ## Current state (summary)
 
 - **Auth:** Supabase email/password login; multi-account switcher with offline profile cache.
-- **Bookings UI:** Manager (live watch query) and create pages read/write via PowerSync (`db/bookings.js`).
+- **Bookings UI:** Manager (live watch query), create, and walk-in pages read/write via PowerSync (`db/bookings.js`).
+- **Metrics:** Weekly pax overview at [`booking/metrics.html`](../booking/metrics.html) — lunch/dinner/day totals per weekday, week and weekend summaries.
+- **Manager totals:** Per-timeslot pax breakdowns plus lunch, dinner, and day totals on the booking manager.
 - **Data:** Local-first SQLite in the browser; offline reads/writes work without network.
 - **Sync:** PowerSync Cloud + Supabase connector; Sync Streams (edition 3) scope bookings per restaurant (RLS + streams).
 - **Sync status UI:** Navbar icon + [`sync-status.html`](../sync-status.html) dashboard for connection health, upload queue, and issues.
+- **PWA:** Installable app shell via `vite-plugin-pwa` (service worker, manifest); pages import `pwa/register.js`.
 - **Multi-restaurant:** Each account has one `restaurant_id` (admin-assigned); users only see and edit their restaurant's bookings.

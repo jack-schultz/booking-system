@@ -1,1 +1,0 @@
-import"./footer-9jXkGN1J.js";import{t as e}from"./docs-D3eVybCy.js";e(`./authentication.md`,`Authentication`);
