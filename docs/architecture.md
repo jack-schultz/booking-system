@@ -26,9 +26,9 @@ A client-side restaurant booking app with no backend server of its own. The brow
 │              │ uploadData() → Supabase REST (bookings)      │  │
 │              └──────────────────────────────────────────────┘  │
 └──────────────────────────────┬─────────────────────────────────┘
-                               │
-              ┌────────────────▼────────────────┐
-              │ PowerSync Cloud ◀──▶ Supabase   │
+                               ▼
+              ┌─────────────────────────────────┐
+              │ PowerSync Cloud <-> Supabase    │
               │ (Sync Streams + replication)    │
               └─────────────────────────────────┘
 ```
@@ -51,19 +51,23 @@ A client-side restaurant booking app with no backend server of its own. The brow
 | Path | Purpose | Auth required |
 |------|---------|---------------|
 | `index.html` | Home / landing | No |
-| `login.html` | Sign in; initializes DB and sync | No |
+| `login.html` | Sign in; redirects to booking shell (no DB init here) | No |
 | `signup.html` | Create account | No |
-| `booking/manager.html` | List bookings by day (live watch query); per-timeslot and day pax totals | Yes |
+| `booking/manager.html` | Booking shell — manager view (list by day; live watch query) | Yes |
 | `booking/metrics.html` | Weekly lunch/dinner pax metrics (live watch query) | Yes |
-| `booking/create.html` | New or edit booking (`?edit=<id>`) | Yes |
-| `booking/walkin.html` | Walk-in placeholder | Yes |
+| `booking/create.html` | Same shell — create/edit view (`?edit=<id>`) | Yes |
+| `booking/walkin.html` | Same shell — walk-in placeholder | Yes |
 | `sync-status.html` | Database sync status dashboard (upload queue, download activity, issues) | Yes |
 
 All pages share a top navbar ([`ui/navbar.js`](../ui/navbar.js)) with Home, Booking Manager, Weekly Metrics, an **Offline** badge when the browser is offline, a **sync status icon** (links to the dashboard), and account controls when logged in.
 
 App pages import [`pwa/register.js`](../pwa/register.js) to register the service worker from `vite-plugin-pwa`.
 
-Booking pages also use a sidebar ([`ui/bookingSidebar.js`](../ui/bookingSidebar.js)) with links to manager, new booking, and walk-in flows.
+### Booking sidebar shell
+
+Manager, create, and walk-in share one JavaScript session ([`booking/app.js`](../booking/app.js)). Sidebar navigation swaps views without reloading the page; PowerSync and the local database stay open for the session.
+
+See **[Booking shell](./booking-shell.html)** for routing, view lifecycle, extension guide, trade-offs, and testing checklist.
 
 ## Multi-restaurant model
 
@@ -96,18 +100,18 @@ All booking CRUD goes through `db/bookings.js` and interacts with the **local** 
 
 | Operation | Function | Used by |
 |-----------|----------|---------|
-| List by date | `getBookingsForDate(db, date, restaurantId)` | `booking/manager.html` (via watch query) |
-| List by week | watched query over week range | `booking/metrics.html` |
-| Load one | `getBookingById(db, id, restaurantId)` | `booking/create.html` (edit mode) |
-| Create | `insertBooking(db, booking)` | `booking/create.html` |
-| Update | `updateBooking(db, id, booking, restaurantId)` | `booking/create.html` |
-| Update status | `updateBookingStatus(db, id, restaurantId, status)` | `booking/manager.html` (status button) |
-| Delete | `deleteBooking(db, id, restaurantId)` | `booking/manager.html` |
-| Pax aggregation | `aggregateBookingsByDay`, `aggregateBookingsByWeek`, `getWeekRange` | `booking/manager.html`, `booking/metrics.html` |
+| List by date | watched query over day range | [`booking/views/managerView.js`](../booking/views/managerView.js) |
+| List by week | watched query over week range | [`booking/metrics.js`](../booking/metrics.js) |
+| Load one | `getBookingById(db, id, restaurantId)` | [`booking/views/createView.js`](../booking/views/createView.js) (edit mode) |
+| Create | `insertBooking(db, booking)` | [`booking/views/createView.js`](../booking/views/createView.js) |
+| Update | `updateBooking(db, id, booking, restaurantId)` | [`booking/views/createView.js`](../booking/views/createView.js) |
+| Update status | `updateBookingStatus(db, id, restaurantId, status)` | [`booking/views/managerView.js`](../booking/views/managerView.js) (status button) |
+| Delete | `deleteBooking(db, id, restaurantId)` | [`booking/views/managerView.js`](../booking/views/managerView.js) |
+| Pax aggregation | `aggregateBookingsByDay`, `aggregateBookingsByWeek`, `getWeekRange` | manager view, [`booking/metrics.js`](../booking/metrics.js) |
 
 Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote changes download via PowerSync Sync Streams.
 
-`login.html` initializes the local DB on load and redirects after auth. Booking pages call `initDatabase()`, subscribe to local data, then start `ensureSyncConnected()` in the background when the user is authenticated, online, and assigned to a restaurant.
+[`login.html`](../login.html) only authenticates and redirects. The booking shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) calls `initDatabase()`, mounts views, and runs `ensureSyncConnected()` in the background when the user is authenticated, online, and assigned to a restaurant. [`booking/metrics.js`](../booking/metrics.js) follows the same DB pattern as a separate multi-page entry.
 
 ## Database module (`db/`)
 
@@ -128,7 +132,7 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 
 | File | Role |
 |------|------|
-| `constants.js` | `BOOKING_STATUS` values, localStorage keys, DB filename |
+| `constants.js` | `BOOKING_STATUS` values, localStorage keys, DB filename, `PROFILE_SYNC_TTL_MS` |
 | `timeslots.js` | Bookable timeslot options (9:00 AM–11:00 PM, 15 min steps), lunch/dinner cutoff (`DINNER_CUTOFF_TIMESLOT` = 5:00 PM) |
 | `connectivity.js` | `isOnline()` wrapper around `navigator.onLine` |
 
@@ -137,7 +141,7 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 | File | Role |
 |------|------|
 | `accounts.js` | Multi-account localStorage cache, `hasAssignedRestaurant()` |
-| `profiles.js` | Fetch profile from Supabase; cache `restaurant_id` offline |
+| `profiles.js` | Fetch profile from Supabase; cache `restaurant_id` offline; 5-minute sync TTL |
 | `accountSwitcher.js` | Navbar switcher; reconnects sync on switch / online / token refresh |
 
 ## UI module (`ui/`)
@@ -148,7 +152,7 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 | `syncIndicator.js` | Navbar sync icon — color reflects health (red offline, yellow attention, green up to date) |
 | `paxSummary.js` | Pax breakdown markup (`formatPaxBreakdown`, `formatPaxSummary`, `formatMetricsPaxCell`) |
 | `footer.js` | Shared footer |
-| `bookingSidebar.js` | Booking sub-nav on manager / create / walk-in pages |
+| `bookingSidebar.js` | Booking sub-nav; client-side routes, active state, conditional save button |
 
 ## PWA (`pwa/`)
 
@@ -162,10 +166,10 @@ The sync status icon links to [`sync-status.html`](../sync-status.html). Status 
 
 ## Module types
 
-All app pages use **ES modules** (`type="module"`) with separate `.js` entry files (`login.js`, `booking/manager.js`, etc.) — resolved by Vite. Shared modules live under `auth/`, `db/`, `ui/`, `config/`, and `pwa/`.
+All app pages use **ES modules** (`type="module"`) with separate `.js` entry files (`login.js`, `booking/app.js`, etc.) — resolved by Vite. Shared modules live under `auth/`, `db/`, `ui/`, `config/`, and `pwa/`.
 
 ## Related docs
 
 - [PowerSync + Supabase sync](./powersync-supabase.html) — schema, Sync Streams, connector, offline behavior, troubleshooting
-- [Authentication](./authentication.html) — login, profiles, restaurant assignment
-- [Database](./database.html) — local SQLite, sync lifecycle, watched queries
+- [Authentication](./authentication.html) — login, profiles, restaurant assignment, profile sync TTL
+- [Database](./database.html) — local SQLite, sync lifecycle, watched queries, booking shell load order

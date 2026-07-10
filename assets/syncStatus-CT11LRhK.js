@@ -1,4 +1,4 @@
-import"./style-TQHRvbNd.js";import"./register-DSngRNPz.js";import{r as e}from"./accountSwitcher-CP187HA-.js";import{i as t,n,t as r}from"./syncStatus-Cux9b3oN.js";import{n as i,t as a}from"./footer-BJkEtQuA.js";import{i as o}from"./sync-DFvf8m_p.js";import{n as s,t as c}from"./db-CljNRUOA.js";i(document.getElementById(`site-navbar-mount`),{showAuthControls:!0,showSyncIndicator:!0}),a(document.getElementById(`site-footer-mount`));var l=document.getElementById(`sync-status-summary`),u=document.getElementById(`sync-status-uploads-list`),d=document.getElementById(`sync-status-downloads-list`),f=document.getElementById(`sync-status-issues-list`),p=document.getElementById(`sync-status-reconnect-btn`);await e({requireAuth:!0,loginRedirect:`login.html`});var m=await s();c(m);function h(e){p.disabled=!1,navigator.onLine?e&&m.connected?p.textContent=`Reconnect`:p.textContent=`Failed to connect`:p.textContent=`Offline`}p.addEventListener(`click`,async()=>{p.disabled=!0,p.textContent=`Reconnecting...`;let e=null;try{e=await o(m)}finally{h(e)}}),window.addEventListener(`online`,()=>{p.textContent===`Offline`&&(p.textContent=`Reconnect`)});function g(e){return e?new Date(e).toLocaleString():`—`}function _(e){return e==null?``:e<1024?`${e} B`:`${(e/1024).toFixed(1)} kB`}function v(e){return e===`offline`?`Offline`:e===`warning`?`Attention needed`:`Up to date`}function y(e){let t=e.online?e.connected?`Connected`:e.connecting?`Connecting…`:`Disconnected`:`Offline`;l.innerHTML=`
+import"./style-QZJYd5xy.js";import"./register-DSngRNPz.js";import{i as e,n as t,t as n}from"./syncStatus-D03-SsvP.js";import{r}from"./accountSwitcher-DRrgrgOn.js";import{n as i,t as a}from"./footer-CFRRatDF.js";import{i as o}from"./sync-D2KK_Bt9.js";import{n as s,t as c}from"./db-CvfBa-0N.js";i(document.getElementById(`site-navbar-mount`),{showAuthControls:!0,showSyncIndicator:!0}),a(document.getElementById(`site-footer-mount`));var l=document.getElementById(`sync-status-summary`),u=document.getElementById(`sync-status-uploads-list`),d=document.getElementById(`sync-status-downloads-list`),f=document.getElementById(`sync-status-issues-list`),p=document.getElementById(`sync-status-reconnect-btn`);await r({requireAuth:!0,loginRedirect:`login.html`});var m=await s();c(m);function h(e){p.disabled=!1,navigator.onLine?e&&m.connected?p.textContent=`Reconnect`:p.textContent=`Failed to connect`:p.textContent=`Offline`}p.addEventListener(`click`,async()=>{p.disabled=!0,p.textContent=`Reconnecting...`;let e=null;try{e=await o(m)}finally{h(e)}}),window.addEventListener(`online`,()=>{p.textContent===`Offline`&&(p.textContent=`Reconnect`)});function g(e){return e?new Date(e).toLocaleString():`—`}function _(e){return e==null?``:e<1024?`${e} B`:`${(e/1024).toFixed(1)} kB`}function v(e){return e===`offline`?`Offline`:e===`warning`?`Attention needed`:`Up to date`}function y(e){let t=e.online?e.connected?`Connected`:e.connecting?`Connecting…`:`Disconnected`:`Offline`;l.innerHTML=`
         <div class="sync-status-metric sync-status-metric--${e.health}">
             <span class="sync-status-metric-label">Status</span>
             <span class="sync-status-metric-value">${v(e.health)}</span>
@@ -42,7 +42,7 @@ import"./style-TQHRvbNd.js";import"./register-DSngRNPz.js";import{r as e}from"./
             ${r?`<p class="sync-status-item-detail">Status: ${b(r)}</p>`:``}
             <p class="sync-status-item-meta">Table: ${b(e.table)}</p>
         </article>
-    `}function S(e){if(e.pendingUploads.length===0){u.innerHTML=`<p class="sync-status-empty">No pending uploads${e.uploadQueueSize==null?``:` (${_(e.uploadQueueSize)})`}</p>`;return}u.innerHTML=(e.uploadQueueSize==null?``:`<p class="sync-status-queue-size">Queue size: ${_(e.uploadQueueSize)}</p>`)+e.pendingUploads.map(x).join(``)}function C(e){let t=[],n=e.dataFlowStatus??{};if(n.downloading&&e.downloadProgress){let n=Math.round(e.downloadProgress.downloadedFraction*100);t.push(`
+    `}function S(e){if(e.pendingUploads.length===0){u.innerHTML=`<p class="sync-status-empty">No pending uploads${e.uploadQueueSize==null?``:` (${_(e.uploadQueueSize)})`}</p>`;return}u.innerHTML=(e.uploadQueueSize==null?``:`<p class="sync-status-queue-size">Queue size: ${_(e.uploadQueueSize)}</p>`)+e.pendingUploads.map(x).join(``)}function C(e){let t=[],r=e.dataFlowStatus??{};if(r.downloading&&e.downloadProgress){let n=Math.round(e.downloadProgress.downloadedFraction*100);t.push(`
             <div class="sync-status-download-progress">
                 <p>Downloading… ${e.downloadProgress.downloadedOperations} / ${e.downloadProgress.totalOperations} operations</p>
                 <div class="sync-status-progress-bar" role="progressbar" aria-valuenow="${n}" aria-valuemin="0" aria-valuemax="100">
@@ -59,46 +59,46 @@ import"./style-TQHRvbNd.js";import"./register-DSngRNPz.js";import{r as e}from"./
                         <p class="sync-status-item-detail">${b(r)}</p>
                         <p class="sync-status-item-meta">Idle</p>
                     </article>
-                `)}n.downloading||t.push(`
+                `)}r.downloading||t.push(`
             <article class="sync-status-item sync-status-item--summary">
                 <p class="sync-status-item-detail">${e.hasSynced?`Up to date`:`Waiting for first sync`}</p>
                 <p class="sync-status-item-meta">Last synced: ${g(e.lastSyncedAt)}</p>
                 ${e.bookingCount==null?``:`<p class="sync-status-item-meta">${e.bookingCount} booking(s) stored locally</p>`}
             </article>
-        `);let i=r();if(i.length>0){t.push(`<h3 class="sync-status-activity-heading">Recent download activity</h3>`);for(let e of i)t.push(`
+        `);let i=n();if(i.length>0){t.push(`<h3 class="sync-status-activity-heading">Recent download activity</h3>`);for(let e of i)t.push(`
                 <article class="sync-status-item">
                     <p class="sync-status-item-detail">${g(e.at)}</p>
                     <p class="sync-status-item-meta">${e.operations==null?`Download completed`:`${e.operations} operations received`}</p>
                 </article>
-            `)}n.uploading&&t.unshift(`<p class="sync-status-active-label">Uploading changes…</p>`),d.innerHTML=t.length?t.join(``):`<p class="sync-status-empty">No download activity</p>`}function w(e){let t=[],r=e.dataFlowStatus??{};r.downloadError&&t.push(`
+            `)}r.uploading&&t.unshift(`<p class="sync-status-active-label">Uploading changes…</p>`),d.innerHTML=t.length?t.join(``):`<p class="sync-status-empty">No download activity</p>`}function w(e){let n=[],r=e.dataFlowStatus??{};r.downloadError&&n.push(`
             <article class="sync-status-issue sync-status-issue--error">
                 <p class="sync-status-issue-type">Download error</p>
                 <p class="sync-status-issue-message">${b(r.downloadError.message??String(r.downloadError))}</p>
             </article>
-        `),r.uploadError&&t.push(`
+        `),r.uploadError&&n.push(`
             <article class="sync-status-issue sync-status-issue--error">
                 <p class="sync-status-issue-type">Upload error</p>
                 <p class="sync-status-issue-message">${b(r.uploadError.message??String(r.uploadError))}</p>
             </article>
-        `),e.syncConfigured&&!e.hasRestaurant&&t.push(`
+        `),e.syncConfigured&&!e.hasRestaurant&&n.push(`
             <article class="sync-status-issue sync-status-issue--warning">
                 <p class="sync-status-issue-type">Restaurant not assigned</p>
                 <p class="sync-status-issue-message">Your account has no restaurant_id. Sync cannot start until an admin assigns one.</p>
             </article>
-        `),e.syncConfigured||t.push(`
+        `),e.syncConfigured||n.push(`
             <article class="sync-status-issue sync-status-issue--warning">
                 <p class="sync-status-issue-type">Local-only mode</p>
                 <p class="sync-status-issue-message">VITE_POWERSYNC_URL is not configured. Data stays in the browser only.</p>
             </article>
-        `),e.uploadQueueCount>0&&e.online&&t.push(`
+        `),e.uploadQueueCount>0&&e.online&&n.push(`
             <article class="sync-status-issue sync-status-issue--warning">
                 <p class="sync-status-issue-type">Pending uploads</p>
                 <p class="sync-status-issue-message">${e.uploadQueueCount} change(s) waiting to upload.</p>
             </article>
-        `);let i=n();for(let e of i)t.push(`
+        `);let i=t();for(let e of i)n.push(`
             <article class="sync-status-issue sync-status-issue--${e.type.includes(`discarded`)?`error`:`warning`}">
                 <p class="sync-status-issue-type">${b(e.type.replace(/_/g,` `))}</p>
                 <p class="sync-status-issue-message">${b(e.message)}</p>
                 <p class="sync-status-issue-meta">${g(e.at)}</p>
             </article>
-        `);f.innerHTML=t.length?t.join(``):`<p class="sync-status-empty">No issues detected</p>`}function T(e){y(e),S(e),C(e),w(e)}t(T);
+        `);f.innerHTML=n.length?n.join(``):`<p class="sync-status-empty">No issues detected</p>`}function T(e){y(e),S(e),C(e),w(e)}e(T);

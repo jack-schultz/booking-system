@@ -88,9 +88,12 @@ Vite opens http://localhost:5173/login.html by default.
 ```
 booking-system/
 ├── auth/              # Account switcher, profiles, offline account cache
-├── booking/           # Booking manager, metrics, create, walk-in pages
-│   ├── manager.js     # Day view with timeslot groups and pax totals
-│   └── metrics.js     # Weekly lunch/dinner pax metrics
+├── booking/           # Booking sidebar shell + metrics
+│   ├── app.js         # SPA entry — bootstrap, router, shared DB session
+│   ├── bootstrap.js   # One-time chrome, DB, auth, sync
+│   ├── router.js      # Client-side routes (manager / create / walk-in)
+│   ├── views/         # managerView, createView, walkinView
+│   └── metrics.js     # Weekly lunch/dinner pax metrics (separate page)
 ├── config/            # Shared constants, timeslots, connectivity helpers
 │   ├── constants.js   # Booking status values, storage keys
 │   └── timeslots.js   # Bookable timeslot options, lunch/dinner cutoff
@@ -108,7 +111,7 @@ booking-system/
 ├── supabase/
 │   └── migrations/    # Postgres schema for Supabase
 ├── docs/              # Documentation (markdown + HTML shells)
-├── login.html         # Login (initializes local DB; sync connects on booking pages)
+├── login.html         # Login (redirects to booking shell; no DB init here)
 ├── sync-status.html   # Sync status dashboard (auth required)
 ├── signup.html        # Account creation
 ├── supabaseClient.js  # Shared Supabase client (ES module)
@@ -119,9 +122,9 @@ booking-system/
 
 1. Complete the [PowerSync + Supabase setup checklist](#powersync--supabase-setup-checklist) above.
 2. Start `npm run dev`.
-3. Log in at `/login.html` — Supabase auth and local DB init, then redirect to the manager.
-4. Use booking pages under `/booking/` — manager lists bookings from local SQLite immediately and syncs in the background; create saves to local SQLite and uploads when online.
-5. Open **Weekly Metrics** from the navbar for lunch/dinner pax totals by day across the current week.
+3. Log in at `/login.html` — Supabase auth, then redirect to the booking shell (`/booking/manager.html`).
+4. Use the **sidebar** to switch between Bookings, New Booking, and Walk-in without a full page reload. Data reads/writes go through local SQLite; sync runs in the background.
+5. Open **Weekly Metrics** from the top navbar for lunch/dinner pax totals (this is a separate page load).
 6. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
 
 ## Troubleshooting
@@ -153,10 +156,14 @@ Check `VITE_POWERSYNC_URL` (PowerSync Dashboard → Connect), Supabase session, 
 Common causes:
 
 1. **Not using Vite** — `db.init()` hangs without a worker/WASM bundler. Use `npm run dev`.
-2. **Blocking on sync** — awaiting `connectSync()` or `initDatabaseAndSync()` before rendering. The manager calls `initDatabase()`, subscribes to the watched query, then runs `void ensureSyncConnected(db)`.
+2. **Blocking on sync** — awaiting `connectSync()` or `initDatabaseAndSync()` before rendering. The booking shell calls `initDatabase()`, mounts the manager view's watched query, then runs `void ensureSyncConnected(db)`.
 3. **HMR during dev** — a hot reload can leave a half-initialized DB; hard-refresh the page.
 4. **Wrong watch API** — use `registerListener({ onData })`, not `onResult` on `query().watch()`. See [Database — Watched queries](./database.html#watched-queries-live-ui).
 
+### Sidebar navigation still slow
+
+If switching between Bookings and New Booking triggers a full document reload (visible flash, network request for the HTML file), the client router is not running — confirm you are on a booking shell URL served through Vite and that [`booking/app.js`](../booking/app.js) loaded without errors in the browser console.
+
 ### Login does not redirect to manager
 
-Login must not `await connectSync()` before redirect — a slow PowerSync connection blocks navigation. Sync starts on the manager page instead.
+Login must not `await connectSync()` or `initDatabase()` before redirect — a slow PowerSync connection blocks navigation. DB init and sync start on the booking shell after redirect.
