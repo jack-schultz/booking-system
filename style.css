@@ -573,8 +573,60 @@ Booking manager list
     font-weight: bold;
 }
 
+.booking-date-month-group + .booking-date-month-group {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.booking-date-month-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background-color: #b0b0b0;
+    color: #111;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.booking-date-month-toggle:hover {
+    background-color: #a4a4a4;
+}
+
+.booking-date-month-chevron {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.booking-date-month-group.is-expanded .booking-date-month-chevron {
+    transform: rotate(45deg);
+}
+
+.booking-month-separator-label {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    color: #333
+}
+
+.booking-date-month-days .booking-date-option {
+    padding-left: 24px;
+}
+
 .booking-day-header-heading {
     border-bottom: none;
+    padding: 12px 16px;
+    font-size: 24px;
+    color: #111;
+    border-radius: 8px;
 }
 
 .booking-header-title {
@@ -630,7 +682,7 @@ Booking manager list
 }
 
 .booking-timeslot-heading {
-    padding: 14px 16px;
+    padding: 8px 16px;
     font-size: 24px;
     font-weight: bold;
     font-variant-numeric: tabular-nums;
@@ -649,13 +701,13 @@ Booking manager list
 .booking-timeslot-items {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px;
+    gap: 6px;
+    padding: 8px;
 }
 
 .booking-list-item-card {
     background-color: #8f8f8f;
-    padding: 10px;
+    padding: 4px 16px;
     margin: 0;
     border-radius: 10px;
     cursor: pointer;

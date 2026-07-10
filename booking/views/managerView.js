@@ -21,7 +21,8 @@ import {
 import { formatMealPaxSummary, formatPaxBreakdown, formatPaxSummary } from '../../ui/paxSummary.js';
 import { STORAGE_KEYS } from '../../config/constants.js';
 
-const DATE_PICKER_RANGE = 14;
+const DATE_PICKER_MONTHS_PAST = 1;
+const DATE_PICKER_MONTHS_FUTURE = 12;
 
 /** @type {AbortController | null} */
 let abortController = null;
@@ -29,6 +30,8 @@ let abortController = null;
 let activeWatch = null;
 /** @type {(() => void) | null} */
 let unregisterAccountSwitch = null;
+/** @type {Set<string>} */
+let expandedDropdownMonths = new Set();
 let db = null;
 let onNavigate = null;
 let selectedDate = null;
@@ -53,12 +56,61 @@ function addDays(date, days) {
     return result;
 }
 
+function getMonthStart(date) {
+    const result = normalizeDate(date);
+    result.setDate(1);
+    return result;
+}
+
+function addMonths(date, months) {
+    const result = getMonthStart(date);
+    result.setMonth(result.getMonth() + months);
+    return result;
+}
+
+function getDaysInMonth(monthStart) {
+    const start = getMonthStart(monthStart);
+    const days = [];
+    const cursor = new Date(start);
+
+    while (cursor.getMonth() === start.getMonth()) {
+        days.push(new Date(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return days;
+}
+
+function getDropdownMonthStarts() {
+    const today = getTodayDate();
+    const months = [];
+
+    for (let offset = -DATE_PICKER_MONTHS_PAST; offset <= DATE_PICKER_MONTHS_FUTURE; offset += 1) {
+        months.push(addMonths(today, offset));
+    }
+
+    return months;
+}
+
+function getDropdownDateRange(monthStarts) {
+    const start = getMonthStart(monthStarts[0]);
+    const end = addMonths(getMonthStart(monthStarts[monthStarts.length - 1]), 1);
+    return { start, end };
+}
+
 function formatDateKey(date) {
     const normalized = normalizeDate(date);
     const year = normalized.getFullYear();
     const month = String(normalized.getMonth() + 1).padStart(2, '0');
     const day = String(normalized.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+function formatMonthKey(date) {
+    const normalized = normalizeDate(date);
+    const year = normalized.getFullYear();
+    const month = String(normalized.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
 }
 
 function parseDateKey(key) {
@@ -80,10 +132,15 @@ function saveSelectedDate(date) {
     localStorage.setItem(STORAGE_KEYS.MANAGER_SELECTED_DATE, formatDateKey(date));
 }
 
-function formatDropdownDateLabel(date) {
+function formatDropdownDayLabel(date) {
     return date.toLocaleDateString('en-AU', {
         weekday: 'short',
         day: 'numeric',
+    });
+}
+
+function formatDropdownMonthLabel(date) {
+    return date.toLocaleDateString('en-AU', {
         month: 'short',
         year: 'numeric',
     });
@@ -111,11 +168,13 @@ function updateTodayButton() {
     }
 }
 
-function buildPaxByDateMap(bookings, centerDate) {
+function buildPaxByDateMap(bookings, monthStarts) {
     const paxByDate = new Map();
 
-    for (let offset = -DATE_PICKER_RANGE; offset <= DATE_PICKER_RANGE; offset += 1) {
-        paxByDate.set(formatDateKey(addDays(centerDate, offset)), createDayPaxTotals());
+    for (const monthStart of monthStarts) {
+        for (const date of getDaysInMonth(monthStart)) {
+            paxByDate.set(formatDateKey(date), createDayPaxTotals());
+        }
     }
 
     for (const booking of bookings) {
@@ -129,15 +188,95 @@ function buildPaxByDateMap(bookings, centerDate) {
     return paxByDate;
 }
 
-async function fetchDropdownBookings(centerDate) {
-    const start = addDays(centerDate, -DATE_PICKER_RANGE);
-    const end = addDays(centerDate, DATE_PICKER_RANGE + 1);
+async function fetchDropdownBookings(monthStarts) {
+    const { start, end } = getDropdownDateRange(monthStarts);
     return db.getAll(
         `SELECT * FROM bookings
          WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?
          ORDER BY datetime`,
         [getActiveRestaurantId(), toTimestamptz(start), toTimestamptz(end)],
     );
+}
+
+function getDefaultExpandedMonths() {
+    return new Set([formatMonthKey(getTodayDate())]);
+}
+
+function createDateOption(date, { dayTotal, lunch, dinner }, { selectedKey, today }) {
+    const dateKey = formatDateKey(date);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'booking-date-option';
+    btn.role = 'option';
+    btn.innerHTML = `
+        <span class="booking-date-option-label">${formatDropdownDayLabel(date)}</span>
+        <span class="booking-date-option-pax">${formatMealPaxSummary({ dayTotal, lunch, dinner })}</span>
+    `;
+
+    if (dateKey === selectedKey) {
+        btn.classList.add('is-selected');
+        btn.setAttribute('aria-selected', 'true');
+    } else {
+        btn.setAttribute('aria-selected', 'false');
+    }
+
+    if (isSameCalendarDay(date, today)) {
+        btn.classList.add('is-today');
+    }
+
+    btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setSelectedDate(date);
+    });
+
+    return btn;
+}
+
+function createMonthGroup(monthStart, paxByDate, { selectedKey, today }) {
+    const monthKey = formatMonthKey(monthStart);
+    const isExpanded = expandedDropdownMonths.has(monthKey);
+    const group = document.createElement('div');
+    group.className = 'booking-date-month-group';
+    if (isExpanded) {
+        group.classList.add('is-expanded');
+    }
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'booking-date-month-toggle';
+    toggle.dataset.monthKey = monthKey;
+    toggle.setAttribute('aria-expanded', String(isExpanded));
+    toggle.innerHTML = `
+        <span class="booking-month-separator-label">${formatDropdownMonthLabel(monthStart)}</span>
+        <span class="booking-date-month-chevron" aria-hidden="true"></span>
+    `;
+
+    const days = document.createElement('div');
+    days.className = 'booking-date-month-days';
+    days.hidden = !isExpanded;
+
+    for (const date of getDaysInMonth(monthStart)) {
+        const dateKey = formatDateKey(date);
+        const { dayTotal, lunch, dinner } = paxByDate.get(dateKey) ?? createDayPaxTotals();
+        days.appendChild(createDateOption(date, { dayTotal, lunch, dinner }, { selectedKey, today }));
+    }
+
+    toggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const nextExpanded = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(nextExpanded));
+        days.hidden = !nextExpanded;
+        group.classList.toggle('is-expanded', nextExpanded);
+
+        if (nextExpanded) {
+            expandedDropdownMonths.add(monthKey);
+        } else {
+            expandedDropdownMonths.delete(monthKey);
+        }
+    });
+
+    group.append(toggle, days);
+    return group;
 }
 
 async function renderDateDropdown() {
@@ -147,45 +286,22 @@ async function renderDateDropdown() {
     const dateDropdownList = viewRoot.querySelector('#booking-date-dropdown-list');
     const today = getTodayDate();
     const selectedKey = formatDateKey(selectedDate);
+    const monthStarts = getDropdownMonthStarts();
     let paxByDate = new Map();
 
     if (hasAssignedRestaurant()) {
-        const bookings = await fetchDropdownBookings(selectedDate);
-        paxByDate = buildPaxByDateMap(bookings, selectedDate);
+        const bookings = await fetchDropdownBookings(monthStarts);
+        paxByDate = buildPaxByDateMap(bookings, monthStarts);
+    } else {
+        paxByDate = buildPaxByDateMap([], monthStarts);
     }
 
     dateDropdownList.innerHTML = '';
 
-    for (let offset = -DATE_PICKER_RANGE; offset <= DATE_PICKER_RANGE; offset += 1) {
-        const date = addDays(selectedDate, offset);
-        const dateKey = formatDateKey(date);
-        const { dayTotal, lunch, dinner } = paxByDate.get(dateKey) ?? createDayPaxTotals();
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'booking-date-option';
-        btn.role = 'option';
-        btn.innerHTML = `
-            <span class="booking-date-option-label">${formatDropdownDateLabel(date)}</span>
-            <span class="booking-date-option-pax">${formatMealPaxSummary({ dayTotal, lunch, dinner })}</span>
-        `;
-
-        if (dateKey === selectedKey) {
-            btn.classList.add('is-selected');
-            btn.setAttribute('aria-selected', 'true');
-        } else {
-            btn.setAttribute('aria-selected', 'false');
-        }
-
-        if (isSameCalendarDay(date, today)) {
-            btn.classList.add('is-today');
-        }
-
-        btn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            setSelectedDate(date);
-        });
-
-        dateDropdownList.appendChild(btn);
+    for (const monthStart of monthStarts) {
+        dateDropdownList.appendChild(
+            createMonthGroup(monthStart, paxByDate, { selectedKey, today }),
+        );
     }
 }
 
@@ -193,6 +309,7 @@ async function openDateDropdown() {
     const viewRoot = root();
     if (!viewRoot) return;
 
+    expandedDropdownMonths = getDefaultExpandedMonths();
     await renderDateDropdown();
     const dateDropdown = viewRoot.querySelector('#booking-date-dropdown');
     const datePicker = viewRoot.querySelector('#booking-date-picker');
