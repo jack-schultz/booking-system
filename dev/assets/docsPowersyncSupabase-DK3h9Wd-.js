@@ -1,1 +1,0 @@
-import"./style-D45hxnZ4.js";import{t as e}from"./docs-DP-LdDTf.js";e(`./powersync-supabase.md`,`PowerSync + Supabase`);
