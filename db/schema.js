@@ -27,12 +27,29 @@ export const AppSchema = new Schema({
             preference: column.text,
             status: column.text,
             notes: column.text,
+            table_id: column.integer,
         },
         {
             indexes: {
                 idx_bookings_profile_id: ['profile_id'],
                 idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
+                idx_bookings_table_id: ['table_id'],
+            },
+        }
+),
+
+    tables: new Table(
+        {
+            id: column.integer,
+            created_at: column.text,
+            restaurant_id: column.integer,
+            pax_max: column.integer,
+            name: column.text,
+        },
+        {
+            indexes: {
+                idx_tables_restaurant_id: ['restaurant_id'],
             },
         }
     ),
