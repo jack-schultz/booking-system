@@ -1,4 +1,4 @@
-import{i as e}from"./syncStatus-DTof4m29.js";var t=`
+import{i as e}from"./syncStatus-2needk3u.js";var t=`
 <span class="sync-indicator-graphic" aria-hidden="true">
     <span class="sync-indicator-core"></span>
     <svg class="sync-indicator-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
