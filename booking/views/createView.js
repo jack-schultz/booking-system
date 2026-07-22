@@ -7,6 +7,7 @@ import {
     toTimestamptz,
     updateBooking,
 } from '../../db/bookings.js';
+import { getTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
 import { BOOKING_STATUS } from '../../config/constants.js';
 import { populateTimeslotSelect } from '../../config/timeslots.js';
 import {
@@ -43,6 +44,11 @@ function resetForm() {
     populateTimeslotSelect(timeslot);
     bookingDate.value = getDateFromDatetime(Date());
 
+    const tableId = viewRoot.querySelector('#tableId');
+    if (tableId) {
+        tableId.value = '';
+    }
+
     form.querySelectorAll('input, select, textarea, button').forEach((el) => {
         el.disabled = false;
     });
@@ -72,6 +78,22 @@ function applyRestaurantGuard() {
     return false;
 }
 
+async function loadTables() {
+    const viewRoot = root();
+    if (!viewRoot || !db) return;
+
+    const tableSelect = viewRoot.querySelector('#tableId');
+    if (!tableSelect) return;
+
+    if (!hasAssignedRestaurant()) {
+        populateTableSelect(tableSelect, []);
+        return;
+    }
+
+    const tables = await getTablesForRestaurant(db, getActiveRestaurantId());
+    populateTableSelect(tableSelect, tables);
+}
+
 async function loadBookingForEdit(editId, state) {
     const viewRoot = root();
     if (!viewRoot) return;
@@ -88,6 +110,7 @@ async function loadBookingForEdit(editId, state) {
     const childPax = viewRoot.querySelector('#childPax');
     const hcPax = viewRoot.querySelector('#hcPax');
     const preference = viewRoot.querySelector('#preference');
+    const tableId = viewRoot.querySelector('#tableId');
     const additionalDetails = viewRoot.querySelector('#additionalDetails');
 
     pageTitle.textContent = 'Loading booking…';
@@ -113,6 +136,9 @@ async function loadBookingForEdit(editId, state) {
     childPax.value = booking.child_pax;
     hcPax.value = booking.hc_pax;
     preference.value = booking.preference ?? 'none';
+    if (tableId) {
+        tableId.value = booking.table_id != null ? String(booking.table_id) : '';
+    }
     additionalDetails.value = booking.notes ?? '';
 }
 
@@ -162,10 +188,14 @@ export async function mountCreateView(ctx) {
 
     unregisterAccountSwitch = ctx.registerOnAccountSwitch(() => {
         applyRestaurantGuard();
+        void loadTables();
     });
 
-    if (applyRestaurantGuard() && ctx.editId) {
-        void loadBookingForEdit(ctx.editId, state);
+    if (applyRestaurantGuard()) {
+        await loadTables();
+        if (ctx.editId) {
+            await loadBookingForEdit(ctx.editId, state);
+        }
     }
 
     form.addEventListener('submit', async (e) => {
@@ -186,7 +216,11 @@ export async function mountCreateView(ctx) {
         const childPaxEl = viewRoot.querySelector('#childPax');
         const hcPaxEl = viewRoot.querySelector('#hcPax');
         const preference = viewRoot.querySelector('#preference');
+        const tableIdEl = viewRoot.querySelector('#tableId');
         const additionalDetails = viewRoot.querySelector('#additionalDetails');
+
+        const tableIdValue = tableIdEl?.value ?? '';
+        const table_id = tableIdValue === '' ? null : parseInt(tableIdValue, 10);
 
         const record = {
             first_name: firstName.value,
@@ -201,6 +235,7 @@ export async function mountCreateView(ctx) {
             notes: additionalDetails.value,
             datetime: buildDatetime(bookingDate.value, timeslotEl.value),
             status: state.editingId ? state.editingStatus : BOOKING_STATUS.PENDING,
+            table_id,
         };
 
         if (state.editingId) {

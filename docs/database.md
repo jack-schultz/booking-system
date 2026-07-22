@@ -44,6 +44,8 @@ db/
 ├── syncStatus.js        # Sync status health, snapshots, issue log (UI dashboard)
 ├── bookings.js          # Booking CRUD, datetime helpers, pax aggregation, status helpers
 ├── bookings.test.js     # Jest tests for bookings.js and meal-period logic
+├── tables.js            # Restaurant table lookup and select helpers
+├── tables.test.js       # Jest tests for tables.js
 ├── migrate.js           # db.init() + migration runner
 └── migrations/          # Named migration hooks
 ```
@@ -171,6 +173,28 @@ The manager view shows per-timeslot pax totals in each timeslot heading and lunc
 
 Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
+## Table helpers (`tables.js`)
+
+Restaurant seating tables are stored in `public.tables` (admin-managed) and synced into local SQLite. The create/edit booking form loads options via:
+
+```javascript
+import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
+
+const tables = await getTablesForRestaurant(db, restaurantId);
+populateTableSelect(document.getElementById('tableId'), tables);
+```
+
+| Column | Purpose |
+|--------|---------|
+| `id` | Primary key; stored on `bookings.table_id` when assigned |
+| `restaurant_id` | Tenant scope — queries filter by active restaurant |
+| `name` | Display label in the dropdown |
+| `pax_max` | Optional max party size (nullable in Postgres); shown in label when set |
+
+`bookings.table_id` is nullable — table assignment is optional at create/edit time.
+
+Run `npm test` to execute [`db/tables.test.js`](../db/tables.test.js).
+
 ## Watched queries (live UI)
 
 The manager view ([`booking/views/managerView.js`](../booking/views/managerView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the manager view calls `activeWatch.close()` so listeners do not leak.
@@ -206,12 +230,28 @@ export const AppSchema = new Schema({
             id: column.text,
             created_at: column.text,
             restaurant_id: column.integer,
+            table_id: column.integer,
             // ...
         },
         {
             indexes: {
                 idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
+                idx_bookings_table_id: ['table_id'],
+            },
+        }
+    ),
+    tables: new Table(
+        {
+            id: column.integer,
+            created_at: column.text,
+            restaurant_id: column.integer,
+            pax_max: column.integer,
+            name: column.text,
+        },
+        {
+            indexes: {
+                idx_tables_restaurant_id: ['restaurant_id'],
             },
         }
     ),
@@ -241,7 +281,13 @@ migrations: new Table(
 
 Most migrations are currently no-ops because schema changes belong in `schema.js`. Use migrations for one-time data backfills or raw SQL that cannot be expressed declaratively.
 
-Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migrations/) and must stay aligned with `db/schema.js`.
+Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migrations/) and must stay aligned with `db/schema.js`:
+
+| Migration | Contents |
+|-----------|----------|
+| `001_initial.sql` | `restaurants`, `profiles`, `bookings`, RLS |
+| `002_tables.sql` | `tables` (seating), select-only RLS |
+| `003_bookings_table_id.sql` | `bookings.table_id` FK to `tables` |
 
 ## Vite configuration
 

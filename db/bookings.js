@@ -77,8 +77,8 @@ export async function insertBooking(db, booking) {
         `INSERT INTO bookings (
             id, created_at, restaurant_id, first_name, last_name, preference,
             datetime, profile_id, status, phone_number, email,
-            total_pax, adult_pax, child_pax, hc_pax, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            total_pax, adult_pax, child_pax, hc_pax, notes, table_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             booking.id,
             booking.created_at,
@@ -96,6 +96,7 @@ export async function insertBooking(db, booking) {
             booking.child_pax,
             booking.hc_pax,
             booking.notes ?? null,
+            booking.table_id ?? null,
         ]
     );
 }
@@ -105,7 +106,7 @@ export async function updateBooking(db, id, booking, restaurantId) {
         `UPDATE bookings SET
             first_name = ?, last_name = ?, preference = ?, datetime = ?,
             phone_number = ?, email = ?, total_pax = ?, adult_pax = ?,
-            child_pax = ?, hc_pax = ?, notes = ?, status = ?
+            child_pax = ?, hc_pax = ?, notes = ?, status = ?, table_id = ?
         WHERE id = ? AND restaurant_id = ?`,
         [
             booking.first_name,
@@ -120,6 +121,7 @@ export async function updateBooking(db, id, booking, restaurantId) {
             booking.hc_pax,
             booking.notes ?? null,
             booking.status ?? BOOKING_STATUS.PENDING,
+            booking.table_id ?? null,
             id,
             restaurantId,
         ]

@@ -16,7 +16,7 @@ The app is **local-first**: PowerSync holds a SQLite replica in the browser. Sup
 
 1. User logs in via Supabase Auth.
 2. App calls `connectSync(db)` with the Supabase connector (`db/supabaseConnector.js`).
-3. PowerSync streams bookings for the user's restaurant into local SQLite (Sync Streams).
+3. PowerSync streams bookings and tables for the user's restaurant into local SQLite (Sync Streams).
 4. UI reads/writes the local `db` instance; the upload queue pushes changes to Supabase.
 5. When offline, local SQLite continues to work; uploads resume on reconnect.
 
@@ -26,20 +26,28 @@ Each account is linked to one restaurant via `profiles.restaurant_id`. Security 
 
 | Layer | Mechanism |
 |-------|-----------|
-| PowerSync Sync Streams | Only download bookings where `restaurant_id` matches the user's profile |
-| Supabase RLS | CRUD on `bookings` only when `restaurant_id = profiles.restaurant_id` for `auth.uid()` |
-| Client queries | All booking SQL includes `WHERE restaurant_id = ?` from `getActiveRestaurantId()` |
+| PowerSync Sync Streams | Download `bookings` and `tables` where `restaurant_id` matches the user's profile |
+| Supabase RLS | CRUD on `bookings` only when `restaurant_id = profiles.restaurant_id` for `auth.uid()`; `tables` is select-only for staff |
+| Client queries | Booking and table SQL includes `WHERE restaurant_id = ?` from `getActiveRestaurantId()` |
 
 Users without an assigned restaurant see a notice and cannot create or edit bookings until an admin sets `profiles.restaurant_id`.
 
 ## Supabase setup
 
-Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
+Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`003_bookings_table_id.sql`](../supabase/migrations/003_bookings_table_id.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
 
 - `restaurants` — tenant registry
 - `profiles` — one row per auth user (auto-created on signup via trigger)
-- `bookings` — matches `db/schema.js`
+- `bookings` — matches `db/schema.js` (includes optional `table_id`)
+- `tables` — restaurant seating tables (admin-managed; staff read via RLS)
 - RLS policies scoped to the user's assigned restaurant
+
+**Seeding tables (manual for now):**
+
+```sql
+insert into public.tables (restaurant_id, name, pax_max)
+values (1, 'Table 1', 4), (1, 'Table 2', 6);
+```
 
 ### PowerSync database role and publication
 
@@ -52,8 +60,14 @@ CREATE ROLE powersync_role WITH REPLICATION BYPASSRLS LOGIN PASSWORD 'your-secur
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO powersync_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO powersync_role;
 
--- Publication: only bookings need to replicate to clients
-CREATE PUBLICATION powersync FOR TABLE bookings;
+-- Publication: bookings (read/write via upload) and tables (read-only download)
+CREATE PUBLICATION powersync FOR TABLE bookings, tables;
+```
+
+If the publication already exists with only `bookings`:
+
+```sql
+ALTER PUBLICATION powersync ADD TABLE tables;
 ```
 
 Notes:
@@ -124,6 +138,13 @@ streams:
       WHERE restaurant_id = (
         SELECT restaurant_id FROM profiles WHERE id = auth.user_id()
       )
+  restaurant_tables:
+    auto_subscribe: true
+    query: |
+      SELECT * FROM tables
+      WHERE restaurant_id = (
+        SELECT restaurant_id FROM profiles WHERE id = auth.user_id()
+      )
 ```
 
 Key points:
@@ -131,6 +152,7 @@ Key points:
 - **`auto_subscribe: true`** — syncs on connect, same behavior as legacy Sync Rules. The app uses `db.connect()` without explicit `syncStream().subscribe()` calls.
 - **`auth.user_id()`** — replaces legacy `request.user_id()` from Sync Rules.
 - The subquery replaces the old separate `parameters:` + `data:` bucket pattern.
+- **`tables`** is download-only on the client — staff assign `bookings.table_id` via the existing bookings upload path.
 
 Alternative (equivalent JOIN form):
 
