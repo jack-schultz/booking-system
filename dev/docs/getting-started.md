@@ -88,12 +88,12 @@ Vite opens http://localhost:5173/login.html by default.
 ```
 booking-system/
 ├── auth/              # Account switcher, profiles, offline account cache
-├── booking/           # Booking sidebar shell + metrics
+├── booking/           # Booking SPA shell
+│   ├── app.html       # Single shell HTML
 │   ├── app.js         # SPA entry — bootstrap, router, shared DB session
 │   ├── bootstrap.js   # One-time chrome, DB, auth, sync
-│   ├── router.js      # Client-side routes (manager / create / walk-in)
-│   ├── views/         # managerView, createView, walkinView
-│   └── metrics.js     # Weekly lunch/dinner pax metrics (separate page)
+│   ├── router.js      # Client-side routes (manager / create / walk-in / metrics / tables / sync-status)
+│   └── views/         # managerView, createView, walkinView, metricsView, tablesView, syncStatusView
 ├── config/            # Shared constants, timeslots, connectivity helpers
 │   ├── constants.js   # Booking status values, storage keys
 │   └── timeslots.js   # Bookable timeslot options, lunch/dinner cutoff
@@ -104,7 +104,7 @@ booking-system/
 │   └── bookings.js    # CRUD, datetime helpers, pax aggregation
 ├── pwa/               # Service worker registration (vite-plugin-pwa)
 │   └── register.js
-├── ui/                # Shared navbar, sync indicator, footer, booking sidebar
+├── ui/                # Shared navbar variants, sync indicator, footer, booking sidebar
 │   ├── navbar.js
 │   ├── paxSummary.js  # Pax breakdown markup for manager and metrics
 │   └── syncIndicator.js
@@ -112,7 +112,6 @@ booking-system/
 │   └── migrations/    # Postgres schema for Supabase
 ├── docs/              # Documentation (markdown + HTML shells)
 ├── login.html         # Login (redirects to booking shell; no DB init here)
-├── sync-status.html   # Sync status dashboard (auth required)
 ├── signup.html        # Account creation
 ├── supabaseClient.js  # Shared Supabase client (ES module)
 └── vite.config.js     # Vite + PWA plugin + doc build entries
@@ -122,10 +121,10 @@ booking-system/
 
 1. Complete the [PowerSync + Supabase setup checklist](#powersync--supabase-setup-checklist) above.
 2. Start `npm run dev`.
-3. Log in at `/login.html` — Supabase auth, then redirect to the booking shell (`/booking/manager.html`).
+3. Log in at `/login.html` — Supabase auth, then redirect to the booking shell (`/booking/manager`).
 4. Use the **sidebar** to switch between Bookings, New Booking, and Walk-in without a full page reload. Data reads/writes go through local SQLite; sync runs in the background.
 5. Open **Weekly Metrics** from the top navbar for lunch/dinner pax totals (this is a separate page load).
-6. Click the **sync status icon** (top-right navbar) to open `/sync-status.html` — pending uploads, download progress, connection state, and issues.
+6. Click the **sync status icon** (top-right app navbar) to open `/booking/sync-status` — pending uploads, download progress, connection state, and issues.
 
 ## Troubleshooting
 

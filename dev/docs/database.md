@@ -99,7 +99,7 @@ The app exposes sync **status** (connection health, queue, errors) separately fr
 |------|------|
 | [`db/syncStatus.js`](../db/syncStatus.js) | `computeSyncHealth()`, `getSyncSnapshot()`, `subscribeSyncStatus()`, issue log |
 | [`ui/syncIndicator.js`](../ui/syncIndicator.js) | Navbar icon; red / yellow / green from health state |
-| [`sync-status.html`](../sync-status.html) | Full dashboard — metrics, upload queue, download activity, reconnect |
+| `/booking/sync-status` (SPA view) | Full dashboard — upload queue, download activity, reconnect |
 
 The status module reads PowerSync SDK APIs (`currentStatus`, `registerListener`, `getUploadQueueStats`, `getCrudBatch`) and combines them with `navigator.onLine` and account/restaurant checks. Upload failures recorded in [`db/supabaseConnector.js`](../db/supabaseConnector.js) appear in the issue log.
 
@@ -175,7 +175,7 @@ Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
 ## Table helpers (`tables.js`)
 
-Restaurant seating tables are stored in `public.tables`, synced into local SQLite via PowerSync, and read offline from the local `tables` table. Staff manage tables on [`booking/tables.html`](../booking/tables.html) (navbar link). The create/edit booking form loads options from local SQLite:
+Restaurant seating tables are stored in `public.tables`, synced into local SQLite via PowerSync, and read offline from the local `tables` table. Staff manage tables on `/booking/tables` (app navbar link). The create/edit booking form loads options from local SQLite:
 
 ```javascript
 import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
@@ -216,7 +216,7 @@ The manager view ([`booking/views/managerView.js`](../booking/views/managerView.
 
 The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
 
-The tables admin page ([`booking/tables.js`](../booking/tables.js)) uses the same watched-query pattern over local `tables`.
+The tables admin view ([`booking/views/tablesView.js`](../booking/views/tablesView.js)) uses the same watched-query pattern over local `tables`.
 
 ```javascript
 const watched = db.query({

@@ -1,0 +1,1 @@
+import"./style-CEPcSWMK.js";import"./register-CxERNST-.js";import{r as e,t}from"./footer-NbQLN31a.js";e(document.getElementById(`site-navbar-mount`)),t(document.getElementById(`site-footer-mount`));

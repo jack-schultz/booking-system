@@ -39,10 +39,10 @@ Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.s
 - `restaurants` — tenant registry
 - `profiles` — one row per auth user (auto-created on signup via trigger)
 - `bookings` — matches `db/schema.js` (includes optional `table_id`)
-- `tables` — restaurant seating tables (staff manage via [`booking/tables.html`](../booking/tables.html))
+- `tables` — restaurant seating tables (staff manage via `/booking/tables`)
 - RLS policies scoped to the user's assigned restaurant
 
-**Managing tables:** use the **Tables** link in the navbar ([`booking/tables.html`](../booking/tables.html)). Adding a table requires an internet connection (Supabase insert); edit and delete are local-first via PowerSync upload.
+**Managing tables:** use the **Tables** link in the app navbar (`/booking/tables`). Adding a table requires an internet connection (Supabase insert); edit and delete are local-first via PowerSync upload.
 
 **Seeding tables (alternative to the admin page):**
 
@@ -224,7 +224,7 @@ Sync is skipped when offline, `VITE_POWERSYNC_URL` is unset, or the user has no 
 
 ### Live updates across devices
 
-[`booking/views/managerView.js`](../booking/views/managerView.js) and [`booking/metrics.js`](../booking/metrics.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
+[`booking/views/managerView.js`](../booking/views/managerView.js) and [`booking/views/metricsView.js`](../booking/views/metricsView.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
 
 ## Environment variables
 
@@ -261,7 +261,7 @@ const db = await initDatabase();
 | PowerSync Test Connection works but client won't sync | Missing `VITE_POWERSYNC_URL`, no restaurant assigned, or offline | Set env var; assign `profiles.restaurant_id`; check browser online |
 | Manager stuck on "loading..." | Blocking on `connectSync` / `db.init()` race during HMR, or wrong watch API | Manager uses `initDatabase()` then `void ensureSyncConnected()`; use `registerListener({ onData })` on `query().watch()` — hard-refresh after HMR; see [Database](./database.html) |
 | "Account not assigned to a restaurant" | `profiles.restaurant_id` is NULL | Admin sets restaurant in Supabase; user refreshes while online |
-| Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant; open [sync status dashboard](../sync-status.html) for queue and errors |
+| Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant; open [sync status dashboard](/booking/sync-status) for queue and errors |
 | Tables dropdown or admin list empty (online or offline) | `restaurant_tables` sync stream or publication not configured | Add `tables` to publication: `ALTER PUBLICATION powersync ADD TABLE tables;` Deploy `restaurant_tables` stream in PowerSync dashboard; load app online once to sync |
 | Tables empty offline after never syncing online | No prior sync download | Connect online once with sync configured; tables then available offline from local SQLite |
 | `All replication slots are in use` (Supabase) | Max 4 logical replication slots | Drop inactive slots — see [PowerSync Supabase troubleshooting](https://docs.powersync.com/configuration/source-db/connection#troubleshooting) |
@@ -276,7 +276,7 @@ const db = await initDatabase();
 4. **Unassigned user:** Profile with `restaurant_id = NULL` → notice shown, no sync/connect.
 5. **Account switch:** Two users, two restaurants → correct bookings per account.
 6. **Reconnect:** Offline changes upload when back online.
-7. **Sync status UI:** Navbar icon turns yellow when uploads are pending or sync needs attention; `/sync-status.html` shows queue details and a manual **Reconnect** button.
+7. **Sync status UI:** Navbar icon turns yellow when uploads are pending or sync needs attention; `/booking/sync-status` shows queue details and a manual **Reconnect** button.
 
 ## References
 
