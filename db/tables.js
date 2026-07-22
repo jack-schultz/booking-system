@@ -14,15 +14,10 @@ export async function getTablesForRestaurant(db, restaurantId) {
 }
 
 /**
- * Fetch tables from Supabase REST (source of truth when PowerSync has not synced tables).
+ * Fetch tables from Supabase when local SQLite is empty (PowerSync stream not yet synced).
  * @param {number} restaurantId
- * @returns {Promise<{ id: number, name: string, pax_max: number | null }[] | null>}
  */
 export async function fetchTablesFromSupabase(restaurantId) {
-    if (!isOnline()) {
-        return null;
-    }
-
     const { supabase } = await import('../supabaseClient.js');
     const { data, error } = await supabase
         .from('tables')
@@ -34,9 +29,7 @@ export async function fetchTablesFromSupabase(restaurantId) {
         throw error;
     }
 
-    const rows = data ?? [];
-
-    return rows;
+    return data ?? [];
 }
 
 /** @param {{ name: string, pax_max: number | null }} table */
@@ -58,6 +51,7 @@ export function formatTableDeleteConfirmMessage(bookingCount) {
 
 /**
  * Insert via Supabase REST (server-assigned bigint id). Requires network.
+ * PowerSync sync stream downloads the new row into local SQLite.
  * @param {{ restaurant_id: number, name: string, pax_max: number | null }} table
  */
 export async function insertTableOnline(table) {
@@ -78,7 +72,7 @@ export async function insertTableOnline(table) {
 }
 
 /**
- * Update a table via Supabase REST. Avoids PowerSync local-write restrictions on integer PKs.
+ * Update a table via Supabase REST. Requires network.
  * @param {number} id
  * @param {{ name: string, pax_max: number | null }} table
  * @param {number} restaurantId
@@ -98,20 +92,6 @@ export async function updateTableOnline(id, table, restaurantId) {
     if (error) {
         throw error;
     }
-}
-
-/**
- * @param {import('@powersync/web').PowerSyncDatabase} db
- * @param {number} id
- * @param {{ name: string, pax_max: number | null }} table
- * @param {number} restaurantId
- */
-export async function updateTable(db, id, table, restaurantId) {
-    await db.execute(
-        `UPDATE tables SET name = ?, pax_max = ?
-         WHERE id = ? AND restaurant_id = ?`,
-        [table.name, table.pax_max, id, restaurantId]
-    );
 }
 
 /**
@@ -138,18 +118,6 @@ export async function clearTableFromBookings(db, tableId, restaurantId) {
         `UPDATE bookings SET table_id = NULL
          WHERE table_id = ? AND restaurant_id = ?`,
         [tableId, restaurantId]
-    );
-}
-
-/**
- * @param {import('@powersync/web').PowerSyncDatabase} db
- * @param {number} id
- * @param {number} restaurantId
- */
-export async function deleteTable(db, id, restaurantId) {
-    await db.execute(
-        `DELETE FROM tables WHERE id = ? AND restaurant_id = ?`,
-        [id, restaurantId]
     );
 }
 
@@ -205,14 +173,15 @@ export function populateTableSelect(selectElement, tables) {
 }
 
 /**
- * Load tables for UI: Supabase when online, otherwise local SQLite (PowerSync cache).
+ * Load tables from local SQLite (PowerSync-synced), with Supabase fallback when online and local is empty.
  * @param {import('@powersync/web').PowerSyncDatabase} db
  * @param {number} restaurantId
  */
 export async function loadTablesForRestaurant(db, restaurantId) {
-    const remote = await fetchTablesFromSupabase(restaurantId);
-    if (remote != null) {
-        return remote;
+    const local = await getTablesForRestaurant(db, restaurantId);
+    if (local.length > 0 || !isOnline()) {
+        return local;
     }
-    return getTablesForRestaurant(db, restaurantId);
+
+    return fetchTablesFromSupabase(restaurantId);
 }

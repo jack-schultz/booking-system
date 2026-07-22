@@ -192,6 +192,12 @@ export async function mountCreateView(ctx) {
         void loadTables();
     });
 
+    window.addEventListener('online', () => {
+        if (hasAssignedRestaurant()) {
+            void loadTables();
+        }
+    }, { signal });
+
     if (applyRestaurantGuard()) {
         await loadTables();
         if (ctx.editId) {

@@ -137,14 +137,14 @@ streams:
     auto_subscribe: true
     query: |
       SELECT * FROM bookings
-      WHERE restaurant_id = (
+      WHERE restaurant_id IN (
         SELECT restaurant_id FROM profiles WHERE id = auth.user_id()
       )
   restaurant_tables:
     auto_subscribe: true
     query: |
       SELECT * FROM tables
-      WHERE restaurant_id = (
+      WHERE restaurant_id IN (
         SELECT restaurant_id FROM profiles WHERE id = auth.user_id()
       )
 ```
@@ -154,7 +154,7 @@ Key points:
 - **`auto_subscribe: true`** — syncs on connect, same behavior as legacy Sync Rules. The app uses `db.connect()` without explicit `syncStream().subscribe()` calls.
 - **`auth.user_id()`** — replaces legacy `request.user_id()` from Sync Rules.
 - The subquery replaces the old separate `parameters:` + `data:` bucket pattern.
-- **`tables`** is writable on the client for update/delete (via upload queue). New table inserts use Supabase REST directly because `tables.id` is server-assigned.
+- **`tables`** admin writes use Supabase REST (online only); PowerSync sync stream downloads rows into local SQLite for offline reads and booking table assignment.
 
 Alternative (equivalent JOIN form):
 
@@ -262,6 +262,8 @@ const db = await initDatabase();
 | Manager stuck on "loading..." | Blocking on `connectSync` / `db.init()` race during HMR, or wrong watch API | Manager uses `initDatabase()` then `void ensureSyncConnected()`; use `registerListener({ onData })` on `query().watch()` — hard-refresh after HMR; see [Database](./database.html) |
 | "Account not assigned to a restaurant" | `profiles.restaurant_id` is NULL | Admin sets restaurant in Supabase; user refreshes while online |
 | Bookings local only, never appear in Supabase | Sync not connected or upload queue blocked | Check connect lifecycle; verify RLS allows insert for user's restaurant; open [sync status dashboard](../sync-status.html) for queue and errors |
+| Tables dropdown or admin list empty (online or offline) | `restaurant_tables` sync stream or publication not configured | Add `tables` to publication: `ALTER PUBLICATION powersync ADD TABLE tables;` Deploy `restaurant_tables` stream in PowerSync dashboard; load app online once to sync |
+| Tables empty offline after never syncing online | No prior sync download | Connect online once with sync configured; tables then available offline from local SQLite |
 | `All replication slots are in use` (Supabase) | Max 4 logical replication slots | Drop inactive slots — see [PowerSync Supabase troubleshooting](https://docs.powersync.com/configuration/source-db/connection#troubleshooting) |
 
 `db.connected === false` in the browser is normal when offline, when `VITE_POWERSYNC_URL` is unset, or when the user has no assigned restaurant — local SQLite still works.

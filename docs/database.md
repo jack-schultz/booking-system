@@ -175,7 +175,7 @@ Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
 ## Table helpers (`tables.js`)
 
-Restaurant seating tables are stored in `public.tables` and synced into local SQLite. Staff manage tables on [`booking/tables.html`](../booking/tables.html) (navbar link). The create/edit booking form loads options via:
+Restaurant seating tables are stored in `public.tables`, synced into local SQLite via PowerSync, and read offline from the local `tables` table. Staff manage tables on [`booking/tables.html`](../booking/tables.html) (navbar link). The create/edit booking form loads options from local SQLite:
 
 ```javascript
 import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
@@ -184,12 +184,17 @@ const tables = await getTablesForRestaurant(db, restaurantId);
 populateTableSelect(document.getElementById('tableId'), tables);
 ```
 
+**Offline reads:** PowerSync downloads `tables` via the `restaurant_tables` sync stream (see [PowerSync + Supabase sync](./powersync-supabase.html)). The booking table dropdown and admin list read local SQLite.
+
+**Admin mutations (online only):** Adding, editing, or deleting tables uses Supabase REST because `tables.id` is a server-assigned integer. The UI disables these actions offline; PowerSync syncs changes into local SQLite after online writes.
+
 | Function | Purpose |
 |----------|---------|
-| `getTablesForRestaurant(db, restaurantId)` | List tables for dropdown / admin page |
-| `insertTableOnline({ restaurant_id, name, pax_max })` | Add table via Supabase REST (online; server-assigned id) |
-| `updateTable(db, id, { name, pax_max }, restaurantId)` | Update name / max pax locally |
-| `deleteTableAndClearBookings(db, id, restaurantId)` | Clear `bookings.table_id`, then delete table |
+| `getTablesForRestaurant(db, restaurantId)` | List tables from local SQLite (offline-capable) |
+| `loadTablesForRestaurant(db, restaurantId)` | Alias for `getTablesForRestaurant` |
+| `insertTableOnline({ restaurant_id, name, pax_max })` | Add table via Supabase REST (online only) |
+| `updateTableOnline(id, { name, pax_max }, restaurantId)` | Update via Supabase REST (online only) |
+| `deleteTableAndClearBookings(db, id, restaurantId)` | Clear `bookings.table_id`, delete via Supabase REST |
 | `getBookingsCountForTable(db, tableId, restaurantId)` | Count bookings assigned to a table (delete warning) |
 | `populateTableSelect(select, tables)` | Fill booking form dropdown |
 | `formatTableLabel(table)` | Display label with optional max pax |
@@ -210,6 +215,8 @@ Run `npm test` to execute [`db/tables.test.js`](../db/tables.test.js).
 The manager view ([`booking/views/managerView.js`](../booking/views/managerView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the manager view calls `activeWatch.close()` so listeners do not leak.
 
 The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
+
+The tables admin page ([`booking/tables.js`](../booking/tables.js)) uses the same watched-query pattern over local `tables`.
 
 ```javascript
 const watched = db.query({

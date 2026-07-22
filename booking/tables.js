@@ -36,18 +36,27 @@ const tablePaxMaxInput = document.getElementById('table-pax-max');
 const tableSaveBtn = document.getElementById('table-save-btn');
 const tableCancelBtn = document.getElementById('table-cancel-btn');
 
+/** @type {import('@powersync/web').SyncStreamSubscription | null} */
+let activeWatch = null;
 /** @type {number | null} */
 let editingTableId = null;
 /** @type {{ id: number, name: string, pax_max: number | null }[]} */
 let cachedTables = [];
+/** Bumps on each explicit refresh; stale async fetches are ignored. */
+let tablesDisplayGeneration = 0;
 
 const abortController = new AbortController();
 const { signal } = abortController;
 
+const OFFLINE_MUTATION_NOTICE =
+    'Table changes require an internet connection. You can still view synced tables and assign them to bookings offline.';
+const OFFLINE_EMPTY_NOTICE =
+    'No tables synced yet. Connect online once to download tables for offline use.';
+
 const switcherPromise = initAccountSwitcher({
     requireAuth: true,
     loginRedirect: '../login.html',
-    onSwitch: () => refreshTables(),
+    onSwitch: () => subscribeTables(),
 });
 
 const db = await initDatabase();
@@ -85,19 +94,20 @@ function showUnassignedNotice() {
     setFormDisabled(true);
 }
 
-function updateOfflineAddNotice() {
+function updateOfflineState() {
     if (!hasAssignedRestaurant()) {
         return;
     }
-    if (!isOnline()) {
-        showNotice('Managing tables requires an internet connection.');
-        tableSaveBtn.disabled = true;
+
+    const offline = !isOnline();
+    setFormDisabled(offline);
+
+    if (offline) {
+        showNotice(OFFLINE_MUTATION_NOTICE);
         return;
     }
+
     hideNotice();
-    if (hasAssignedRestaurant()) {
-        tableSaveBtn.disabled = false;
-    }
 }
 
 function parsePaxMax(value) {
@@ -109,23 +119,69 @@ function parsePaxMax(value) {
     return Number.isNaN(parsed) ? null : parsed;
 }
 
+async function refreshTablesFromSupabaseDisplay() {
+    if (!hasAssignedRestaurant() || !isOnline()) {
+        return;
+    }
+
+    const generation = ++tablesDisplayGeneration;
+    const restaurantId = getActiveRestaurantId();
+
+    try {
+        const remote = await fetchTablesFromSupabase(restaurantId);
+        if (generation !== tablesDisplayGeneration) {
+            return;
+        }
+        renderTables(remote);
+    } catch {
+        if (generation === tablesDisplayGeneration) {
+            renderTables(cachedTables);
+        }
+    }
+}
+
+async function renderTablesFromWatch(tables) {
+    if (!hasAssignedRestaurant()) {
+        renderTables(tables);
+        return;
+    }
+
+    if (isOnline()) {
+        await refreshTablesFromSupabaseDisplay();
+        return;
+    }
+
+    renderTables(tables);
+}
+
 function renderTables(tables) {
     cachedTables = tables;
+    const mutationsDisabled = !isOnline();
 
     if (tables.length === 0) {
         tablesList.innerHTML = '<p class="tables-empty">No tables configured yet.</p>';
+        if (!isOnline()) {
+            showNotice(OFFLINE_EMPTY_NOTICE);
+        } else if (hasAssignedRestaurant()) {
+            hideNotice();
+        }
         return;
+    }
+
+    if (isOnline() && hasAssignedRestaurant()) {
+        hideNotice();
     }
 
     const rows = tables.map((table) => {
         const paxDisplay = table.pax_max == null ? '—' : String(table.pax_max);
+        const disabledAttr = mutationsDisabled ? ' disabled' : '';
         return `
             <tr data-id="${table.id}">
                 <td>${escapeHtml(formatTableLabel(table))}</td>
                 <td>${escapeHtml(paxDisplay)}</td>
                 <td class="tables-actions">
-                    <button type="button" class="tables-edit-btn" data-id="${table.id}">Edit</button>
-                    <button type="button" class="tables-delete-btn" data-id="${table.id}">Delete</button>
+                    <button type="button" class="tables-edit-btn" data-id="${table.id}"${disabledAttr}>Edit</button>
+                    <button type="button" class="tables-delete-btn" data-id="${table.id}"${disabledAttr}>Delete</button>
                 </td>
             </tr>
         `;
@@ -143,6 +199,10 @@ function renderTables(tables) {
             <tbody>${rows}</tbody>
         </table>
     `;
+
+    if (mutationsDisabled && hasAssignedRestaurant()) {
+        showNotice(OFFLINE_MUTATION_NOTICE);
+    }
 }
 
 function escapeHtml(value) {
@@ -160,11 +220,15 @@ function startEdit(table) {
     tableFormHeading.textContent = 'Edit Table';
     tableSaveBtn.textContent = 'Update Table';
     tableCancelBtn.hidden = false;
-    updateOfflineAddNotice();
     tableNameInput.focus();
 }
 
-async function refreshTables() {
+async function subscribeTables() {
+    if (activeWatch) {
+        await activeWatch.close();
+        activeWatch = null;
+    }
+
     resetForm();
 
     if (!hasAssignedRestaurant()) {
@@ -172,27 +236,31 @@ async function refreshTables() {
         return;
     }
 
-    setFormDisabled(false);
-    updateOfflineAddNotice();
+    updateOfflineState();
 
     const restaurantId = getActiveRestaurantId();
 
-    try {
-        const tables = isOnline()
-            ? await fetchTablesFromSupabase(restaurantId)
-            : [];
-        renderTables(tables ?? []);
-    } catch (err) {
-        showNotice(err.message ?? 'Could not load tables from server.');
-        renderTables([]);
-    }
+    activeWatch = db
+        .query({
+            sql: `SELECT id, name, pax_max FROM tables
+                  WHERE restaurant_id = ?
+                  ORDER BY name`,
+            parameters: [restaurantId],
+        })
+        .watch();
+
+    activeWatch.registerListener({
+        onData: (tables) => {
+            void renderTablesFromWatch(tables);
+        },
+    });
 }
 
 tablesList.addEventListener('click', async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
 
-    if (!hasAssignedRestaurant()) return;
+    if (!hasAssignedRestaurant() || !isOnline()) return;
 
     const restaurantId = getActiveRestaurantId();
     const editBtn = target.closest('.tables-edit-btn');
@@ -222,8 +290,7 @@ tablesList.addEventListener('click', async (event) => {
             if (editingTableId === id) {
                 resetForm();
             }
-            hideNotice();
-            await refreshTables();
+            await refreshTablesFromSupabaseDisplay();
         } catch (err) {
             showNotice(err.message ?? 'Could not delete table.');
         }
@@ -232,13 +299,18 @@ tablesList.addEventListener('click', async (event) => {
 
 tableCancelBtn.addEventListener('click', () => {
     resetForm();
-    updateOfflineAddNotice();
+    updateOfflineState();
 }, { signal });
 
 tableForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (!hasAssignedRestaurant()) {
+        return;
+    }
+
+    if (!isOnline()) {
+        showNotice(OFFLINE_MUTATION_NOTICE);
         return;
     }
 
@@ -251,33 +323,41 @@ tableForm.addEventListener('submit', async (event) => {
         return;
     }
 
-    if (!isOnline()) {
-        showNotice('Managing tables requires an internet connection.');
-        return;
-    }
-
     try {
         if (editingTableId != null) {
             await updateTableOnline(editingTableId, { name, pax_max }, restaurantId);
             resetForm();
+            await refreshTablesFromSupabaseDisplay();
         } else {
             await insertTableOnline({ restaurant_id: restaurantId, name, pax_max });
             tableForm.reset();
+            await refreshTablesFromSupabaseDisplay();
         }
         hideNotice();
-        updateOfflineAddNotice();
-        await refreshTables();
+        updateOfflineState();
     } catch (err) {
         showNotice(err.message ?? 'Could not save table.');
     }
 }, { signal });
 
 window.addEventListener('online', () => {
-    updateOfflineAddNotice();
-    void refreshTables();
+    updateOfflineState();
+    if (cachedTables.length > 0) {
+        renderTables(cachedTables);
+    }
 }, { signal });
-window.addEventListener('offline', updateOfflineAddNotice, { signal });
+window.addEventListener('offline', () => {
+    updateOfflineState();
+    if (cachedTables.length > 0) {
+        renderTables(cachedTables);
+    }
+}, { signal });
+
+window.addEventListener('beforeunload', () => {
+    abortController.abort();
+    void activeWatch?.close();
+});
 
 await switcherPromise;
-await refreshTables();
-void ensureSyncConnected(db);
+await ensureSyncConnected(db);
+await subscribeTables();

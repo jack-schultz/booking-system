@@ -415,7 +415,7 @@ function renderBookings(bookings, date) {
     renderDayHeader(date, bookings);
 
     if (bookings.length === 0) {
-        bookingList.innerHTML = '<p>No bookings for today</p>';
+        bookingList.innerHTML = '<p>No bookings for today. (or they are still downloading)</p>';
         return;
     }
 
