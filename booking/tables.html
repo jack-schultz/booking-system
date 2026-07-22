@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant Tables — Booking System</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div id="site-navbar-mount"></div>
+
+<div class="page-content">
+    <div class="tables-page-layout">
+        <div class="page-primary-panel tables-page-panel">
+            <h1>Restaurant Tables</h1>
+            <p id="tables-notice" class="booking-notice" hidden></p>
+
+            <div id="tables-list" class="tables-list-mount">loading...</div>
+
+            <form id="table-form" class="tables-form">
+                <h2 id="table-form-heading">Add Table</h2>
+                <div class="tables-form-row">
+                    <div class="tables-form-column">
+                        <label for="table-name">Name</label>
+                        <input type="text" id="table-name" name="tableName" required placeholder="Table 1">
+                    </div>
+                    <div class="tables-form-column">
+                        <label for="table-pax-max">Max Pax</label>
+                        <input type="number" id="table-pax-max" name="tablePaxMax" min="1" max="99" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="tables-form-actions">
+                    <button type="submit" id="table-save-btn">Save Table</button>
+                    <button type="button" id="table-cancel-btn" hidden>Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="site-footer-mount"></div>
+
+<script type="module" src="./tables.js"></script>
+</body>
+</html>

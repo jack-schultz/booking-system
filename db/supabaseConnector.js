@@ -2,6 +2,8 @@ import { UpdateType } from '@powersync/web';
 import { supabase } from '../supabaseClient.js';
 import { recordSyncIssue } from './syncStatus.js';
 
+const SYNC_TABLES = new Set(['bookings', 'tables']);
+
 const POWERSYNC_URL = import.meta.env.VITE_POWERSYNC_URL;
 
 /** Postgres errors that should not block the upload queue.
@@ -69,7 +71,7 @@ async function uploadData(database) {
         for (const op of transaction.crud) {
             lastOp = op;
 
-            if (op.table !== 'bookings') {
+            if (!SYNC_TABLES.has(op.table)) {
                 throw new Error(`Unexpected sync table: ${op.table}`);
             }
 

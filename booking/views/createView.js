@@ -7,7 +7,7 @@ import {
     toTimestamptz,
     updateBooking,
 } from '../../db/bookings.js';
-import { getTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
+import { loadTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
 import { BOOKING_STATUS } from '../../config/constants.js';
 import { populateTimeslotSelect } from '../../config/timeslots.js';
 import {
@@ -90,7 +90,8 @@ async function loadTables() {
         return;
     }
 
-    const tables = await getTablesForRestaurant(db, getActiveRestaurantId());
+    const restaurantId = getActiveRestaurantId();
+    const tables = await loadTablesForRestaurant(db, restaurantId);
     populateTableSelect(tableSelect, tables);
 }
 

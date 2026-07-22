@@ -1,4 +1,4 @@
-import { populateTableSelect } from './tables.js';
+import { formatTableDeleteConfirmMessage, formatTableLabel, populateTableSelect } from './tables.js';
 
 function createMockSelect(initialPlaceholder = true) {
     const children = [];
@@ -67,5 +67,33 @@ describe('populateTableSelect', () => {
         expect(select.options[0].value).toBe('');
         expect(select.options[0].textContent).toBe('None');
         expect(select.options[1].textContent).toBe('Patio 1 (6 max)');
+    });
+});
+
+describe('formatTableLabel', () => {
+    test('includes max pax when set', () => {
+        expect(formatTableLabel({ name: 'Table 1', pax_max: 4 })).toBe('Table 1 (4 max)');
+    });
+
+    test('shows name only when pax_max is null', () => {
+        expect(formatTableLabel({ name: 'Booth A', pax_max: null })).toBe('Booth A');
+    });
+});
+
+describe('formatTableDeleteConfirmMessage', () => {
+    test('returns simple prompt when no bookings assigned', () => {
+        expect(formatTableDeleteConfirmMessage(0)).toBe('Delete this table?');
+    });
+
+    test('warns about single assigned booking', () => {
+        expect(formatTableDeleteConfirmMessage(1)).toBe(
+            'This table is assigned to 1 booking. Deleting it will set those bookings to None. Continue?'
+        );
+    });
+
+    test('warns about multiple assigned bookings', () => {
+        expect(formatTableDeleteConfirmMessage(3)).toBe(
+            'This table is assigned to 3 bookings. Deleting it will set those bookings to None. Continue?'
+        );
     });
 });

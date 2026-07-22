@@ -175,7 +175,7 @@ Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
 ## Table helpers (`tables.js`)
 
-Restaurant seating tables are stored in `public.tables` (admin-managed) and synced into local SQLite. The create/edit booking form loads options via:
+Restaurant seating tables are stored in `public.tables` and synced into local SQLite. Staff manage tables on [`booking/tables.html`](../booking/tables.html) (navbar link). The create/edit booking form loads options via:
 
 ```javascript
 import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
@@ -183,6 +183,16 @@ import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
 const tables = await getTablesForRestaurant(db, restaurantId);
 populateTableSelect(document.getElementById('tableId'), tables);
 ```
+
+| Function | Purpose |
+|----------|---------|
+| `getTablesForRestaurant(db, restaurantId)` | List tables for dropdown / admin page |
+| `insertTableOnline({ restaurant_id, name, pax_max })` | Add table via Supabase REST (online; server-assigned id) |
+| `updateTable(db, id, { name, pax_max }, restaurantId)` | Update name / max pax locally |
+| `deleteTableAndClearBookings(db, id, restaurantId)` | Clear `bookings.table_id`, then delete table |
+| `getBookingsCountForTable(db, tableId, restaurantId)` | Count bookings assigned to a table (delete warning) |
+| `populateTableSelect(select, tables)` | Fill booking form dropdown |
+| `formatTableLabel(table)` | Display label with optional max pax |
 
 | Column | Purpose |
 |--------|---------|
@@ -288,6 +298,7 @@ Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migration
 | `001_initial.sql` | `restaurants`, `profiles`, `bookings`, RLS |
 | `002_tables.sql` | `tables` (seating), select-only RLS |
 | `003_bookings_table_id.sql` | `bookings.table_id` FK to `tables` |
+| `004_tables_write_rls.sql` | `tables` insert/update/delete RLS for admin page |
 
 ## Vite configuration
 

@@ -27,22 +27,24 @@ Each account is linked to one restaurant via `profiles.restaurant_id`. Security 
 | Layer | Mechanism |
 |-------|-----------|
 | PowerSync Sync Streams | Download `bookings` and `tables` where `restaurant_id` matches the user's profile |
-| Supabase RLS | CRUD on `bookings` only when `restaurant_id = profiles.restaurant_id` for `auth.uid()`; `tables` is select-only for staff |
+| Supabase RLS | CRUD on `bookings` when `restaurant_id = profiles.restaurant_id`; `tables` read/write scoped to assigned restaurant |
 | Client queries | Booking and table SQL includes `WHERE restaurant_id = ?` from `getActiveRestaurantId()` |
 
 Users without an assigned restaurant see a notice and cannot create or edit bookings until an admin sets `profiles.restaurant_id`.
 
 ## Supabase setup
 
-Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`003_bookings_table_id.sql`](../supabase/migrations/003_bookings_table_id.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
+Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`004_tables_write_rls.sql`](../supabase/migrations/004_tables_write_rls.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
 
 - `restaurants` — tenant registry
 - `profiles` — one row per auth user (auto-created on signup via trigger)
 - `bookings` — matches `db/schema.js` (includes optional `table_id`)
-- `tables` — restaurant seating tables (admin-managed; staff read via RLS)
+- `tables` — restaurant seating tables (staff manage via [`booking/tables.html`](../booking/tables.html))
 - RLS policies scoped to the user's assigned restaurant
 
-**Seeding tables (manual for now):**
+**Managing tables:** use the **Tables** link in the navbar ([`booking/tables.html`](../booking/tables.html)). Adding a table requires an internet connection (Supabase insert); edit and delete are local-first via PowerSync upload.
+
+**Seeding tables (alternative to the admin page):**
 
 ```sql
 insert into public.tables (restaurant_id, name, pax_max)
@@ -60,7 +62,7 @@ CREATE ROLE powersync_role WITH REPLICATION BYPASSRLS LOGIN PASSWORD 'your-secur
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO powersync_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO powersync_role;
 
--- Publication: bookings (read/write via upload) and tables (read-only download)
+-- Publication: bookings and tables (client uploads via uploadData)
 CREATE PUBLICATION powersync FOR TABLE bookings, tables;
 ```
 
@@ -152,7 +154,7 @@ Key points:
 - **`auto_subscribe: true`** — syncs on connect, same behavior as legacy Sync Rules. The app uses `db.connect()` without explicit `syncStream().subscribe()` calls.
 - **`auth.user_id()`** — replaces legacy `request.user_id()` from Sync Rules.
 - The subquery replaces the old separate `parameters:` + `data:` bucket pattern.
-- **`tables`** is download-only on the client — staff assign `bookings.table_id` via the existing bookings upload path.
+- **`tables`** is writable on the client for update/delete (via upload queue). New table inserts use Supabase REST directly because `tables.id` is server-assigned.
 
 Alternative (equivalent JOIN form):
 

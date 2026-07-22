@@ -1451,3 +1451,121 @@ Weekly metrics
     flex-wrap: wrap;
     min-width: 0;
 }
+
+/*
+=============================================================================
+Restaurant tables admin
+=============================================================================
+*/
+
+.tables-page-layout {
+    padding: 0;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.page-primary-panel.tables-page-panel {
+    width: 100%;
+    max-width: 720px;
+}
+
+.tables-list-mount {
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.tables-empty {
+    color: #444;
+}
+
+.tables-list {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tables-list th,
+.tables-list td {
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #9a9a9a;
+    background-color: #e0e0e0;
+}
+
+.tables-list th {
+    background-color: #c8c8c8;
+    font-weight: bold;
+}
+
+.tables-actions {
+    white-space: nowrap;
+}
+
+.tables-edit-btn,
+.tables-delete-btn {
+    margin-right: 8px;
+    padding: 6px 12px;
+    border: 2px solid #9a9a9a;
+    border-radius: 6px;
+    background-color: #c8c8c8;
+    cursor: pointer;
+}
+
+.tables-edit-btn:hover,
+.tables-delete-btn:hover {
+    background-color: #b0b0b0;
+}
+
+.tables-form {
+    margin-top: 8px;
+}
+
+.tables-form h2 {
+    margin: 0 0 16px;
+    font-size: 1.25rem;
+}
+
+.tables-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.tables-form-column {
+    flex: 1;
+    min-width: 160px;
+}
+
+.tables-form-column label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.tables-form-column input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tables-form-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.tables-form-actions button {
+    padding: 10px 20px;
+    border: 2px solid #9a9a9a;
+    border-radius: 8px;
+    background-color: #c8c8c8;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.tables-form-actions button:hover:not(:disabled) {
+    background-color: #b0b0b0;
+}
+
+.tables-form-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
