@@ -1,4 +1,4 @@
-import{i as e}from"./syncStatus-2needk3u.js";var t=`
+import{i as e}from"./syncStatus-B8c62kbC.js";var t=`
 <span class="sync-indicator-graphic" aria-hidden="true">
     <span class="sync-indicator-core"></span>
     <svg class="sync-indicator-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -16,6 +16,7 @@ import{i as e}from"./syncStatus-2needk3u.js";var t=`
             <a href="${t}index.html">Home</a>
                 <a href="${t}booking/manager.html">Booking Manager</a>
                 <a href="${t}booking/metrics.html">Weekly Metrics</a>
+                <a href="${t}booking/tables.html">Tables</a>
             </div>
             <div class="site-navbar-links-user">
                 <span id="offline-indicator" class="offline-indicator" hidden>Offline</span>

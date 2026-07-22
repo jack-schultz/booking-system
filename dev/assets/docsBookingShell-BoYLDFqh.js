@@ -1,0 +1,1 @@
+import"./style-BJcfAIxS.js";import{t as e}from"./docs-DEfDvpLP.js";e(`./booking-shell.md`,`Booking shell`);

@@ -44,6 +44,8 @@ db/
 ├── syncStatus.js        # Sync status health, snapshots, issue log (UI dashboard)
 ├── bookings.js          # Booking CRUD, datetime helpers, pax aggregation, status helpers
 ├── bookings.test.js     # Jest tests for bookings.js and meal-period logic
+├── tables.js            # Restaurant table lookup and select helpers
+├── tables.test.js       # Jest tests for tables.js
 ├── migrate.js           # db.init() + migration runner
 └── migrations/          # Named migration hooks
 ```
@@ -171,11 +173,50 @@ The manager view shows per-timeslot pax totals in each timeslot heading and lunc
 
 Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
+## Table helpers (`tables.js`)
+
+Restaurant seating tables are stored in `public.tables`, synced into local SQLite via PowerSync, and read offline from the local `tables` table. Staff manage tables on [`booking/tables.html`](../booking/tables.html) (navbar link). The create/edit booking form loads options from local SQLite:
+
+```javascript
+import { getTablesForRestaurant, populateTableSelect } from './db/tables.js';
+
+const tables = await getTablesForRestaurant(db, restaurantId);
+populateTableSelect(document.getElementById('tableId'), tables);
+```
+
+**Offline reads:** PowerSync downloads `tables` via the `restaurant_tables` sync stream (see [PowerSync + Supabase sync](./powersync-supabase.html)). The booking table dropdown and admin list read local SQLite.
+
+**Admin mutations (online only):** Adding, editing, or deleting tables uses Supabase REST because `tables.id` is a server-assigned integer. The UI disables these actions offline; PowerSync syncs changes into local SQLite after online writes.
+
+| Function | Purpose |
+|----------|---------|
+| `getTablesForRestaurant(db, restaurantId)` | List tables from local SQLite (offline-capable) |
+| `loadTablesForRestaurant(db, restaurantId)` | Alias for `getTablesForRestaurant` |
+| `insertTableOnline({ restaurant_id, name, pax_max })` | Add table via Supabase REST (online only) |
+| `updateTableOnline(id, { name, pax_max }, restaurantId)` | Update via Supabase REST (online only) |
+| `deleteTableAndClearBookings(db, id, restaurantId)` | Clear `bookings.table_id`, delete via Supabase REST |
+| `getBookingsCountForTable(db, tableId, restaurantId)` | Count bookings assigned to a table (delete warning) |
+| `populateTableSelect(select, tables)` | Fill booking form dropdown |
+| `formatTableLabel(table)` | Display label with optional max pax |
+
+| Column | Purpose |
+|--------|---------|
+| `id` | Primary key; stored on `bookings.table_id` when assigned |
+| `restaurant_id` | Tenant scope — queries filter by active restaurant |
+| `name` | Display label in the dropdown |
+| `pax_max` | Optional max party size (nullable in Postgres); shown in label when set |
+
+`bookings.table_id` is nullable — table assignment is optional at create/edit time.
+
+Run `npm test` to execute [`db/tables.test.js`](../db/tables.test.js).
+
 ## Watched queries (live UI)
 
 The manager view ([`booking/views/managerView.js`](../booking/views/managerView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the manager view calls `activeWatch.close()` so listeners do not leak.
 
 The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
+
+The tables admin page ([`booking/tables.js`](../booking/tables.js)) uses the same watched-query pattern over local `tables`.
 
 ```javascript
 const watched = db.query({
@@ -206,12 +247,28 @@ export const AppSchema = new Schema({
             id: column.text,
             created_at: column.text,
             restaurant_id: column.integer,
+            table_id: column.integer,
             // ...
         },
         {
             indexes: {
                 idx_bookings_restaurant_id: ['restaurant_id'],
                 idx_bookings_datetime: ['datetime'],
+                idx_bookings_table_id: ['table_id'],
+            },
+        }
+    ),
+    tables: new Table(
+        {
+            id: column.integer,
+            created_at: column.text,
+            restaurant_id: column.integer,
+            pax_max: column.integer,
+            name: column.text,
+        },
+        {
+            indexes: {
+                idx_tables_restaurant_id: ['restaurant_id'],
             },
         }
     ),
@@ -241,7 +298,14 @@ migrations: new Table(
 
 Most migrations are currently no-ops because schema changes belong in `schema.js`. Use migrations for one-time data backfills or raw SQL that cannot be expressed declaratively.
 
-Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migrations/) and must stay aligned with `db/schema.js`.
+Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migrations/) and must stay aligned with `db/schema.js`:
+
+| Migration | Contents |
+|-----------|----------|
+| `001_initial.sql` | `restaurants`, `profiles`, `bookings`, RLS |
+| `002_tables.sql` | `tables` (seating), select-only RLS |
+| `003_bookings_table_id.sql` | `bookings.table_id` FK to `tables` |
+| `004_tables_write_rls.sql` | `tables` insert/update/delete RLS for admin page |
 
 ## Vite configuration
 
