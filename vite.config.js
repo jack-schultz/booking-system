@@ -2,6 +2,7 @@ import { cpSync, mkdirSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { bookingRoutePlugin } from './vite/bookingRoutePlugin.js';
 
 function copyDocsMarkdown() {
     return {
@@ -40,13 +41,7 @@ export default defineConfig({
                 index: resolve(__dirname, 'index.html'),
                 login: resolve(__dirname, 'login.html'),
                 signup: resolve(__dirname, 'signup.html'),
-                manager: resolve(__dirname, 'booking/manager.html'),
                 bookingApp: resolve(__dirname, 'booking/app.html'),
-                metrics: resolve(__dirname, 'booking/metrics.html'),
-                tables: resolve(__dirname, 'booking/tables.html'),
-                create: resolve(__dirname, 'booking/create.html'),
-                walkin: resolve(__dirname, 'booking/walkin.html'),
-                syncStatus: resolve(__dirname, 'sync-status.html'),
                 seedBookings: resolve(__dirname, 'seed-bookings.html'),
                 docsIndex: resolve(__dirname, 'docs/index.html'),
                 docsGettingStarted: resolve(__dirname, 'docs/getting-started.html'),
@@ -61,6 +56,7 @@ export default defineConfig({
     },
     plugins: [
         copyDocsMarkdown(),
+        bookingRoutePlugin(),
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['style.css'],

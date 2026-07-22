@@ -7,15 +7,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var path = location.pathname;
-            var showManager = path.endsWith('manager.html') || (!path.endsWith('create.html') && !path.endsWith('walkin.html'));
-            var showCreate = path.endsWith('create.html');
-            var showWalkin = path.endsWith('walkin.html');
-            var vm = document.getElementById('view-manager');
-            var vc = document.getElementById('view-create');
-            var vw = document.getElementById('view-walkin');
-            if (vm) vm.hidden = !showManager;
-            if (vc) vc.hidden = !showCreate;
-            if (vw) vw.hidden = !showWalkin;
+            var match = path.replace(/\/$/, '').match(/\/booking\/(manager|create|walkin|metrics|tables|sync-status)$/);
+            var route = match ? match[1] : 'manager';
+            ['manager', 'create', 'walkin', 'metrics', 'tables', 'sync-status'].forEach(function (name) {
+                var el = document.getElementById('view-' + name);
+                if (el) el.hidden = name !== route;
+            });
+            var layout = document.getElementById('booking-shell-layout');
+            var sidebarPanel = document.getElementById('booking-sidebar-panel');
+            var showSidebar = route === 'manager' || route === 'create' || route === 'walkin';
+            if (layout) layout.classList.toggle('booking-page-layout--no-sidebar', !showSidebar);
+            if (sidebarPanel) sidebarPanel.hidden = !showSidebar;
         });
     </script>
 </head>
@@ -23,7 +25,7 @@
 <div id="site-navbar-mount"></div>
 
 <div class="page-content">
-    <div class="booking-page-layout">
+    <div class="booking-page-layout" id="booking-shell-layout">
         <div class="page-primary-panel">
             <div id="view-manager">
                 <div class="booking-header-group">
@@ -199,9 +201,79 @@
                 <h1>Log Walk-In</h1>
                 <p>Walk-in booking flow coming soon.</p>
             </div>
+
+            <div id="view-metrics" hidden>
+                <div class="metrics-page-layout">
+                    <div class="page-primary-panel metrics-page-panel">
+                        <div class="metrics-header-group">
+                            <button type="button" class="metrics-week-left" id="metrics-week-left" aria-label="Previous week">‹</button>
+                            <h1 id="metrics-header">Loading...</h1>
+                            <button type="button" class="metrics-week-right" id="metrics-week-right" aria-label="Next week">›</button>
+                        </div>
+                        <p id="metrics-notice" class="booking-notice" hidden></p>
+                        <div id="metrics-table" class="metrics-table-mount">loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-tables" hidden>
+                <div class="tables-page-layout">
+                    <div class="page-primary-panel tables-page-panel">
+                        <h1>Restaurant Tables</h1>
+                        <p id="tables-notice" class="booking-notice" hidden></p>
+                        <div id="tables-list" class="tables-list-mount">loading...</div>
+                        <form id="table-form" class="tables-form">
+                            <h2 id="table-form-heading">Add Table</h2>
+                            <div class="tables-form-row">
+                                <div class="tables-form-column">
+                                    <label for="table-name">Name</label>
+                                    <input type="text" id="table-name" name="tableName" required placeholder="Table 1">
+                                </div>
+                                <div class="tables-form-column">
+                                    <label for="table-pax-max">Max Pax</label>
+                                    <input type="number" id="table-pax-max" name="tablePaxMax" min="1" max="99" placeholder="Optional">
+                                </div>
+                            </div>
+                            <div class="tables-form-actions">
+                                <button type="submit" id="table-save-btn">Save Table</button>
+                                <button type="button" id="table-cancel-btn" hidden>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-sync-status" hidden>
+                <div class="sync-status-page">
+                    <h1>Database Sync Status</h1>
+                    <section class="sync-status-summary" id="sync-status-summary" aria-live="polite">
+                        <p class="sync-status-loading">Loading sync status…</p>
+                    </section>
+                    <div class="sync-status-panels">
+                        <section class="sync-status-panel">
+                            <h2>Uploads</h2>
+                            <p class="sync-status-panel-subtitle">Pending changes waiting to upload to the server</p>
+                            <div class="sync-status-panel-scroll" id="sync-status-uploads-list"></div>
+                        </section>
+                        <section class="sync-status-panel">
+                            <h2>Downloads</h2>
+                            <p class="sync-status-panel-subtitle">Incoming sync activity from the server</p>
+                            <div class="sync-status-panel-scroll" id="sync-status-downloads-list"></div>
+                        </section>
+                    </div>
+                    <section class="sync-status-issues">
+                        <div class="sync-status-issues-header">
+                            <h2>Issues</h2>
+                            <button type="button" class="sync-status-reconnect-btn" id="sync-status-reconnect-btn">Reconnect</button>
+                        </div>
+                        <p class="sync-status-panel-subtitle">Errors and sync problems. Conflicts are not tracked. Server accepts <strong>last-write-wins</strong>.</p>
+                        <div id="sync-status-issues-list"></div>
+                    </section>
+                </div>
+            </div>
         </div>
 
-        <div class="page-sidebar-panel">
+        <div class="page-sidebar-panel" id="booking-sidebar-panel">
             <div id="booking-sidebar-mount"></div>
         </div>
     </div>

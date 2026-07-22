@@ -1,29 +1,30 @@
 const ROUTE_PATHS = {
-    manager: 'manager.html',
-    create: 'create.html',
-    walkin: 'walkin.html',
+    manager: 'manager',
+    create: 'create',
+    walkin: 'walkin',
+    metrics: 'metrics',
+    tables: 'tables',
+    'sync-status': 'sync-status',
 };
 
+const BOOKING_ROUTE_RE = /\/booking\/(manager|create|walkin|metrics|tables|sync-status)\/?$/;
+
 /**
- * @returns {{ name: 'manager' | 'create' | 'walkin', editId: string | null }}
+ * @returns {{ name: keyof typeof ROUTE_PATHS, editId: string | null }}
  */
 export function parseRouteFromLocation(location = window.location) {
-    const pathname = location.pathname;
+    const pathname = location.pathname.replace(/\/$/, '');
     const params = new URLSearchParams(location.search);
     const editId = params.get('edit');
-
-    if (pathname.endsWith('/create.html') || pathname.endsWith('create.html')) {
-        return { name: 'create', editId };
-    }
-    if (pathname.endsWith('/walkin.html') || pathname.endsWith('walkin.html')) {
-        return { name: 'walkin', editId: null };
-    }
-    return { name: 'manager', editId: null };
+    const match = pathname.match(BOOKING_ROUTE_RE);
+    const name = match?.[1] ?? 'manager';
+    return { name, editId: name === 'create' ? editId : null };
 }
 
 function buildUrl(routeName, { edit } = {}) {
-    const path = ROUTE_PATHS[routeName] ?? ROUTE_PATHS.manager;
-    const url = new URL(path, window.location.href);
+    const segment = ROUTE_PATHS[routeName] ?? ROUTE_PATHS.manager;
+    const base = import.meta.env.BASE_URL;
+    const url = new URL(`${base}booking/${segment}`, window.location.origin);
     if (edit) {
         url.searchParams.set('edit', edit);
     } else {
@@ -50,6 +51,9 @@ export function createBookingRouter(ctx) {
         manager: document.getElementById('view-manager'),
         create: document.getElementById('view-create'),
         walkin: document.getElementById('view-walkin'),
+        metrics: document.getElementById('view-metrics'),
+        tables: document.getElementById('view-tables'),
+        'sync-status': document.getElementById('view-sync-status'),
     };
 
     function showViewContainer(name) {

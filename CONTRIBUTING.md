@@ -6,10 +6,10 @@ Short guide for where code belongs in this project. Full setup and architecture 
 
 | Change | Location |
 |--------|----------|
-| Page UI logic (forms, lists, clicks) | `booking/*.js`, `login.js`, `signup.js`, `index.js`, `sync-status.js` |
+| Page UI logic (forms, lists, clicks) | `booking/views/*.js`, `login.js`, `signup.js`, `index.js` |
 | Page markup only | Matching `.html` file — keep scripts in separate `.js` files |
 | Shared navbar / booking sidebar | `ui/navbar.js`, `ui/bookingSidebar.js` |
-| Sync status icon + dashboard | `ui/syncIndicator.js`, `sync-status.html`, `sync-status.js`, `db/syncStatus.js` |
+| Sync status icon + dashboard view | `ui/syncIndicator.js`, `booking/views/syncStatusView.js`, `db/syncStatus.js` |
 | SQL and booking CRUD | `db/bookings.js` |
 | Database schema (local) | `db/schema.js` |
 | Database schema (Supabase) | `supabase/migrations/` |
@@ -31,7 +31,7 @@ Short guide for where code belongs in this project. Full setup and architecture 
 ## Intentional stubs as of writing
 
 - `db/migrations/001.js`, `002.js` — only migration framework exists. Once db is live and needs migration, this lays out how it will work.
-- `booking/walkin.html` — placeholder page, not in scope yet.
+- `booking/views/walkinView.js` — walk-in placeholder view inside the booking shell, not in scope yet.
 - `DEFAULT_RESTAURANT_ID` in `config/constants.js` — fallback when profile has not synced `restaurant_id` yet.
 
 ## Domain terms

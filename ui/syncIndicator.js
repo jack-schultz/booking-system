@@ -19,14 +19,16 @@ const HEALTH_LABELS = {
     ok: 'Sync up to date',
 };
 
-/**
- * @param {{ basePath?: string }} options
- */
-export function initSyncIndicator({ basePath = '' } = {}) {
+/** @type {(() => void) | null} */
+let unsubscribeSyncIndicator = null;
+
+export function initSyncIndicator() {
     const link = document.getElementById('sync-indicator');
     if (!link) {
         return;
     }
+
+    unsubscribeSyncIndicator?.();
 
     function applyHealth(health) {
         link.classList.remove('sync-indicator--offline', 'sync-indicator--warning', 'sync-indicator--ok');
@@ -34,11 +36,32 @@ export function initSyncIndicator({ basePath = '' } = {}) {
         link.setAttribute('aria-label', HEALTH_LABELS[health] ?? 'Sync status');
     }
 
-    subscribeSyncStatus((snapshot) => {
+    unsubscribeSyncIndicator = subscribeSyncStatus((snapshot) => {
         applyHealth(snapshot.health);
     });
 }
 
-export function getSyncIndicatorMarkup(basePath) {
-    return `<a id="sync-indicator" class="sync-indicator sync-indicator--ok" href="${basePath}sync-status.html" aria-label="${HEALTH_LABELS.ok}">${SYNC_ICON_SVG}</a>`;
+/**
+ * @param {Function | undefined} onNavigate
+ */
+export function wireSyncIndicatorNavigation(onNavigate) {
+    const link = document.getElementById('sync-indicator');
+    if (!link || !onNavigate) return;
+
+    if (link.dataset.navWired === 'true') return;
+    link.dataset.navWired = 'true';
+
+    link.addEventListener('click', (event) => {
+        event.preventDefault();
+        onNavigate('sync-status');
+    });
+}
+
+/**
+ * @param {string} basePath
+ * @param {{ route?: string, href?: string }} [options]
+ */
+export function getSyncIndicatorMarkup(basePath, { route = 'sync-status', href } = {}) {
+    const targetHref = href ?? `${basePath}booking/${route}`;
+    return `<a id="sync-indicator" class="sync-indicator sync-indicator--ok" href="${targetHref}" data-route="${route}" aria-label="${HEALTH_LABELS.ok}">${SYNC_ICON_SVG}</a>`;
 }

@@ -50,22 +50,29 @@ A client-side restaurant booking app with no backend server of its own. The brow
 
 | Path | Purpose | Auth required |
 |------|---------|---------------|
-| `index.html` | Home / landing | No |
-| `login.html` | Sign in; redirects to booking shell (no DB init here) | No |
-| `signup.html` | Create account | No |
-| `booking/manager.html` | Booking shell — manager view (list by day; live watch query) | Yes |
-| `booking/metrics.html` | Weekly lunch/dinner pax metrics (live watch query) | Yes |
-| `booking/create.html` | Same shell — create/edit view (`?edit=<id>`) | Yes |
-| `booking/walkin.html` | Same shell — walk-in placeholder | Yes |
-| `sync-status.html` | Database sync status dashboard (upload queue, download activity, issues) | Yes |
+| `index.html` | Home / landing — public navbar with **Open Booking App** | No |
+| `login.html` | Sign in; **Continue as [name]** when a stored account exists | No |
+| `signup.html` | Create account — public navbar | No |
+| `booking/manager` | SPA — manager view (list by day; live watch query) | Yes |
+| `booking/metrics` | SPA — weekly lunch/dinner pax metrics | Yes |
+| `booking/create` | SPA — create/edit view (`?edit=<id>`) | Yes |
+| `booking/walkin` | SPA — walk-in placeholder | Yes |
+| `booking/tables` | SPA — restaurant table admin | Yes |
+| `booking/sync-status` | SPA — sync dashboard (upload queue, download activity, issues) | Yes |
 
-All pages share a top navbar ([`ui/navbar.js`](../ui/navbar.js)) with Home, Booking Manager, Weekly Metrics, an **Offline** badge when the browser is offline, a **sync status icon** (links to the dashboard), and account controls when logged in.
+**Navbar variants** ([`ui/navbar.js`](../ui/navbar.js)):
+
+| Variant | Used on | Links |
+|---------|---------|-------|
+| `mountPublicNavbar` | index, signup, docs | Open Booking App |
+| `mountAuthNavbar` | login | Auth controls only |
+| `mountAppNavbar` | booking SPA | Bookings, Metrics, Tables, sync icon, auth |
 
 App pages import [`pwa/register.js`](../pwa/register.js) to register the service worker from `vite-plugin-pwa`.
 
 ### Booking sidebar shell
 
-Manager, create, and walk-in share one JavaScript session ([`booking/app.js`](../booking/app.js)). Sidebar navigation swaps views without reloading the page; PowerSync and the local database stay open for the session.
+Manager, create, walk-in, metrics, tables, and sync status share one JavaScript session ([`booking/app.js`](../booking/app.js)). The booking sidebar appears on manager / create / walk-in only; the app navbar handles all in-shell navigation.
 
 See **[Booking shell](./booking-shell.html)** for routing, view lifecycle, extension guide, trade-offs, and testing checklist.
 
@@ -101,17 +108,17 @@ All booking CRUD goes through `db/bookings.js` and interacts with the **local** 
 | Operation | Function | Used by |
 |-----------|----------|---------|
 | List by date | watched query over day range | [`booking/views/managerView.js`](../booking/views/managerView.js) |
-| List by week | watched query over week range | [`booking/metrics.js`](../booking/metrics.js) |
+| List by week | watched query over week range | [`booking/views/metricsView.js`](../booking/views/metricsView.js) |
 | Load one | `getBookingById(db, id, restaurantId)` | [`booking/views/createView.js`](../booking/views/createView.js) (edit mode) |
 | Create | `insertBooking(db, booking)` | [`booking/views/createView.js`](../booking/views/createView.js) |
 | Update | `updateBooking(db, id, booking, restaurantId)` | [`booking/views/createView.js`](../booking/views/createView.js) |
 | Update status | `updateBookingStatus(db, id, restaurantId, status)` | [`booking/views/managerView.js`](../booking/views/managerView.js) (status button) |
 | Delete | `deleteBooking(db, id, restaurantId)` | [`booking/views/managerView.js`](../booking/views/managerView.js) |
-| Pax aggregation | `aggregateBookingsByDay`, `aggregateBookingsByWeek`, `getWeekRange` | manager view, [`booking/metrics.js`](../booking/metrics.js) |
+| Pax aggregation | `aggregateBookingsByDay`, `aggregateBookingsByWeek`, `getWeekRange` | manager view, [`booking/views/metricsView.js`](../booking/views/metricsView.js) |
 
 Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote changes download via PowerSync Sync Streams.
 
-[`login.html`](../login.html) only authenticates and redirects. The booking shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) calls `initDatabase()`, mounts views, and runs `ensureSyncConnected()` in the background when the user is authenticated, online, and assigned to a restaurant. [`booking/metrics.js`](../booking/metrics.js) follows the same DB pattern as a separate multi-page entry.
+[`login.html`](../login.html) authenticates and redirects. The booking shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) calls `initDatabase()`, mounts views, and runs `ensureSyncConnected()` in the background when the user is authenticated, online, and assigned to a restaurant.
 
 ## Database module (`db/`)
 
@@ -162,7 +169,7 @@ Changes upload to Supabase via `db/supabaseConnector.js` when online. Remote cha
 
 Configured in `vite.config.js` with `navigateFallback: null` so the service worker does not redirect unknown URLs to `index.html` (important for multi-page routing on GitHub Pages).
 
-The sync status icon links to [`sync-status.html`](../sync-status.html). Status is computed in [`db/syncStatus.js`](../db/syncStatus.js) from PowerSync `currentStatus`, upload queue stats, and browser connectivity — separate from [`db/sync.js`](../db/sync.js), which handles PowerSync connect/disconnect.
+The sync status icon navigates to `/booking/sync-status` within the SPA. Status is computed in [`db/syncStatus.js`](../db/syncStatus.js) from PowerSync `currentStatus`, upload queue stats, and browser connectivity — separate from [`db/sync.js`](../db/sync.js), which handles PowerSync connect/disconnect.
 
 ## Module types
 

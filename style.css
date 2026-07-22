@@ -42,6 +42,30 @@ Page layout
     padding: 0;
 }
 
+.booking-page-layout--no-sidebar .page-primary-panel {
+    width: 100%;
+}
+
+.booking-page-layout--no-sidebar .page-sidebar-panel {
+    display: none;
+}
+
+.stored-account-prompt {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: whitesmoke;
+    border-radius: 10px;
+}
+
+.stored-account-prompt p {
+    margin: 0 0 0.75rem;
+}
+
+.site-navbar-app-link.is-active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 /* Left column: forms, lists, and main page content */
 .page-primary-panel {
     width: 70%;

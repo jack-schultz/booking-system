@@ -1,16 +1,28 @@
 import '../pwa/register.js';
 import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import { initAccountSwitcher } from '../auth/accountSwitcher.js';
-import { mountSiteNavbar } from '../ui/navbar.js';
+import { mountAppNavbar, updateAppNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar, updateBookingSidebar } from '../ui/bookingSidebar.js';
 
 /** @type {Set<(account: import('../auth/accounts.js').Account | null) => void>} */
 const accountSwitchListeners = new Set();
 
+const SIDEBAR_ROUTES = new Set(['manager', 'create', 'walkin']);
+
 function notifyAccountSwitch(account) {
     for (const listener of accountSwitchListeners) {
         listener(account);
+    }
+}
+
+function setSidebarVisible(route) {
+    const layout = document.getElementById('booking-shell-layout');
+    const panel = document.getElementById('booking-sidebar-panel');
+    const showSidebar = SIDEBAR_ROUTES.has(route);
+    layout?.classList.toggle('booking-page-layout--no-sidebar', !showSidebar);
+    if (panel) {
+        panel.hidden = !showSidebar;
     }
 }
 
@@ -19,10 +31,10 @@ function notifyAccountSwitch(account) {
  * @param {{ initialRoute: string, onNavigate: (route: string, options?: { edit?: string }) => void }} options
  */
 export async function bootstrapBookingApp({ initialRoute, onNavigate }) {
-    mountSiteNavbar(document.getElementById('site-navbar-mount'), {
+    mountAppNavbar(document.getElementById('site-navbar-mount'), {
         basePath: '../',
-        showAuthControls: true,
-        showSyncIndicator: true,
+        activeRoute: initialRoute,
+        onNavigate,
     });
     mountSiteFooter(document.getElementById('site-footer-mount'), {
         basePath: '../',
@@ -32,6 +44,7 @@ export async function bootstrapBookingApp({ initialRoute, onNavigate }) {
         onNavigate,
         showSaveButton: initialRoute === 'create',
     });
+    setSidebarVisible(initialRoute);
 
     const switcherPromise = initAccountSwitcher({
         requireAuth: true,
@@ -50,11 +63,19 @@ export async function bootstrapBookingApp({ initialRoute, onNavigate }) {
             return () => accountSwitchListeners.delete(fn);
         },
         setActiveRoute(route) {
-            updateBookingSidebar({
+            setSidebarVisible(route);
+            updateAppNavbar({
                 activeRoute: route,
                 onNavigate,
-                showSaveButton: route === 'create',
+                basePath: '../',
             });
+            if (SIDEBAR_ROUTES.has(route)) {
+                updateBookingSidebar({
+                    activeRoute: route,
+                    onNavigate,
+                    showSaveButton: route === 'create',
+                });
+            }
         },
     };
 }

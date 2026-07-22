@@ -1,51 +1,26 @@
-import '../pwa/register.js';
-import { initDatabase, ensureSyncConnected } from '../db/index.js';
 import {
     aggregateBookingsByWeek,
     getWeekRange,
     toTimestamptz,
-} from '../db/bookings.js';
+} from '../../db/bookings.js';
 import {
-    initAccountSwitcher,
     getActiveRestaurantId,
     hasAssignedRestaurant,
-} from '../auth/accountSwitcher.js';
-import { mountSiteNavbar } from '../ui/navbar.js';
-import { mountSiteFooter } from '../ui/footer.js';
-import { formatMetricsPaxCell } from '../ui/paxSummary.js';
+} from '../../auth/accountSwitcher.js';
+import { formatMetricsPaxCell } from '../../ui/paxSummary.js';
 
-mountSiteNavbar(document.getElementById('site-navbar-mount'), {
-    basePath: '../',
-    showAuthControls: true,
-    showSyncIndicator: true,
-});
-mountSiteFooter(document.getElementById('site-footer-mount'), {
-    basePath: '../',
-});
-
-const metricsHeader = document.getElementById('metrics-header');
-const metricsNotice = document.getElementById('metrics-notice');
-const metricsTable = document.getElementById('metrics-table');
-
-const switcherPromise = initAccountSwitcher({
-    requireAuth: true,
-    loginRedirect: '../login.html',
-    onSwitch: () => subscribeBookings(),
-});
-
-const db = await initDatabase();
+/** @type {AbortController | null} */
+let abortController = null;
+/** @type {import('@powersync/web').SyncStreamSubscription | null} */
+let activeWatch = null;
+/** @type {(() => void) | null} */
+let unregisterAccountSwitch = null;
+/** @type {import('@powersync/web').PowerSyncDatabase | null} */
+let db = null;
 
 let weekOffset = 0;
-let activeWatch = null;
 
-document.getElementById('metrics-week-left').addEventListener('click', () => {
-    weekOffset -= 1;
-    subscribeBookings();
-});
-document.getElementById('metrics-week-right').addEventListener('click', () => {
-    weekOffset += 1;
-    subscribeBookings();
-});
+const root = () => document.getElementById('view-metrics');
 
 function formatWeekLabel(start, end) {
     const endDate = new Date(end);
@@ -75,6 +50,10 @@ function isSameCalendarDay(left, right) {
 }
 
 function renderMetrics(bookings, weekStart, weekEnd) {
+    const metricsHeader = root()?.querySelector('#metrics-header');
+    const metricsTable = root()?.querySelector('#metrics-table');
+    if (!metricsHeader || !metricsTable) return;
+
     metricsHeader.textContent = formatWeekLabel(weekStart, weekEnd);
 
     const { days, lunchTotal, dinnerTotal, weekendTotal, weekTotal } = aggregateBookingsByWeek(bookings, weekStart);
@@ -143,6 +122,11 @@ function renderMetrics(bookings, weekStart, weekEnd) {
 }
 
 function showUnassignedNotice() {
+    const metricsNotice = root()?.querySelector('#metrics-notice');
+    const metricsTable = root()?.querySelector('#metrics-table');
+    const metricsHeader = root()?.querySelector('#metrics-header');
+    if (!metricsNotice || !metricsTable || !metricsHeader) return;
+
     metricsNotice.hidden = false;
     metricsNotice.textContent =
         'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant, then refresh this page.';
@@ -151,17 +135,22 @@ function showUnassignedNotice() {
 }
 
 async function subscribeBookings() {
+    if (!db) return;
+
     if (activeWatch) {
         await activeWatch.close();
         activeWatch = null;
     }
 
+    const metricsNotice = root()?.querySelector('#metrics-notice');
     if (!hasAssignedRestaurant()) {
         showUnassignedNotice();
         return;
     }
 
-    metricsNotice.hidden = true;
+    if (metricsNotice) {
+        metricsNotice.hidden = true;
+    }
 
     const { start, end } = getWeekRange(new Date(), weekOffset);
     const restaurantId = getActiveRestaurantId();
@@ -180,6 +169,44 @@ async function subscribeBookings() {
     });
 }
 
-await switcherPromise;
-await subscribeBookings();
-void ensureSyncConnected(db);
+/**
+ * @param {{ db: import('@powersync/web').PowerSyncDatabase, registerOnAccountSwitch: Function }} ctx
+ */
+export async function mountMetricsView(ctx) {
+    db = ctx.db;
+    abortController = new AbortController();
+    const { signal } = abortController;
+
+    weekOffset = 0;
+
+    root()?.querySelector('#metrics-week-left')?.addEventListener('click', () => {
+        weekOffset -= 1;
+        void subscribeBookings();
+    }, { signal });
+
+    root()?.querySelector('#metrics-week-right')?.addEventListener('click', () => {
+        weekOffset += 1;
+        void subscribeBookings();
+    }, { signal });
+
+    unregisterAccountSwitch = ctx.registerOnAccountSwitch(() => {
+        void subscribeBookings();
+    });
+
+    await subscribeBookings();
+}
+
+export async function unmountMetricsView() {
+    unregisterAccountSwitch?.();
+    unregisterAccountSwitch = null;
+
+    if (activeWatch) {
+        await activeWatch.close();
+        activeWatch = null;
+    }
+
+    abortController?.abort();
+    abortController = null;
+    db = null;
+    weekOffset = 0;
+}

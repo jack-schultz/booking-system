@@ -1,59 +1,18 @@
-import './pwa/register.js';
-import { initAccountSwitcher } from './auth/accountSwitcher.js';
-import { mountSiteNavbar } from './ui/navbar.js';
-import { mountSiteFooter } from './ui/footer.js';
-import {
-    initDatabase,
-    ensureSyncConnected,
-    reconnectSync,
-} from './db/index.js';
+import { reconnectSync } from '../../db/index.js';
 import {
     subscribeSyncStatus,
     getRecentIssues,
     getDownloadActivityLog,
-} from './db/syncStatus.js';
+} from '../../db/syncStatus.js';
 
-mountSiteNavbar(document.getElementById('site-navbar-mount'), { showAuthControls: true, showSyncIndicator: true });
-mountSiteFooter(document.getElementById('site-footer-mount'));
+/** @type {AbortController | null} */
+let abortController = null;
+/** @type {(() => void) | null} */
+let unsubscribeSyncStatus = null;
+/** @type {import('@powersync/web').PowerSyncDatabase | null} */
+let db = null;
 
-const summaryEl = document.getElementById('sync-status-summary');
-const uploadsEl = document.getElementById('sync-status-uploads-list');
-const downloadsEl = document.getElementById('sync-status-downloads-list');
-const issuesEl = document.getElementById('sync-status-issues-list');
-const reconnectBtn = document.getElementById('sync-status-reconnect-btn');
-
-await initAccountSwitcher({ requireAuth: true, loginRedirect: 'login.html' });
-
-const db = await initDatabase();
-void ensureSyncConnected(db);
-
-function setReconnectButtonIdle(reconnectResult) {
-    reconnectBtn.disabled = false;
-    if (!navigator.onLine) {
-        reconnectBtn.textContent = 'Offline';
-    } else if (reconnectResult && db.connected) {
-        reconnectBtn.textContent = 'Reconnect';
-    } else {
-        reconnectBtn.textContent = 'Failed to connect';
-    }
-}
-
-reconnectBtn.addEventListener('click', async () => {
-    reconnectBtn.disabled = true;
-    reconnectBtn.textContent = 'Reconnecting...';
-    let reconnectResult = null;
-    try {
-        reconnectResult = await reconnectSync(db);
-    } finally {
-        setReconnectButtonIdle(reconnectResult);
-    }
-});
-
-window.addEventListener('online', () => {
-    if (reconnectBtn.textContent === 'Offline') {
-        reconnectBtn.textContent = 'Reconnect';
-    }
-});
+const root = () => document.getElementById('view-sync-status');
 
 function formatDateTime(iso) {
     if (!iso) return '—';
@@ -72,7 +31,16 @@ function healthLabel(health) {
     return 'Up to date';
 }
 
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function renderSummary(snapshot) {
+    const summaryEl = root()?.querySelector('#sync-status-summary');
+    if (!summaryEl) return;
+
     const connectionState = snapshot.online
         ? snapshot.connected
             ? 'Connected'
@@ -124,12 +92,6 @@ function renderSummary(snapshot) {
     }
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 function renderUploadItem(entry) {
     const name = [entry.opData?.first_name, entry.opData?.last_name].filter(Boolean).join(' ');
     const datetime = entry.opData?.datetime ?? '';
@@ -150,6 +112,9 @@ function renderUploadItem(entry) {
 }
 
 function renderUploads(snapshot) {
+    const uploadsEl = root()?.querySelector('#sync-status-uploads-list');
+    if (!uploadsEl) return;
+
     if (snapshot.pendingUploads.length === 0) {
         const sizeNote =
             snapshot.uploadQueueSize != null ? ` (${formatBytes(snapshot.uploadQueueSize)})` : '';
@@ -167,6 +132,9 @@ function renderUploads(snapshot) {
 }
 
 function renderDownloads(snapshot) {
+    const downloadsEl = root()?.querySelector('#sync-status-downloads-list');
+    if (!downloadsEl) return;
+
     const parts = [];
     const flow = snapshot.dataFlowStatus ?? {};
 
@@ -236,6 +204,9 @@ function renderDownloads(snapshot) {
 }
 
 function renderIssues(snapshot) {
+    const issuesEl = root()?.querySelector('#sync-status-issues-list');
+    if (!issuesEl) return;
+
     const parts = [];
     const flow = snapshot.dataFlowStatus ?? {};
 
@@ -307,4 +278,55 @@ function render(snapshot) {
     renderIssues(snapshot);
 }
 
-subscribeSyncStatus(render);
+function setReconnectButtonIdle(reconnectBtn, reconnectResult) {
+    if (!reconnectBtn || !db) return;
+
+    reconnectBtn.disabled = false;
+    if (!navigator.onLine) {
+        reconnectBtn.textContent = 'Offline';
+    } else if (reconnectResult && db.connected) {
+        reconnectBtn.textContent = 'Reconnect';
+    } else {
+        reconnectBtn.textContent = 'Failed to connect';
+    }
+}
+
+/**
+ * @param {{ db: import('@powersync/web').PowerSyncDatabase }} ctx
+ */
+export async function mountSyncStatusView(ctx) {
+    db = ctx.db;
+    abortController = new AbortController();
+    const { signal } = abortController;
+
+    const reconnectBtn = root()?.querySelector('#sync-status-reconnect-btn');
+
+    reconnectBtn?.addEventListener('click', async () => {
+        if (!reconnectBtn || !db) return;
+        reconnectBtn.disabled = true;
+        reconnectBtn.textContent = 'Reconnecting...';
+        let reconnectResult = null;
+        try {
+            reconnectResult = await reconnectSync(db);
+        } finally {
+            setReconnectButtonIdle(reconnectBtn, reconnectResult);
+        }
+    }, { signal });
+
+    window.addEventListener('online', () => {
+        if (reconnectBtn?.textContent === 'Offline') {
+            reconnectBtn.textContent = 'Reconnect';
+        }
+    }, { signal });
+
+    unsubscribeSyncStatus = subscribeSyncStatus(render);
+}
+
+export async function unmountSyncStatusView() {
+    unsubscribeSyncStatus?.();
+    unsubscribeSyncStatus = null;
+
+    abortController?.abort();
+    abortController = null;
+    db = null;
+}
