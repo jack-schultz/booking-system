@@ -8,7 +8,7 @@ import {
     updateBooking,
 } from '../../db/bookings.js';
 import { loadTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
-import { BOOKING_STATUS } from '../../config/constants.js';
+import {BOOKING_STATUS, STORAGE_KEYS} from '../../config/constants.js';
 import { populateTimeslotSelect } from '../../config/timeslots.js';
 import {
     getActiveProfileId,
@@ -42,7 +42,7 @@ function resetForm() {
     bookingNotice.textContent = '';
 
     populateTimeslotSelect(timeslot);
-    bookingDate.value = getDateFromDatetime(Date());
+    bookingDate.value = localStorage.getItem(STORAGE_KEYS.MANAGER_SELECTED_DATE);
 
     const tableId = viewRoot.querySelector('#tableId');
     if (tableId) {
