@@ -42,7 +42,7 @@ function resetForm() {
     bookingNotice.textContent = '';
 
     populateTimeslotSelect(timeslot);
-    bookingDate.value = getDateFromDatetime(Date());
+    bookingDate.value = localStorage.getItem(STORAGE_KEYS.MANAGER_SELECTED_DATE);
 
     const tableId = viewRoot.querySelector('#tableId');
     if (tableId) {
