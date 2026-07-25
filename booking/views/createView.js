@@ -8,20 +8,39 @@ import {
     updateBooking,
 } from '../../db/bookings.js';
 import { loadTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
-import {BOOKING_STATUS, STORAGE_KEYS} from '../../config/constants.js';
+import { BOOKING_STATUS } from '../../config/constants.js';
 import { populateTimeslotSelect } from '../../config/timeslots.js';
 import {
     getActiveProfileId,
     getActiveRestaurantId,
     hasAssignedRestaurant,
 } from '../../auth/accountSwitcher.js';
+import {
+    formatDateKey,
+    mountBookingDateBar,
+    parseDateKey,
+} from '../../ui/bookingDateBar.js';
 
 /** @type {AbortController | null} */
 let abortController = null;
 /** @type {(() => void) | null} */
 let unregisterAccountSwitch = null;
+/** @type {ReturnType<typeof mountBookingDateBar> | null} */
+let dateBar = null;
 let db = null;
 let onNavigate = null;
+
+// Required as the date bar is used in multiple views
+const CREATE_DATE_BAR_IDS = {
+    dateLeft: 'create-booking-list-date-left',
+    dateRight: 'create-booking-list-date-right',
+    datePicker: 'create-booking-date-picker',
+    dateHeader: 'create-booking-list-header',
+    headerPax: 'create-booking-header-pax',
+    dateDropdown: 'create-booking-date-dropdown',
+    dateDropdownList: 'create-booking-date-dropdown-list',
+    dateToday: 'create-booking-date-today',
+};
 
 const root = () => document.getElementById('view-create');
 
@@ -42,7 +61,7 @@ function resetForm() {
     bookingNotice.textContent = '';
 
     populateTimeslotSelect(timeslot);
-    bookingDate.value = localStorage.getItem(STORAGE_KEYS.MANAGER_SELECTED_DATE);
+    bookingDate.value = formatDateKey(dateBar?.getDate() ?? new Date());
 
     const tableId = viewRoot.querySelector('#tableId');
     if (tableId) {
@@ -127,6 +146,7 @@ async function loadBookingForEdit(editId, state) {
     state.editingStatus = booking.status;
     pageTitle.textContent = 'Edit Booking';
     bookingDate.value = getDateFromDatetime(booking.datetime);
+    dateBar?.setDate(parseDateKey(bookingDate.value) ?? new Date(), { silent: true });
     timeslot.value = getTimeslotFromDatetime(booking.datetime);
     firstName.value = booking.first_name;
     lastName.value = booking.last_name;
@@ -174,13 +194,38 @@ export async function mountCreateView(ctx) {
     const totalPax = viewRoot.querySelector('#totalPax');
     const childPax = viewRoot.querySelector('#childPax');
     const hcPax = viewRoot.querySelector('#hcPax');
+    const bookingDate = viewRoot.querySelector('#bookingDate');
 
     const state = {
         editingId: null,
         editingStatus: BOOKING_STATUS.PENDING,
     };
 
+    let syncingDate = false;
+
+    dateBar = mountBookingDateBar({
+        viewRoot,
+        db,
+        signal,
+        ids: CREATE_DATE_BAR_IDS,
+        onDateChange: (date) => {
+            if (syncingDate) return;
+            syncingDate = true;
+            bookingDate.value = formatDateKey(date);
+            syncingDate = false;
+        },
+    });
+
     resetForm();
+
+    bookingDate.addEventListener('change', () => {
+        if (syncingDate) return;
+        const parsed = parseDateKey(bookingDate.value);
+        if (!parsed) return;
+        syncingDate = true;
+        dateBar?.setDate(parsed, { silent: true });
+        syncingDate = false;
+    }, { signal });
 
     const onPaxChange = () => updatePax(viewRoot);
     totalPax.addEventListener('change', onPaxChange, { signal });
@@ -189,6 +234,7 @@ export async function mountCreateView(ctx) {
 
     unregisterAccountSwitch = ctx.registerOnAccountSwitch(() => {
         applyRestaurantGuard();
+        dateBar?.refresh();
         void loadTables();
     });
 
@@ -212,7 +258,7 @@ export async function mountCreateView(ctx) {
             return;
         }
 
-        const bookingDate = viewRoot.querySelector('#bookingDate');
+        const bookingDateEl = viewRoot.querySelector('#bookingDate');
         const timeslotEl = viewRoot.querySelector('#timeslot');
         const firstName = viewRoot.querySelector('#firstName');
         const lastName = viewRoot.querySelector('#lastName');
@@ -240,7 +286,7 @@ export async function mountCreateView(ctx) {
             hc_pax: parseInt(hcPaxEl.value, 10),
             preference: preference.value,
             notes: additionalDetails.value,
-            datetime: buildDatetime(bookingDate.value, timeslotEl.value),
+            datetime: buildDatetime(bookingDateEl.value, timeslotEl.value),
             status: state.editingId ? state.editingStatus : BOOKING_STATUS.PENDING,
             table_id,
         };
@@ -262,6 +308,9 @@ export async function mountCreateView(ctx) {
 }
 
 export async function unmountCreateView() {
+    await dateBar?.destroy();
+    dateBar = null;
+
     abortController?.abort();
     abortController = null;
     unregisterAccountSwitch?.();
