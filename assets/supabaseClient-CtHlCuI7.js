@@ -1,0 +1,1 @@
+import{t as e}from"./supabaseClient-BEL8yLtP.js";export{e as supabase};

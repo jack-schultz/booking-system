@@ -23,11 +23,20 @@ import { supabase } from "../supabaseClient.js";
 
 ## Login flow (`login.html`)
 
+On load:
+
+1. `mountAuthNavbar()` — account switcher and logout (no app section links).
+2. `initAccountSwitcher()` restores any stored session from localStorage.
+3. If a stored account exists, a **Continue as [name]** prompt appears; **Continue** redirects to `booking/manager`.
+4. The login form remains available to sign in as another account (multi-account support).
+
+On form submit:
+
 1. User submits email/password.
 2. `supabase.auth.signInWithPassword()` runs.
 3. On success:
    - `registerLoggedInSession()` caches the account and syncs profile from Supabase (forced refresh).
-4. Redirect to `booking/manager.html` — **DB init and sync start on the booking shell**, not on the login page. PowerSync connects in the background after the shell loads.
+4. Redirect to `booking/manager` — **DB init and sync start on the booking shell**, not on the login page. PowerSync connects in the background after the shell loads.
 
 ## Signup (`signup.html`)
 
@@ -69,7 +78,7 @@ If `restaurant_id` is null, `hasAssignedRestaurant()` returns false. Booking pag
 
 ## Protecting routes
 
-The booking shell calls `initAccountSwitcher({ requireAuth: true })` in [`booking/bootstrap.js`](../booking/bootstrap.js), which redirects to login when no active account exists. [`booking/metrics.js`](../booking/metrics.js) and other protected pages use the same helper directly.
+The booking shell calls `initAccountSwitcher({ requireAuth: true })` in [`booking/bootstrap.js`](../booking/bootstrap.js), which redirects to login when no active account exists.
 
 ## Logout
 

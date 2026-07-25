@@ -128,9 +128,11 @@ The workflow builds `main` and `dev` independently. Production docs come from **
 For HTML pages that use PowerSync or other bundled modules (e.g. a new file under `booking/`):
 
 1. Create the `.html` page (and any JS it imports).
-2. Add it to `build.rollupOptions.input` in `vite.config.js` (same pattern as `manager`, `metrics`, `create`, etc.).
+2. Add it to `build.rollupOptions.input` in `vite.config.js` (same pattern as `bookingApp`, `metrics`, `tables`, etc.).
 3. Run `VITE_BASE_PATH=/booking-system/ npm run build` and confirm the file exists under `dist/`.
 4. Merge to `main` for production.
+
+**Booking shell routes** (`/booking/manager`, `/booking/create`, `/booking/walkin`) are not separate HTML files. They share [`booking/app.html`](../booking/app.html); [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` copies at build time and rewrites paths in dev. To add a new shell route, extend the plugin, router, and shell markup — see [Booking shell; Adding a new view](./booking-shell.html#adding-a-new-view).
 
 Doc pages and app pages share the same deployment path: **source → Vite build → `dist/` → `gh-pages`**.
 
