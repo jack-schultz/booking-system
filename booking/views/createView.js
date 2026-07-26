@@ -51,12 +51,10 @@ function resetForm() {
     const form = viewRoot.querySelector('#bookingForm');
     form.reset();
 
-    const pageTitle = viewRoot.querySelector('#pageTitle');
     const bookingNotice = viewRoot.querySelector('#create-booking-notice');
     const timeslot = viewRoot.querySelector('#timeslot');
     const bookingDate = viewRoot.querySelector('#bookingDate');
 
-    pageTitle.textContent = 'New Booking';
     bookingNotice.hidden = true;
     bookingNotice.textContent = '';
 
@@ -118,7 +116,6 @@ async function loadBookingForEdit(editId, state) {
     const viewRoot = root();
     if (!viewRoot) return;
 
-    const pageTitle = viewRoot.querySelector('#pageTitle');
     const bookingDate = viewRoot.querySelector('#bookingDate');
     const timeslot = viewRoot.querySelector('#timeslot');
     const firstName = viewRoot.querySelector('#firstName');
@@ -133,8 +130,6 @@ async function loadBookingForEdit(editId, state) {
     const tableId = viewRoot.querySelector('#tableId');
     const additionalDetails = viewRoot.querySelector('#additionalDetails');
 
-    pageTitle.textContent = 'Loading booking…';
-
     const restaurantId = getActiveRestaurantId();
     const booking = await getBookingById(db, editId, restaurantId);
     if (!booking) {
@@ -144,7 +139,6 @@ async function loadBookingForEdit(editId, state) {
 
     state.editingId = editId;
     state.editingStatus = booking.status;
-    pageTitle.textContent = 'Edit Booking';
     bookingDate.value = getDateFromDatetime(booking.datetime);
     dateBar?.setDate(parseDateKey(bookingDate.value) ?? new Date(), { silent: true });
     timeslot.value = getTimeslotFromDatetime(booking.datetime);
