@@ -1,16 +1,18 @@
 # Deployment
 
-The project deploys to **GitHub Pages** via `.github/workflows/deploy.yml`.
+The project deploys to **GitHub Pages** and **bunny.net** via [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml).
 
 ## How it works
 
 On push to `main` or `dev`:
 
 1. Check out both `main` and `dev` branches (always the latest tip of each — not only the branch that was pushed).
-2. Run `npm ci` and `npm run build` on each (Vite bundles `@powersync/web`, workers, and WASM).
-3. Copy `main/dist/*` into `public/`.
-4. Copy `dev/dist/*` into `public/dev/`.
-5. Publish `public/` to the `gh-pages` branch.
+2. Run `npm ci` and `npm run build` on each branch twice — once per deploy target (different `VITE_BASE_PATH` values).
+3. Copy build outputs into `public/` (GitHub Pages) and `bunny-public/` (bunny.net).
+4. Publish `public/` to the `gh-pages` branch.
+5. Upload `bunny-public/` to bunny.net Storage and purge the Pull Zone cache.
+
+### GitHub Pages URLs
 
 Production URL: `https://<username>.github.io/booking-system/`  
 Dev preview: `https://<username>.github.io/booking-system/dev/`
@@ -21,6 +23,18 @@ Docs on the live site:
 |-------------|----------|
 | Production (`main`) | `https://<username>.github.io/booking-system/docs/` |
 | Dev preview (`dev`) | `https://<username>.github.io/booking-system/dev/docs/` |
+
+### Bunny.net URLs
+
+Production is served at your **custom domain root** (e.g. `https://bookings.yourdomain.com/`).  
+Dev preview is under `/dev/` on the same domain (e.g. `https://bookings.yourdomain.com/dev/`).
+
+| Environment | App URL | Docs URL |
+|-------------|---------|----------|
+| Production (`main`) | `https://bookings.yourdomain.com/login.html` | `https://bookings.yourdomain.com/docs/` |
+| Dev preview (`dev`) | `https://bookings.yourdomain.com/dev/login.html` | `https://bookings.yourdomain.com/dev/docs/` |
+
+Replace `bookings.yourdomain.com` with your actual custom hostname.
 
 ### What actually lands on `gh-pages`
 
@@ -47,12 +61,12 @@ The sidebar is driven by the `DOC_PAGES` array in `docs/docs.js`. A new `.md` fi
 
 ## Base path
 
-GitHub Pages serves this repo under `/booking-system/`. The workflow sets `VITE_BASE_PATH` during build:
+Each deploy target bakes a different base path into asset URLs and the PWA service worker. The workflow sets `VITE_BASE_PATH` during build:
 
-| Branch | `VITE_BASE_PATH` |
-|--------|------------------|
-| `main` | `/booking-system/` |
-| `dev` | `/booking-system/dev/` |
+| Branch | GitHub Pages `VITE_BASE_PATH` | Bunny.net `VITE_BASE_PATH` |
+|--------|-------------------------------|----------------------------|
+| `main` | `/booking-system/` | `/` |
+| `dev` | `/booking-system/dev/` | `/dev/` |
 
 Local dev uses `/` by default (`npm run dev`).
 
@@ -66,6 +80,15 @@ npm run preview
 ```
 
 Open http://localhost:4173/booking-system/login.html
+
+Test the bunny.net (custom domain root) build locally:
+
+```bash
+VITE_BASE_PATH=/ npm run build
+npm run preview
+```
+
+Open http://localhost:4173/login.html
 
 ## Adding a new documentation page
 
@@ -148,18 +171,83 @@ Pushing to either `main` or `dev` triggers a full redeploy of **both** environme
 
 ## Environment and secrets
 
-Supabase URL, anon key, and PowerSync endpoint URL are public client-side config values. Set them in:
+Supabase URL, anon key, and PowerSync endpoint URL are public client-side config values.
 
 | Context | Where to set |
 |---------|----------------|
 | Local dev | Copy `.env.example` → `.env` |
-| GitHub Pages build | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
+| CI build (GitHub Pages + bunny.net) | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
 
 **Important:** The deploy workflow reads **repository** secrets (`Settings → Secrets and variables → Actions → Repository secrets`).
 
 **`VITE_POWERSYNC_URL`:** Copy from PowerSync Dashboard → select your instance → **Connect** → instance URL (e.g. `https://xxxxxxxx.powersync.journeyapps.com`). Not the dashboard URL and not Supabase.
 
 PowerSync authentication uses the user's Supabase JWT at runtime — no separate PowerSync secret is needed in the frontend.
+
+## Bunny.net setup (one-time, outside the repo)
+
+Complete these steps in the [bunny.net dashboard](https://bunny.net) before the first bunny deploy can succeed.
+
+### 1. Storage Zone
+
+1. **Storage → Add Storage Zone**
+2. Name the zone (e.g. `booking-system`) and pick the region closest to your users.
+3. On **FTP & API Access**, copy the **Storage Zone Password** (upload `AccessKey`).
+4. Note the regional storage endpoint (e.g. `https://storage.bunnycdn.com`, `https://syd.storage.bunnycdn.com`).
+
+### 2. Pull Zone
+
+1. **CDN → Add Pull Zone**
+2. Set **Origin Type** to **Storage Zone** and select the zone from step 1.
+3. Copy the **Pull Zone ID** from the zone overview (needed for cache purge in CI).
+
+### 3. Custom domain and SSL
+
+1. In the Pull Zone, **Hostnames → Add Custom Hostname** (e.g. `bookings.yourdomain.com`).
+2. Add the DNS record bunny shows (typically a **CNAME** to `*.b-cdn.net`).
+3. Enable **Force SSL** — bunny provisions a Let's Encrypt certificate after DNS propagates.
+
+Dev preview uses `/dev/` on the same domain; a separate hostname is optional.
+
+### 4. CDN behavior
+
+This app is a multi-page site (not a client-side router SPA). [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` files for `/booking/manager`, `/booking/create`, etc., so SPA-style 404 → `index.html` fallback is not required.
+
+Recommended Pull Zone settings:
+
+- Enable Brotli/Gzip compression.
+- Long cache for hashed assets under `/assets/`; shorter cache or bypass for `sw.js`, `manifest.webmanifest`, and HTML if you want faster deploy visibility.
+
+### 5. Account API key (cache purge)
+
+1. **Account → API** → generate an API key with permission to purge Pull Zones.
+2. Store separately from the Storage Zone Password.
+
+### 6. GitHub repository secrets for bunny.net
+
+Add under **Settings → Secrets and variables → Actions → Repository secrets**:
+
+| Secret | Purpose |
+|--------|---------|
+| `BUNNY_STORAGE_ZONE_NAME` | Storage zone name |
+| `BUNNY_STORAGE_ZONE_PASSWORD` | Storage zone password (upload AccessKey) |
+| `BUNNY_STORAGE_ENDPOINT` | Regional endpoint URL, e.g. `https://storage.bunnycdn.com` |
+| `BUNNY_API_KEY` | Account API key for Pull Zone purge |
+| `BUNNY_PULL_ZONE_ID` | Numeric Pull Zone ID |
+
+If any bunny secret is missing, the workflow still deploys to GitHub Pages and skips the bunny.net upload with a warning.
+
+## Verification checklist
+
+After the first successful deploy:
+
+1. **Bunny production:** `https://bookings.yourdomain.com/login.html` loads; no 404s under `/assets/`.
+2. **Booking routes:** `/booking/manager`, `/booking/create`, etc. work.
+3. **Bunny dev:** `https://bookings.yourdomain.com/dev/login.html` works.
+4. **PWA:** `sw.js` and `manifest.webmanifest` load; service worker registers (DevTools → Application).
+5. **Supabase login:** sign in redirects to `/booking/manager` and sync connects when online.
+6. **GitHub Pages unchanged:** `https://<username>.github.io/booking-system/login.html` still works.
+7. **Cache:** after a second deploy, changed files appear within ~1 minute (purge step working).
 
 ## Manual deploy trigger
 

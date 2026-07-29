@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Deploy
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +53,7 @@ jobs:
             echo "The deployed app will run in local-only mode without cloud sync."
           fi
 
-      - name: Build main
+      - name: Build main (GitHub Pages)
         working-directory: main
         env:
           VITE_BASE_PATH: /booking-system/
@@ -64,7 +64,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Build dev
+      - name: Build dev (GitHub Pages)
         working-directory: dev
         env:
           VITE_BASE_PATH: /booking-system/dev/
@@ -75,16 +75,101 @@ jobs:
           npm ci
           npm run build
 
-      - name: Prepare site
+      - name: Prepare GitHub Pages site
         run: |
           mkdir public
           cp -r main/dist/* public/
           mkdir -p public/dev
           cp -r dev/dist/* public/dev/
 
-      - name: Deploy
+      - name: Build main (Bunny.net)
+        working-directory: main
+        env:
+          VITE_BASE_PATH: /
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+        run: npm run build
+
+      - name: Build dev (Bunny.net)
+        working-directory: dev
+        env:
+          VITE_BASE_PATH: /dev/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+        run: npm run build
+
+      - name: Prepare Bunny.net site
+        run: |
+          mkdir bunny-public
+          cp -r main/dist/* bunny-public/
+          mkdir -p bunny-public/dev
+          cp -r dev/dist/* bunny-public/dev/
+
+      - name: Upload site artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: |
+            public
+            bunny-public
+
+  deploy-gh-pages:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download site artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: public
+
+  deploy-bunny:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Bunny.net repository secrets
+        id: bunny-secrets
+        env:
+          BUNNY_STORAGE_ZONE_NAME: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
+          BUNNY_STORAGE_ZONE_PASSWORD: ${{ secrets.BUNNY_STORAGE_ZONE_PASSWORD }}
+          BUNNY_STORAGE_ENDPOINT: ${{ secrets.BUNNY_STORAGE_ENDPOINT }}
+          BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+          BUNNY_PULL_ZONE_ID: ${{ secrets.BUNNY_PULL_ZONE_ID }}
+        run: |
+          if [ -z "$BUNNY_STORAGE_ZONE_NAME" ] || [ -z "$BUNNY_STORAGE_ZONE_PASSWORD" ] || [ -z "$BUNNY_STORAGE_ENDPOINT" ] || [ -z "$BUNNY_API_KEY" ] || [ -z "$BUNNY_PULL_ZONE_ID" ]; then
+            echo "::warning::One or more Bunny.net repository secrets are missing or empty."
+            echo "Add BUNNY_STORAGE_ZONE_NAME, BUNNY_STORAGE_ZONE_PASSWORD, BUNNY_STORAGE_ENDPOINT, BUNNY_API_KEY, and BUNNY_PULL_ZONE_ID under Settings → Secrets and variables → Actions → Repository secrets."
+            echo "Skipping Bunny.net deploy."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download site artifacts
+        if: steps.bunny-secrets.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+
+      - name: Deploy to Bunny.net
+        if: steps.bunny-secrets.outputs.skip != 'true'
+        uses: R-J-dev/bunny-deploy@v2.1.1
+        with:
+          storage-endpoint: ${{ secrets.BUNNY_STORAGE_ENDPOINT }}
+          storage-zone-name: ${{ secrets.BUNNY_STORAGE_ZONE_NAME }}
+          storage-zone-password: ${{ secrets.BUNNY_STORAGE_ZONE_PASSWORD }}
+          directory-to-upload: bunny-public
+          pull-zone-id: ${{ secrets.BUNNY_PULL_ZONE_ID }}
+          access-key: ${{ secrets.BUNNY_API_KEY }}
+          enable-purge-pull-zone: true
+          concurrency: "20"
