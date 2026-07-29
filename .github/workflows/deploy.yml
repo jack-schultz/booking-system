@@ -172,4 +172,5 @@ jobs:
           pull-zone-id: ${{ secrets.BUNNY_PULL_ZONE_ID }}
           access-key: ${{ secrets.BUNNY_API_KEY }}
           enable-purge-pull-zone: true
+          replication-timeout: "15000"
           concurrency: "20"
