@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@config "./tailwind.config.js";
+@source "./index.html";
+@source "./login.html";
+@source "./signup.html";
+
+/* ── Public pages palette — edit these to retheme landing, login, and signup ── */
+:root {
+    --landing-accent: #10b980;
+    --landing-accent-hover: #34d389;
+    --landing-page: #020608;
+    --landing-page-elevated: #0f171a;
+    --landing-surface: #1e293a;
+    --landing-border: #334153;
+    --landing-border-subtle: #1e293c;
+    --landing-heading: #ffffff;
+    --landing-body: #f1f5f7;
+    --landing-muted: #94a3b9;
+    --landing-subtle: #64748a;
+    --landing-on-accent: #020616;
+    --landing-error: #f87174;
+    --landing-success: #34d394;
+}
+
+@theme inline {
+    --color-accent: var(--landing-accent);
+    --color-accent-hover: var(--landing-accent-hover);
+    --color-page: var(--landing-page);
+    --color-page-elevated: var(--landing-page-elevated);
+    --color-surface: var(--landing-surface);
+    --color-line: var(--landing-border);
+    --color-line-subtle: var(--landing-border-subtle);
+    --color-heading: var(--landing-heading);
+    --color-body: var(--landing-body);
+    --color-muted: var(--landing-muted);
+    --color-subtle: var(--landing-subtle);
+    --color-on-accent: var(--landing-on-accent);
+    --color-error: var(--landing-error);
+    --color-success: var(--landing-success);
+}
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}

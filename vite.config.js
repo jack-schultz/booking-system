@@ -27,7 +27,7 @@ export default defineConfig({
     root: '.',
     server: {
         port: 5173,
-        open: '/login.html',
+        open: '/',
     },
     optimizeDeps: {
         exclude: ['@powersync/web'],
@@ -66,7 +66,7 @@ export default defineConfig({
                 theme_color: '#333333',
                 background_color: '#87ceeb',
                 display: 'standalone',
-                start_url: './login.html',
+                start_url: './',
             },
             workbox: {
                 navigateFallback: null,
