@@ -2,34 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Signup</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Booking-App-Name-Placeholder</title>
+    <link rel="stylesheet" href="./landing.css">
 </head>
-<body>
-<div id="site-navbar-mount"></div>
+<body class="bg-page text-body font-sans antialiased">
 
-<h1>Sign Up</h1>
+<header class="fixed top-0 inset-x-0 z-50 border-b border-line-subtle/80 bg-page/80 backdrop-blur-md">
+    <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4" aria-label="Main navigation">
+        <a href="index.html" class="text-lg font-semibold tracking-tight text-heading">Booking-App-Name-Placeholder</a>
 
-<form id="signupForm" class="auth-form">
-    <label for="firstName">First Name</label>
-    <input type="text" id="firstName" autocomplete="given-name" required>
+        <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm">
+            <span class="font-medium text-heading" aria-current="page">Sign Up</span>
+            <a href="https://github.com/jack-schultz/booking-system" target="_blank" rel="noopener noreferrer" class="text-muted transition-colors hover:text-heading">GitHub</a>
+            <a href="booking/manager" class="rounded-lg bg-accent px-4 py-2 font-medium text-on-accent transition-colors hover:bg-accent-hover">Open Booking App</a>
+        </div>
+    </nav>
+</header>
 
-    <label for="lastName">Last Name</label>
-    <input type="text" id="lastName" autocomplete="family-name" required>
+<main class="flex min-h-screen items-center justify-center px-6 pb-12 pt-28">
+    <div class="w-full max-w-md">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold tracking-tight text-heading">Create account</h1>
+            <p class="mt-2 text-muted">Get started with Booking-App-Name-Placeholder</p>
+        </div>
 
-    <label for="email">Email</label>
-    <input type="email" id="email" autocomplete="email" required>
+        <form id="signupForm" class="mt-8 space-y-5 rounded-xl border border-line-subtle bg-page-elevated/50 p-8">
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="firstName" class="mb-1.5 block text-sm font-medium text-body">First name</label>
+                    <input type="text" id="firstName" autocomplete="given-name" required
+                           class="w-full rounded-lg border border-line bg-surface px-4 py-2.5 text-body placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent">
+                </div>
+                <div>
+                    <label for="lastName" class="mb-1.5 block text-sm font-medium text-body">Last name</label>
+                    <input type="text" id="lastName" autocomplete="family-name" required
+                           class="w-full rounded-lg border border-line bg-surface px-4 py-2.5 text-body placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent">
+                </div>
+            </div>
 
-    <label for="password">Password</label>
-    <input type="password" id="password" required minlength="6">
+            <div>
+                <label for="email" class="mb-1.5 block text-sm font-medium text-body">Email</label>
+                <input type="email" id="email" autocomplete="email" required
+                       class="w-full rounded-lg border border-line bg-surface px-4 py-2.5 text-body placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent">
+            </div>
 
-    <button type="submit">Create Account</button>
-</form>
+            <div>
+                <label for="password" class="mb-1.5 block text-sm font-medium text-body">Password</label>
+                <input type="password" id="password" required minlength="6" autocomplete="new-password"
+                       class="w-full rounded-lg border border-line bg-surface px-4 py-2.5 text-body placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent">
+                <p class="mt-1.5 text-xs text-subtle">At least 6 characters</p>
+            </div>
 
-<p id="message" class="auth-message"></p>
-<p>Already have an account? <a href="login.html">Log in</a></p>
+            <button type="submit" class="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-on-accent transition-colors hover:bg-accent-hover">
+                Create Account
+            </button>
+        </form>
 
-<div id="site-footer-mount"></div>
+        <div class="relative mt-6">
+            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-line-subtle"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="bg-page px-3 text-subtle">or</span>
+            </div>
+        </div>
+
+        <button type="button" id="demo-mode-btn" class="demo-mode-btn mt-6 w-full rounded-lg border border-line px-4 py-2.5 font-medium text-body transition-colors hover:border-muted hover:text-heading">
+            Continue in Demo Mode
+        </button>
+
+        <p id="message" class="mt-4 text-center text-sm"></p>
+        <p class="mt-6 text-center text-sm text-muted">
+            Already have an account?
+            <a href="login.html" class="font-medium text-accent-hover transition-colors hover:text-accent">Log In</a>
+        </p>
+    </div>
+</main>
+
+<footer class="border-t border-line-subtle/80 px-6 py-10">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <p class="text-sm text-subtle">Booking-App-Name-Placeholder &copy; 2026</p>
+        <a href="https://github.com/jack-schultz/booking-system" target="_blank" rel="noopener noreferrer" class="text-sm text-muted transition-colors hover:text-heading">
+            GitHub
+        </a>
+    </div>
+</footer>
 
 <script type="module" src="./signup.js"></script>
 </body>

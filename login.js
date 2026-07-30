@@ -2,11 +2,9 @@ import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { getAccountDisplayName, getActiveAccount } from './auth/accounts.js';
 import { initAccountSwitcher, registerLoggedInSession } from './auth/accountSwitcher.js';
-import {mountPublicNavbar} from './ui/navbar.js';
-import { mountSiteFooter } from './ui/footer.js';
+import { wireDemoModeButton } from './auth/demoMode.js';
 
-mountPublicNavbar(document.getElementById('site-navbar-mount'));
-mountSiteFooter(document.getElementById('site-footer-mount'));
+wireDemoModeButton();
 
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');
