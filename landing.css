@@ -20,6 +20,25 @@
     --landing-on-accent: #020616;
     --landing-error: #f87174;
     --landing-success: #34d394;
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+    --landing-accent: #10b980;
+    --landing-accent-hover: #059669;
+    --landing-page: #dce3ec;
+    --landing-page-elevated: #eef2f6;
+    --landing-surface: #ffffff;
+    --landing-border: #94a3b8;
+    --landing-border-subtle: #c4ced9;
+    --landing-heading: #0f172a;
+    --landing-body: #1e293b;
+    --landing-muted: #475569;
+    --landing-subtle: #64748b;
+    --landing-on-accent: #ffffff;
+    --landing-error: #dc2626;
+    --landing-success: #059669;
+    color-scheme: light;
 }
 
 @theme inline {
@@ -44,4 +63,46 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+}
+
+.password-field {
+    position: relative;
+    width: 100%;
+}
+
+.password-field input {
+    padding-right: 4.5rem;
+}
+
+.password-field-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    margin: 0;
+    padding: 0.375rem 0.625rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--landing-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.password-field-toggle:hover {
+    color: var(--landing-heading);
+}
+
+.theme-toggle-icon {
+    display: block;
+}
+
+:root[data-theme="light"] .theme-toggle-icon--sun {
+    display: none;
+}
+
+:root:not([data-theme="light"]) .theme-toggle-icon--moon {
+    display: none;
 }
