@@ -18,7 +18,7 @@ export const BOOKING_STATUS = {
 export const DEFAULT_RESTAURANT_ID = 0;
 
 /** Cap on bookings for demo sandbox restaurants (enforced server-side too). */
-export const DEMO_MAX_BOOKINGS = 5;
+export const DEMO_MAX_BOOKINGS = 15;
 
 /** Local SQLite filename used by PowerSync in the browser */
 export const DB_FILENAME = 'bookings.db';

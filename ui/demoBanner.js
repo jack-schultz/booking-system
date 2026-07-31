@@ -11,7 +11,7 @@ export function mountDemoBanner() {
     banner.className = 'demo-banner';
     banner.setAttribute('role', 'status');
     banner.innerHTML =
-        '<strong>Demo account</strong> · Shared sandbox · Max 5 bookings · Resets periodically · ' +
+        '<strong>Demo account</strong> · Shared sandbox · Max 15 bookings · Resets periodically · ' +
         '<a href="../signup.html">Sign up for a real account</a>';
 
     const navbar = document.querySelector('.site-navbar');

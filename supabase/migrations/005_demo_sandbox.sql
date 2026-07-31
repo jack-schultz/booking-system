@@ -17,7 +17,7 @@ create policy restaurants_select_own
   );
 
 -- ---------------------------------------------------------------------------
--- Demo booking limit (max 5 per demo restaurant)
+-- Demo booking limit (max 15 per demo restaurant)
 -- ---------------------------------------------------------------------------
 
 create or replace function public.enforce_demo_booking_limit()
@@ -26,7 +26,7 @@ language plpgsql
 set search_path = public
 as $$
 declare
-  demo_limit constant int := 5;
+  demo_limit constant int := 15;
   current_count int;
   is_demo_restaurant boolean;
 begin
@@ -141,23 +141,68 @@ begin
     first_name, last_name, phone_number, email,
     total_pax, adult_pax, child_pax, hc_pax, preference, status, notes
   ) values
+    -- Today (5)
     (
       gen_random_uuid(), demo_restaurant_id, demo_profile_id,
-      (current_date + interval '18 hours') at time zone 'UTC',
-      'Alex', 'Chen', '0400 000 001', 'alex@example.com',
-      4, 4, 0, 0, 'indoor', 'set', 'Anniversary dinner'
+      (current_date + interval '9 hours') at time zone 'UTC',
+      'Alex', 'Chen', '0400000001', 'alex@example.com',
+      4, 4, 0, 0, 'booth', 'set', 'Anniversary dinner'
+    ),
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date + interval '11 hours 30 minutes') at time zone 'UTC',
+      'Sam', 'Taylor', '0400000002', 'sam@example.com',
+      2, 2, 0, 0, 'none', 'seated', null
+    ),
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date + interval '13 hours') at time zone 'UTC',
+      'Jordan', 'Lee', '0400000003', 'jordan@example.com',
+      6, 5, 1, 0, 'window', 'pending', 'High chair needed'
+    ),
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date + interval '17 hours') at time zone 'UTC',
+      'Riley', 'Nguyen', '0400000004', 'riley@example.com',
+      3, 3, 0, 0, 'outdoor', 'set', null
     ),
     (
       gen_random_uuid(), demo_restaurant_id, demo_profile_id,
       (current_date + interval '19 hours 30 minutes') at time zone 'UTC',
-      'Sam', 'Taylor', '0400 000 002', 'sam@example.com',
-      2, 2, 0, 0, 'outdoor', 'pending', null
+      'Casey', 'Brown', '0400000005', 'casey@example.com',
+      2, 2, 0, 0, 'indoor', 'pending', 'Quiet table please'
+    ),
+    -- Tomorrow (3)
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date + interval '1 day 10 hours') at time zone 'UTC',
+      'Morgan', 'Patel', '0400000006', 'morgan@example.com',
+      4, 4, 0, 0, 'window', 'set', 'Business lunch'
     ),
     (
       gen_random_uuid(), demo_restaurant_id, demo_profile_id,
-      (current_date + interval '20 hours') at time zone 'UTC',
-      'Jordan', 'Lee', '0400 000 003', 'jordan@example.com',
-      6, 5, 1, 0, 'indoor', 'pending', 'High chair needed'
+      (current_date + interval '1 day 12 hours') at time zone 'UTC',
+      'Jamie', 'Wilson', '0400000007', 'jamie@example.com',
+      2, 2, 0, 0, 'none', 'pending', null
+    ),
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date + interval '1 day 20 hours') at time zone 'UTC',
+      'Taylor', 'Kim', '0400000008', 'taylor@example.com',
+      5, 4, 1, 0, 'booth', 'set', 'Birthday celebration'
+    ),
+    -- Yesterday (2)
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date - interval '1 day 18 hours') at time zone 'UTC',
+      'Quinn', 'Martinez', '0400000009', 'quinn@example.com',
+      2, 2, 0, 0, 'indoor', 'seated', null
+    ),
+    (
+      gen_random_uuid(), demo_restaurant_id, demo_profile_id,
+      (current_date - interval '1 day 20 hours 30 minutes') at time zone 'UTC',
+      'Avery', 'Singh', '0400000010', 'avery@example.com',
+      3, 2, 1, 0, 'outdoor', 'set', 'Completed visit'
     );
 end;
 $$;
