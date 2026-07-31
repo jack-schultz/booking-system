@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="EasyTableBook, Australian owned and operated booking software for small sit-down restaurants. Manage covers, walk-ins, and lunch/dinner service offline.">
     <title>EasyTableBook | Bookings for Australian restaurants</title>
-    <script src="./theme-init.js"></script>
-  <script type="module" crossorigin src="/booking-system/dev/assets/index-BwyV86j_.js"></script>
+    <script src="./public/theme-init.js"></script>
+  <script type="module" crossorigin src="/booking-system/dev/assets/index-e78LsnrW.js"></script>
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/modulepreload-polyfill-Dezn_h7o.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/landingTheme-BQyuZNkM.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/landingTheme-DQYW06sm.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/preload-helper-j_ZwnIYB.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Cll7b3zd.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accounts-BuezXnYs.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/demoMode-DQvVl6MR.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/landingTheme-DYLqOVLl.css">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/landingTheme-BcUc9xq3.css">
 <link rel="manifest" href="/booking-system/dev/manifest.webmanifest"></head>
 <body class="bg-page text-body font-sans antialiased">
 
@@ -23,11 +23,11 @@
 
         <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm">
             <button type="button" data-theme-toggle class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted transition-colors hover:border-muted hover:text-heading" aria-label="Switch to light mode">
-                <svg class="theme-toggle-icon theme-toggle-icon--sun h-[1.125rem] w-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg class="theme-toggle-icon theme-toggle-icon--sun h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="4"></circle>
                     <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
                 </svg>
-                <svg class="theme-toggle-icon theme-toggle-icon--moon h-[1.125rem] w-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg class="theme-toggle-icon theme-toggle-icon--moon h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
             </button>
@@ -42,7 +42,7 @@
 <main>
     <!-- Hero -->
     <section class="relative overflow-hidden px-6 pb-24 pt-32">
-        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent/10 via-transparent to-transparent"></div>
+        <div class="pointer-events-none absolute inset-0 bg-linear-to-b from-accent/10 via-transparent to-transparent"></div>
         <div class="relative mx-auto max-w-3xl text-center">
             <h1 class="text-4xl font-bold tracking-tight text-heading sm:text-5xl lg:text-6xl">
                 Bookings built for sit-down restaurants
@@ -61,6 +61,7 @@
                     Open Booking App
                 </a>
             </div>
+            <p id="demo-error" class="mt-4 text-center text-sm text-error" role="alert"></p>
         </div>
     </section>
 
@@ -178,7 +179,7 @@
                 </p>
             </div>
 
-            <div class="flex aspect-[4/3] items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+            <div class="flex aspect-4/3 items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
                 Offline mode placeholder
             </div>
         </div>
