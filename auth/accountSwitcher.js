@@ -13,6 +13,7 @@ import {
     setActiveAccount,
 } from "./accounts.js";
 import { syncAccountProfileFromSupabase } from "./profiles.js";
+import { isDemoAccount } from "./demoMode.js";
 
 let dropdownRender = null;
 
@@ -109,7 +110,9 @@ function setupDropdown(triggerEl, { loginRedirect, onSwitch }) {
         addLink.className = "navbar-account-add-link";
         addLink.href = loginRedirect;
         addLink.textContent = "Add account";
-        dropdown.appendChild(addLink);
+        if (!isDemoAccount(active)) {
+            dropdown.appendChild(addLink);
+        }
     }
 
     render();
@@ -158,7 +161,7 @@ export async function initAccountSwitcher(options = {}) {
 
     const active = getActiveAccount();
     if (active && isOnline()) {
-        await syncAccountProfileFromSupabase(supabase, active.id);
+        await syncAccountProfileFromSupabase(supabase, active.id, { force: true });
     }
     dropdownRender?.();
 

@@ -9,7 +9,7 @@ import { PROFILE_SYNC_TTL_MS } from '../config/constants.js';
 export async function fetchUserProfile(supabase, userId) {
     const { data, error } = await supabase
         .from('profiles')
-        .select('first_name, last_name, restaurant_id')
+        .select('first_name, last_name, restaurant_id, restaurants(is_demo)')
         .eq('id', userId)
         .maybeSingle();
 
@@ -20,7 +20,31 @@ export async function fetchUserProfile(supabase, userId) {
         console.log('Loaded profile:', data);
     }
 
-    return data;
+    if (!data) return null;
+
+    const restaurant = data.restaurants;
+    let is_demo = Array.isArray(restaurant)
+        ? restaurant[0]?.is_demo === true
+        : restaurant?.is_demo === true;
+
+    if (data.restaurant_id != null && !is_demo) {
+        const { data: restaurantRow, error: restaurantError } = await supabase
+            .from('restaurants')
+            .select('is_demo')
+            .eq('id', data.restaurant_id)
+            .maybeSingle();
+
+        if (!restaurantError && restaurantRow) {
+            is_demo = restaurantRow.is_demo === true;
+        }
+    }
+
+    return {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        restaurant_id: data.restaurant_id,
+        is_demo,
+    };
 }
 
 function getCachedProfile(userId) {
@@ -31,6 +55,7 @@ function getCachedProfile(userId) {
         first_name: account.first_name,
         last_name: account.last_name,
         restaurant_id: account.restaurant_id,
+        is_demo: account.is_demo ?? false,
     };
 }
 

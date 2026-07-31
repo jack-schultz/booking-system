@@ -2,7 +2,12 @@ import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { wireDemoModeButton } from './auth/demoMode.js';
 
-wireDemoModeButton();
+wireDemoModeButton(supabase, {
+    onError: (err) => {
+        messageEl.textContent = err.message;
+        messageEl.className = MESSAGE_ERROR;
+    },
+});
 
 const form = document.getElementById('signupForm');
 const messageEl = document.getElementById('message');

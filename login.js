@@ -4,7 +4,11 @@ import { getAccountDisplayName, getActiveAccount } from './auth/accounts.js';
 import { initAccountSwitcher, registerLoggedInSession } from './auth/accountSwitcher.js';
 import { wireDemoModeButton } from './auth/demoMode.js';
 
-wireDemoModeButton();
+wireDemoModeButton(supabase, {
+    onError: (err) => {
+        errorEl.textContent = err.message;
+    },
+});
 
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');

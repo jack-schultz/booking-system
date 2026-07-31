@@ -1,6 +1,7 @@
 import {
     buildDatetime,
     getBookingById,
+    getBookingsInRange,
     getDateFromDatetime,
     getTimeslotFromDatetime,
     insertBooking,
@@ -8,13 +9,14 @@ import {
     updateBooking,
 } from '../../db/bookings.js';
 import { loadTablesForRestaurant, populateTableSelect } from '../../db/tables.js';
-import { BOOKING_STATUS } from '../../config/constants.js';
+import { BOOKING_STATUS, DEMO_MAX_BOOKINGS } from '../../config/constants.js';
 import { populateTimeslotSelect } from '../../config/timeslots.js';
 import {
     getActiveProfileId,
     getActiveRestaurantId,
     hasAssignedRestaurant,
 } from '../../auth/accountSwitcher.js';
+import { isDemoAccount } from '../../auth/demoMode.js';
 import {
     formatDateKey,
     mountBookingDateBar,
@@ -89,6 +91,44 @@ function applyRestaurantGuard() {
     bookingNotice.hidden = false;
     bookingNotice.textContent =
         'Your account is not assigned to a restaurant yet. Ask an administrator to set your restaurant before creating bookings.';
+    form.querySelectorAll('input, select, textarea, button').forEach((el) => {
+        el.disabled = true;
+    });
+    return false;
+}
+
+async function countRestaurantBookings() {
+    if (!db) return 0;
+
+    const restaurantId = getActiveRestaurantId();
+    const start = new Date('2000-01-01');
+    const end = new Date('2100-01-01');
+    const bookings = await getBookingsInRange(db, start, end, restaurantId);
+    return bookings.length;
+}
+
+async function applyDemoLimitGuard(state) {
+    const viewRoot = root();
+    if (!viewRoot || !isDemoAccount() || state.editingId) return true;
+
+    const form = viewRoot.querySelector('#bookingForm');
+    const bookingNotice = viewRoot.querySelector('#create-booking-notice');
+    const atLimit = (await countRestaurantBookings()) >= DEMO_MAX_BOOKINGS;
+
+    if (!atLimit) {
+        if (hasAssignedRestaurant()) {
+            bookingNotice.hidden = true;
+            bookingNotice.textContent = '';
+            form.querySelectorAll('input, select, textarea, button').forEach((el) => {
+                el.disabled = false;
+            });
+        }
+        return true;
+    }
+
+    bookingNotice.hidden = false;
+    bookingNotice.textContent =
+        `Demo limit reached — maximum ${DEMO_MAX_BOOKINGS} bookings. Delete a booking or sign up for a real account to continue.`;
     form.querySelectorAll('input, select, textarea, button').forEach((el) => {
         el.disabled = true;
     });
@@ -242,6 +282,8 @@ export async function mountCreateView(ctx) {
         await loadTables();
         if (ctx.editId) {
             await loadBookingForEdit(ctx.editId, state);
+        } else {
+            await applyDemoLimitGuard(state);
         }
     }
 
@@ -250,6 +292,17 @@ export async function mountCreateView(ctx) {
 
         if (!hasAssignedRestaurant()) {
             return;
+        }
+
+        if (!state.editingId && isDemoAccount()) {
+            const atLimit = (await countRestaurantBookings()) >= DEMO_MAX_BOOKINGS;
+            if (atLimit) {
+                const bookingNotice = viewRoot.querySelector('#create-booking-notice');
+                bookingNotice.hidden = false;
+                bookingNotice.textContent =
+                    `Demo limit reached. Maximum ${DEMO_MAX_BOOKINGS} bookings. Delete a booking or sign up for a real account to continue.`;
+                return;
+            }
         }
 
         const bookingDateEl = viewRoot.querySelector('#bookingDate');

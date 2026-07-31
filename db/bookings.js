@@ -50,13 +50,8 @@ export function formatTimeslot(datetime) {
     return `${hours}:${minutes} ${ampm}`;
 }
 
-/** List bookings for a local calendar day (date is a Date at local midnight). */
-export async function getBookingsForDate(db, date, restaurantId) {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-
+/** List bookings within a datetime range (start inclusive, end exclusive). */
+export async function getBookingsInRange(db, start, end, restaurantId) {
     return db.getAll(
         `SELECT * FROM bookings
          WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?

@@ -24,6 +24,8 @@ Copy `.env.example` to `.env` and set:
 | `VITE_SUPABASE_URL` | Supabase project URL | Supabase → Project Settings → API |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/publishable key | Supabase → Project Settings → API Keys |
 | `VITE_POWERSYNC_URL` | PowerSync Cloud instance endpoint | PowerSync Dashboard → **Connect** (omit for local-only dev) |
+| `VITE_DEMO_EMAIL` | Shared demo sandbox login email | Must match demo auth user in Supabase |
+| `VITE_DEMO_PASSWORD` | Shared demo sandbox password | Same as demo auth user (public in client bundle) |
 
 Example:
 
@@ -31,6 +33,8 @@ Example:
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_POWERSYNC_URL=https://xxxxxxxx.powersync.journeyapps.com
+VITE_DEMO_EMAIL=demo@example.com
+VITE_DEMO_PASSWORD=your-demo-password
 ```
 
 Restart `npm run dev` after editing `.env`.
@@ -39,13 +43,14 @@ Restart `npm run dev` after editing `.env`.
 
 Complete these steps once per environment (Development or Production instance):
 
-1. **Supabase schema** — Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) in the SQL editor.
+1. **Supabase schema** — Run migrations `001` through `005` in the SQL editor (see [PowerSync + Supabase sync](./powersync-supabase.html)).
 2. **PowerSync role** — Create `powersync_role`, grants, and `powersync` publication (see [PowerSync + Supabase sync](./powersync-supabase.html)).
 3. **Connect PowerSync to Postgres** — PowerSync Dashboard → Database Connections → Supabase **direct** connection URI, username `powersync_role`, database `postgres`, SSL `verify-full`.
 4. **Enable Supabase Auth** — PowerSync Dashboard → Client Auth → **Use Supabase Auth**.
 5. **Deploy Sync Streams** — Paste the `restaurant_bookings` stream YAML (edition 3) from [PowerSync + Supabase sync](./powersync-supabase.html).
 6. **Set `VITE_POWERSYNC_URL`** — PowerSync Dashboard → **Connect** → copy instance URL into `.env`.
 7. **Assign a test user** — Create a restaurant and set `profiles.restaurant_id` for your user.
+8. **Demo sandbox (optional)** — Create demo auth user, run [`supabase/seed/demo_account_setup.sql`](../supabase/seed/demo_account_setup.sql), set `VITE_DEMO_EMAIL` / `VITE_DEMO_PASSWORD`. See [Authentication — Demo sandbox](./authentication.html#demo-sandbox).
 
 ## Supabase database
 
