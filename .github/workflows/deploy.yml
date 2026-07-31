@@ -37,11 +37,13 @@ jobs:
           cache: npm
           cache-dependency-path: main/package-lock.json
 
-      - name: Check Supabase repository secrets
+      - name: Check repository secrets
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_DEMO_EMAIL: ${{ secrets.VITE_DEMO_EMAIL }}
+          VITE_DEMO_PASSWORD: ${{ secrets.VITE_DEMO_PASSWORD }}
         run: |
           if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
             echo "::warning::Repository secrets VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are missing or empty."
@@ -52,6 +54,10 @@ jobs:
             echo "::warning::Repository secret VITE_POWERSYNC_URL is missing or empty."
             echo "The deployed app will run in local-only mode without cloud sync."
           fi
+          if [ -z "$VITE_DEMO_EMAIL" ] || [ -z "$VITE_DEMO_PASSWORD" ]; then
+            echo "::warning::Repository secrets VITE_DEMO_EMAIL and/or VITE_DEMO_PASSWORD are missing or empty."
+            echo "Open Demo will not work on deployed sites until both are set."
+          fi
 
       - name: Build main (GitHub Pages)
         working-directory: main
@@ -60,6 +66,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_DEMO_EMAIL: ${{ secrets.VITE_DEMO_EMAIL }}
+          VITE_DEMO_PASSWORD: ${{ secrets.VITE_DEMO_PASSWORD }}
         run: |
           npm ci
           npm run build
@@ -71,6 +79,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_DEMO_EMAIL: ${{ secrets.VITE_DEMO_EMAIL }}
+          VITE_DEMO_PASSWORD: ${{ secrets.VITE_DEMO_PASSWORD }}
         run: |
           npm ci
           npm run build
@@ -89,6 +99,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_DEMO_EMAIL: ${{ secrets.VITE_DEMO_EMAIL }}
+          VITE_DEMO_PASSWORD: ${{ secrets.VITE_DEMO_PASSWORD }}
         run: npm run build
 
       - name: Build dev (Bunny.net)
@@ -98,6 +110,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_DEMO_EMAIL: ${{ secrets.VITE_DEMO_EMAIL }}
+          VITE_DEMO_PASSWORD: ${{ secrets.VITE_DEMO_PASSWORD }}
         run: npm run build
 
       - name: Prepare Bunny.net site
