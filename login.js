@@ -3,11 +3,14 @@ import { supabase } from './supabaseClient.js';
 import { getAccountDisplayName, getActiveAccount } from './auth/accounts.js';
 import { initAccountSwitcher, registerLoggedInSession } from './auth/accountSwitcher.js';
 import { wireDemoModeButton } from './auth/demoMode.js';
+import { enhancePasswordField } from './ui/passwordInput.js';
 
 wireDemoModeButton();
 
 const form = document.getElementById('loginForm');
 const errorEl = document.getElementById('error');
+
+enhancePasswordField(document.getElementById('password'));
 const storedAccountPrompt = document.getElementById('stored-account-prompt');
 const storedAccountName = document.getElementById('stored-account-name');
 const storedAccountContinue = document.getElementById('stored-account-continue');

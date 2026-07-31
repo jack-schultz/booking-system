@@ -1,6 +1,7 @@
 import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
 import { wireDemoModeButton } from './auth/demoMode.js';
+import { enhancePasswordField } from './ui/passwordInput.js';
 
 wireDemoModeButton();
 
@@ -10,6 +11,8 @@ const messageEl = document.getElementById('message');
 const MESSAGE_BASE = 'mt-4 text-center text-sm';
 const MESSAGE_ERROR = `${MESSAGE_BASE} text-error`;
 const MESSAGE_SUCCESS = `${MESSAGE_BASE} text-success`;
+
+enhancePasswordField(document.getElementById('password'));
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
