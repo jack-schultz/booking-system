@@ -176,7 +176,7 @@ Supabase URL, anon key, and PowerSync endpoint URL are public client-side config
 | Context | Where to set |
 |---------|----------------|
 | Local dev | Copy `.env.example` → `.env` |
-| CI build (GitHub Pages + bunny.net) | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
+| CI build (GitHub Pages + bunny.net) | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL`, `VITE_DEMO_EMAIL`, `VITE_DEMO_PASSWORD` |
 
 **Important:** The deploy workflow reads **repository** secrets (`Settings → Secrets and variables → Actions → Repository secrets`).
 

@@ -2,21 +2,197 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Booking System</title>
-  <script type="module" crossorigin src="/booking-system/dev/assets/index-6B4Tdd2P.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/style-CzAFc46y.js">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EasyTableBook, Australian owned and operated booking software for small sit-down restaurants. Manage covers, walk-ins, and lunch/dinner service offline.">
+    <title>EasyTableBook | Bookings for Australian restaurants</title>
+    <script src="./theme-init.js"></script>
+  <script type="module" crossorigin src="/booking-system/dev/assets/index-BwyV86j_.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/modulepreload-polyfill-Dezn_h7o.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/landingTheme-BQyuZNkM.js">
   <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/preload-helper-j_ZwnIYB.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/register-CxERNST-.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/syncStatus-CUus1Ppg.js">
-  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/footer-NbQLN31a.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/style-ggfYnT66.css">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/supabaseClient-Cll7b3zd.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/accounts-BuezXnYs.js">
+  <link rel="modulepreload" crossorigin href="/booking-system/dev/assets/demoMode-DQvVl6MR.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/dev/assets/landingTheme-DYLqOVLl.css">
 <link rel="manifest" href="/booking-system/dev/manifest.webmanifest"></head>
-<body>
-<div id="site-navbar-mount"></div>
+<body class="bg-page text-body font-sans antialiased">
 
-<p>Use the navbar to open the booking app.</p>
+<header class="fixed top-0 inset-x-0 z-50 border-b border-line-subtle/80 bg-page/80 backdrop-blur-md">
+    <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4" aria-label="Main navigation">
+        <a href="index.html" class="text-lg font-semibold tracking-tight text-heading">EasyTableBook</a>
 
-<div id="site-footer-mount"></div>
+        <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm">
+            <button type="button" data-theme-toggle class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted transition-colors hover:border-muted hover:text-heading" aria-label="Switch to light mode">
+                <svg class="theme-toggle-icon theme-toggle-icon--sun h-[1.125rem] w-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+                </svg>
+                <svg class="theme-toggle-icon theme-toggle-icon--moon h-[1.125rem] w-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                </svg>
+            </button>
+            <a href="signup.html" class="text-muted transition-colors hover:text-heading">Sign Up</a>
+            <a href="https://github.com/jack-schultz/booking-system" target="_blank" rel="noopener noreferrer" class="text-muted transition-colors hover:text-heading">GitHub</a>
+            <button type="button" class="demo-mode-btn rounded-lg border border-line px-4 py-2 font-medium text-body transition-colors hover:border-muted hover:text-heading">Open Demo</button>
+            <a href="booking/manager" class="rounded-lg bg-accent px-4 py-2 font-medium text-on-accent transition-colors hover:bg-accent-hover">Open Booking App</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden px-6 pb-24 pt-32">
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent/10 via-transparent to-transparent"></div>
+        <div class="relative mx-auto max-w-3xl text-center">
+            <h1 class="text-4xl font-bold tracking-tight text-heading sm:text-5xl lg:text-6xl">
+                Bookings built for sit-down restaurants
+            </h1>
+            <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
+                EasyTableBook is made for small Australian restaurants, cafés and dining rooms where keeping track of bookings and walk-ins matter.
+            </p>
+            <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <a href="signup.html" class="rounded-lg border border-line px-6 py-3 font-medium text-body transition-colors hover:border-muted hover:text-heading">
+                    Sign Up
+                </a>
+                <button type="button" class="demo-mode-btn rounded-lg border border-line px-6 py-3 font-medium text-body transition-colors hover:border-muted hover:text-heading">
+                    Open Demo
+                </button>
+                <a href="booking/manager" class="rounded-lg bg-accent px-6 py-3 font-medium text-on-accent transition-colors hover:bg-accent-hover">
+                    Open Booking App
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="border-t border-line-subtle/80 px-6 py-24" aria-labelledby="features-heading">
+        <div class="mx-auto max-w-6xl">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 id="features-heading" class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">
+                    Built for the way you actually run service
+                </h2>
+                <p class="mt-4 text-muted">
+                    Not a one-size-fits-all platform. EasyTableBook is designed for small sit-down venues. The kind where you count covers per timeslot, flip tables between lunch and dinner, and seat walk-ins without a second thought.
+                </p>
+            </div>
+
+            <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <article>
+                    <div class="flex aspect-video items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+                        Screenshot placeholder
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-heading">Daily service view</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        See today's bookings by timeslot with live cover counts; lunch, dinner, and full-day totals at a glance.
+                    </p>
+                </article>
+
+                <article>
+                    <div class="flex aspect-video items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+                        Screenshot placeholder
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-heading">Reservations &amp; party size</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Take and update bookings with party size and seating details. Built for table service, not takeaway queues.
+                    </p>
+                </article>
+
+                <article>
+                    <div class="flex aspect-video items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+                        Screenshot placeholder
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-heading">Walk-ins on the floor</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Add walk-in guests in seconds without leaving the host stand, alongside your pre-booked tables.
+                    </p>
+                </article>
+
+                <article>
+                    <div class="flex aspect-video items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+                        Screenshot placeholder
+                    </div>
+                    <h3 class="mt-4 text-lg font-semibold text-heading">Staff account switching</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Front-of-house staff swap between accounts on shared devices. No re-entering passwords during a busy service.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="border-t border-line-subtle/80 bg-page-elevated/50 px-6 py-24" aria-labelledby="how-it-works-heading">
+        <div class="mx-auto max-w-6xl">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 id="how-it-works-heading" class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">
+                    How it works
+                </h2>
+                <p class="mt-4 text-muted">
+                    Set up in minutes. No enterprise onboarding, no lock-in contracts. Test it now using the Demo!
+                </p>
+            </div>
+
+            <ol class="mt-16 grid gap-8 md:grid-cols-3">
+                <li class="rounded-xl border border-line-subtle bg-page p-8">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent-hover">1</span>
+                    <h3 class="mt-6 text-lg font-semibold text-heading">Create your account</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Sign up your venue in minutes. Built for small businesses, not corporate rollouts.
+                    </p>
+                </li>
+
+                <li class="rounded-xl border border-line-subtle bg-page p-8">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent-hover">2</span>
+                    <h3 class="mt-6 text-lg font-semibold text-heading">Run your service</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Manage bookings, walk-ins, and cover counts from one screen on the floor.
+                    </p>
+                </li>
+
+                <li class="rounded-xl border border-line-subtle bg-page p-8">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent-hover">3</span>
+                    <h3 class="mt-6 text-lg font-semibold text-heading">Sync automatically</h3>
+                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                        Changes upload when connectivity returns.
+                    </p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- Offline / differentiator -->
+    <section class="border-t border-line-subtle/80 px-6 py-24" aria-labelledby="offline-heading">
+        <div class="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+            <div>
+                <h2 id="offline-heading" class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">
+                    Australian made for small venues
+                </h2>
+                <p class="mt-6 leading-relaxed text-muted">
+                    EasyTableBook is Australian owned and operated. Built by people who understand how local sit-down restaurants actually work. No bloated enterprise suites, no features you'll never use. Just a focused tool for small businesses that need reliable bookings during a busy lunch or Saturday night service.
+                </p>
+                <p class="mt-4 leading-relaxed text-muted">
+                    Whether you run a neighbourhood café or a family dining room, you get sit-down-specific tools: cover counts by timeslot, lunch and dinner splits, walk-in handling, and table management. All working offline on the floor when connectivity lets you down.
+                </p>
+                <p class="mt-4 text-sm text-subtle">
+                    Local-first and secure. Your data stays usable without internet, then syncs when you're back online.
+                </p>
+            </div>
+
+            <div class="flex aspect-[4/3] items-center justify-center rounded-xl border border-line bg-surface text-sm text-subtle">
+                Offline mode placeholder
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="border-t border-line-subtle/80 px-6 py-10">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <p class="text-sm text-subtle">EasyTableBook &copy; 2026 · Australian owned &amp; operated</p>
+        <a href="https://github.com/jack-schultz/booking-system" target="_blank" rel="noopener noreferrer" class="text-sm text-muted transition-colors hover:text-heading">
+            GitHub
+        </a>
+    </div>
+</footer>
 
 </body>
 </html>

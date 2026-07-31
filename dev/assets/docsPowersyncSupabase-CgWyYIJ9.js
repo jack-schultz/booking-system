@@ -1,0 +1,1 @@
+import"./modulepreload-polyfill-Dezn_h7o.js";/* empty css              */import{t as e}from"./docs-D0PWMsmW.js";e(`./powersync-supabase.md`,`PowerSync + Supabase`);

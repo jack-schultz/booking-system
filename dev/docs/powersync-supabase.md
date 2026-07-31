@@ -34,13 +34,16 @@ Users without an assigned restaurant see a notice and cannot create or edit book
 
 ## Supabase setup
 
-Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`004_tables_write_rls.sql`](../supabase/migrations/004_tables_write_rls.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
+Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`005_demo_sandbox.sql`](../supabase/migrations/005_demo_sandbox.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
 
-- `restaurants` — tenant registry
+- `restaurants` — tenant registry (includes `is_demo` flag for sandbox)
 - `profiles` — one row per auth user (auto-created on signup via trigger)
 - `bookings` — matches `db/schema.js` (includes optional `table_id`)
 - `tables` — restaurant seating tables (staff manage via `/booking/tables`)
 - RLS policies scoped to the user's assigned restaurant
+- Demo sandbox: booking cap trigger, table write protection, `reset_demo_sandbox()` function
+
+See [Authentication — Demo sandbox](./authentication.html#demo-sandbox) for demo user setup and reset instructions.
 
 **Managing tables:** use the **Tables** link in the app navbar (`/booking/tables`). Adding a table requires an internet connection (Supabase insert); edit and delete are local-first via PowerSync upload.
 

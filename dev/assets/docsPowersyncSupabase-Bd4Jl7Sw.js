@@ -1,1 +1,0 @@
-import"./style-CzAFc46y.js";import{t as e}from"./docs-JXntKQey.js";e(`./powersync-supabase.md`,`PowerSync + Supabase`);

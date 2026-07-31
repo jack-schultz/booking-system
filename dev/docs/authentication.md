@@ -44,17 +44,17 @@ Uses `supabase.auth.signUp()` with first/last name in user metadata. A Supabase 
 
 ## Profiles and restaurant assignment
 
-[`auth/profiles.js`](../auth/profiles.js) loads `first_name`, `last_name`, and `restaurant_id` from `public.profiles`:
+[`auth/profiles.js`](../auth/profiles.js) loads `first_name`, `last_name`, `restaurant_id`, and `is_demo` (via join on `restaurants`) from `public.profiles`:
 
 ```javascript
 await supabase
     .from('profiles')
-    .select('first_name, last_name, restaurant_id')
+    .select('first_name, last_name, restaurant_id, restaurants(is_demo)')
     .eq('id', userId)
     .maybeSingle();
 ```
 
-Profile data is merged into the offline account cache in localStorage ([`auth/accounts.js`](../auth/accounts.js)) so `restaurant_id` is available offline after first sync.
+Profile data is merged into the offline account cache in localStorage ([`auth/accounts.js`](../auth/accounts.js)) so `restaurant_id` and `is_demo` are available offline after first sync.
 
 While online, profile fetches are cached for **5 minutes** (`PROFILE_SYNC_TTL_MS` in [`config/constants.js`](../config/constants.js)) to avoid a Supabase round-trip on every page load. Account switch, sign-in, token refresh, and coming back online always force a fresh fetch.
 
@@ -67,6 +67,67 @@ While online, profile fetches are cached for **5 minutes** (`PROFILE_SYNC_TTL_MS
 ### Unassigned accounts
 
 If `restaurant_id` is null, `hasAssignedRestaurant()` returns false. Booking pages show a notice and disable create/edit. PowerSync does not connect until a restaurant is assigned.
+
+## Demo sandbox
+
+Visitors can try the app without signing up via **Open Demo** / **Continue in Demo Mode** on the landing page, login page, and signup page. Demo uses a **real Supabase auth user** assigned to a shared sandbox restaurant — the same PowerSync and booking code paths as production users.
+
+### Client flow
+
+1. User clicks a demo button ([`auth/demoMode.js`](../auth/demoMode.js)).
+2. `signInAsDemo()` calls `supabase.auth.signInWithPassword()` with `VITE_DEMO_EMAIL` / `VITE_DEMO_PASSWORD`.
+3. `registerLoggedInSession()` caches the account and syncs profile (including `is_demo`).
+4. Redirect to `booking/manager` — PowerSync connects normally.
+5. When `is_demo` is true, a yellow banner appears ([`ui/demoBanner.js`](../ui/demoBanner.js)) and the account switcher hides **Add account**.
+
+### One-time Supabase setup
+
+1. Run migrations [`001_initial.sql`](../supabase/migrations/001_initial.sql) through [`005_demo_sandbox.sql`](../supabase/migrations/005_demo_sandbox.sql).
+2. Create a demo auth user in Supabase Dashboard → **Authentication** → **Users** (email/password must match `.env`).
+3. Run [`supabase/seed/demo_account_setup.sql`](../supabase/seed/demo_account_setup.sql) in the SQL editor (assigns profile to demo restaurant and seeds sample bookings).
+
+Set in `.env` (and CI secrets for deploy):
+
+```env
+VITE_DEMO_EMAIL=demo@example.com
+VITE_DEMO_PASSWORD=your-demo-password
+```
+
+These values are **intentionally public** in the client bundle — acceptable for a shared sandbox with no real data.
+
+### Demo limits and protection
+
+| Limit | Enforcement |
+|-------|-------------|
+| Max 5 bookings | Postgres `BEFORE INSERT` trigger on `bookings` (`005_demo_sandbox.sql`) + client notice on create form |
+| Table layout read-only | RLS blocks `INSERT`/`UPDATE`/`DELETE` on `tables` for demo restaurants |
+| Shared data | All demo users share one restaurant; changes are visible to other demo sessions |
+
+### Resetting demo data
+
+**Manual reset** (SQL editor, service role):
+
+```sql
+select public.reset_demo_sandbox();
+```
+
+This deletes all bookings for the demo restaurant and re-inserts the seed bookings.
+
+**Automated nightly reset (optional):**
+
+Using [pg_cron](https://supabase.com/docs/guides/database/extensions/pg_cron) (enable in Supabase → Database → Extensions):
+
+```sql
+create extension if not exists pg_cron;
+
+select cron.schedule(
+  'reset-demo-sandbox',
+  '0 3 * * *',  -- 03:00 UTC daily
+  $$ select public.reset_demo_sandbox(); $$
+);
+```
+
+Alternative: a Supabase Edge Function that calls `reset_demo_sandbox()` via the service role, triggered on a schedule with Supabase cron or an external scheduler.
 
 ## Multi-account switcher
 

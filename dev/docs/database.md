@@ -111,7 +111,7 @@ The booking pages do not run raw SQL inline. They import helpers from `db/bookin
 
 ```javascript
 import {
-    getBookingsForDate,
+    getBookingsInRange,
     getBookingById,
     insertBooking,
     updateBooking,
@@ -128,7 +128,7 @@ import {
 const db = await initDatabase();
 void ensureSyncConnected(db);
 const today = new Date();
-const bookings = await getBookingsForDate(db, today, restaurantId);
+const bookings = await getBookingsInRange(db, start, end, restaurantId);
 ```
 
 All list/get/update/delete helpers include `restaurant_id` in their WHERE clauses.
