@@ -1,0 +1,1 @@
+import"./style-CzAFc46y.js";import"./register-DSngRNPz.js";import{r as e,t}from"./footer-BVkL_Kwv.js";e(document.getElementById(`site-navbar-mount`)),t(document.getElementById(`site-footer-mount`));

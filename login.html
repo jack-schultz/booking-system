@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-  <script type="module" crossorigin src="/booking-system/assets/login-CFhmzBRw.js"></script>
-  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-CEPcSWMK.js">
+  <script type="module" crossorigin src="/booking-system/assets/login-Mbf4kl1E.js"></script>
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/style-CzAFc46y.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/preload-helper-DVdjxgLz.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/register-DSngRNPz.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/syncStatus-BBCGoWc1.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/footer-BVkL_Kwv.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/supabaseClient-BEL8yLtP.js">
   <link rel="modulepreload" crossorigin href="/booking-system/assets/accountSwitcher-28aTGeGE.js">
-  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-CCvVbSAu.css">
+  <link rel="modulepreload" crossorigin href="/booking-system/assets/passwordInput-CrDtwEYH.js">
+  <link rel="stylesheet" crossorigin href="/booking-system/assets/style-ggfYnT66.css">
 <link rel="manifest" href="/booking-system/manifest.webmanifest"></head>
 <body>
 <div id="site-navbar-mount"></div>
@@ -28,12 +29,13 @@
     <input type="email" id="email" placeholder="Email" required>
 
     <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Password" required>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
 
     <button type="submit">Login</button>
 </form>
 
 <p id="error" class="auth-message auth-message--error"></p>
+<p class="auth-form-links"><a href="forgot-password.html">Forgot password?</a></p>
 <p>Need an account? <a href="signup.html">Sign up here</a></p>
 
 <div id="site-footer-mount"></div>

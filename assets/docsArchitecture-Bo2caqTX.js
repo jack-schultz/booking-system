@@ -1,0 +1,1 @@
+import"./style-CzAFc46y.js";import{t as e}from"./docs-BSBuJcA1.js";e(`./architecture.md`,`Architecture`);
