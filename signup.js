@@ -1,10 +1,8 @@
 import './pwa/register.js';
 import { supabase } from './supabaseClient.js';
-import { wireDemoModeButton } from './auth/demoMode.js';
 import { enhancePasswordField } from './ui/passwordInput.js';
 import { wireLandingThemeToggles } from './ui/landingTheme.js';
 
-wireDemoModeButton();
 wireLandingThemeToggles();
 
 const form = document.getElementById('signupForm');
