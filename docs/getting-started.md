@@ -25,11 +25,13 @@ Copy `.env.example` to `.env` and set:
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/publishable key | Supabase → Project Settings → API Keys |
 | `VITE_POWERSYNC_URL` | PowerSync Cloud instance endpoint | PowerSync Dashboard → **Connect** (omit for local-only dev) |
 
+For local development, point these at your **dev** Supabase project and PowerSync instance. Deployed production and dev preview sites use separate CI secrets — see [Deployment](./deployment.html#environment-and-secrets).
+
 Example:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_URL=https://your-dev-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-dev-anon-key
 VITE_POWERSYNC_URL=https://xxxxxxxx.powersync.journeyapps.com
 ```
 

@@ -171,16 +171,30 @@ Pushing to either `main` or `dev` triggers a full redeploy of **both** environme
 
 ## Environment and secrets
 
-Supabase URL, anon key, and PowerSync endpoint URL are public client-side config values.
+Supabase URL, anon key, and PowerSync endpoint URL are public client-side config values baked in at build time.
+
+Production and dev preview use **separate Supabase projects and PowerSync instances**. The deploy workflow maps each branch to its own secret set.
 
 | Context | Where to set |
 |---------|----------------|
-| Local dev | Copy `.env.example` → `.env` |
-| CI build (GitHub Pages + bunny.net) | **Repository secrets**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
+| Local dev | Copy `.env.example` → `.env` (typically your **dev** Supabase + PowerSync) |
+| CI — production (`main` branch builds) | Repository secrets: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_POWERSYNC_URL` |
+| CI — dev preview (`dev` branch builds) | Repository secrets: `VITE_SUPABASE_URL_DEV`, `VITE_SUPABASE_ANON_KEY_DEV`, `VITE_POWERSYNC_URL_DEV` |
 
 **Important:** The deploy workflow reads **repository** secrets (`Settings → Secrets and variables → Actions → Repository secrets`).
 
-**`VITE_POWERSYNC_URL`:** Copy from PowerSync Dashboard → select your instance → **Connect** → instance URL (e.g. `https://xxxxxxxx.powersync.journeyapps.com`). Not the dashboard URL and not Supabase.
+| Secret | Used by | Points at |
+|--------|---------|-----------|
+| `VITE_SUPABASE_URL` | `main` → GitHub Pages + bunny.net root | Production Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | `main` builds | Production Supabase anon key |
+| `VITE_POWERSYNC_URL` | `main` builds | Production PowerSync instance URL |
+| `VITE_SUPABASE_URL_DEV` | `dev` → `/dev/` preview | Dev Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY_DEV` | `dev` builds | Dev Supabase anon key |
+| `VITE_POWERSYNC_URL_DEV` | `dev` builds | Dev PowerSync instance URL |
+
+Dev build steps inject the `_DEV` secrets as the standard `VITE_*` env vars — no app code changes are required.
+
+**`VITE_POWERSYNC_URL` / `VITE_POWERSYNC_URL_DEV`:** Copy from PowerSync Dashboard → select the matching instance → **Connect** → instance URL (e.g. `https://xxxxxxxx.powersync.journeyapps.com`). Not the dashboard URL and not Supabase.
 
 PowerSync authentication uses the user's Supabase JWT at runtime — no separate PowerSync secret is needed in the frontend.
 
@@ -245,9 +259,10 @@ After the first successful deploy:
 2. **Booking routes:** `/booking/manager`, `/booking/create`, etc. work.
 3. **Bunny dev:** `https://bookings.yourdomain.com/dev/login.html` works.
 4. **PWA:** `sw.js` and `manifest.webmanifest` load; service worker registers (DevTools → Application).
-5. **Supabase login:** sign in redirects to `/booking/manager` and sync connects when online.
-6. **GitHub Pages unchanged:** `https://<username>.github.io/booking-system/login.html` still works.
-7. **Cache:** after a second deploy, changed files appear within ~1 minute (purge step working).
+5. **Supabase login (production):** sign in on the root site redirects to `/booking/manager` and sync connects to the **production** Supabase + PowerSync.
+6. **Supabase login (dev preview):** sign in on `/dev/` connects to the **dev** Supabase + PowerSync (separate users/data from production).
+7. **GitHub Pages unchanged:** `https://<username>.github.io/booking-system/login.html` still works.
+8. **Cache:** after a second deploy, changed files appear within ~1 minute (purge step working).
 
 ## Manual deploy trigger
 

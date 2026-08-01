@@ -42,15 +42,27 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_SUPABASE_URL_DEV: ${{ secrets.VITE_SUPABASE_URL_DEV }}
+          VITE_SUPABASE_ANON_KEY_DEV: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
+          VITE_POWERSYNC_URL_DEV: ${{ secrets.VITE_POWERSYNC_URL_DEV }}
         run: |
           if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
-            echo "::warning::Repository secrets VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are missing or empty."
+            echo "::warning::Production secrets VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY are missing or empty."
             echo "Add them under Settings → Secrets and variables → Actions → Repository secrets (not Environment secrets)."
-            echo "The build will fall back to default values in supabaseClient.js."
+            echo "The production build (main branch) will fall back to default values in supabaseClient.js."
           fi
           if [ -z "$VITE_POWERSYNC_URL" ]; then
-            echo "::warning::Repository secret VITE_POWERSYNC_URL is missing or empty."
-            echo "The deployed app will run in local-only mode without cloud sync."
+            echo "::warning::Production secret VITE_POWERSYNC_URL is missing or empty."
+            echo "The production build will run in local-only mode without cloud sync."
+          fi
+          if [ -z "$VITE_SUPABASE_URL_DEV" ] || [ -z "$VITE_SUPABASE_ANON_KEY_DEV" ]; then
+            echo "::warning::Dev secrets VITE_SUPABASE_URL_DEV and/or VITE_SUPABASE_ANON_KEY_DEV are missing or empty."
+            echo "Add them under Settings → Secrets and variables → Actions → Repository secrets (not Environment secrets)."
+            echo "The dev preview build (dev branch) will fall back to default values in supabaseClient.js."
+          fi
+          if [ -z "$VITE_POWERSYNC_URL_DEV" ]; then
+            echo "::warning::Dev secret VITE_POWERSYNC_URL_DEV is missing or empty."
+            echo "The dev preview build will run in local-only mode without cloud sync."
           fi
 
       - name: Build main (GitHub Pages)
@@ -68,9 +80,9 @@ jobs:
         working-directory: dev
         env:
           VITE_BASE_PATH: /booking-system/dev/
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_DEV }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL_DEV }}
         run: |
           npm ci
           npm run build
@@ -95,9 +107,9 @@ jobs:
         working-directory: dev
         env:
           VITE_BASE_PATH: /dev/
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_DEV }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
+          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL_DEV }}
         run: npm run build
 
       - name: Prepare Bunny.net site

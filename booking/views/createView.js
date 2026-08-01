@@ -184,7 +184,6 @@ export async function mountCreateView(ctx) {
     if (!viewRoot) return;
 
     const form = viewRoot.querySelector('#bookingForm');
-    const timeslot = viewRoot.querySelector('#timeslot');
     const totalPax = viewRoot.querySelector('#totalPax');
     const childPax = viewRoot.querySelector('#childPax');
     const hcPax = viewRoot.querySelector('#hcPax');

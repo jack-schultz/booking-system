@@ -117,3 +117,11 @@ create policy bookings_delete_own_restaurant
   using (
     restaurant_id = (select restaurant_id from public.profiles where id = auth.uid())
   );
+
+-- restaurants: staff may read their assigned restaurant (e.g. name)
+drop policy if exists restaurants_select_own on public.restaurants;
+create policy restaurants_select_own
+  on public.restaurants for select
+  using (
+    id = (select restaurant_id from public.profiles where id = auth.uid())
+  );

@@ -27,7 +27,7 @@ Each account is linked to one restaurant via `profiles.restaurant_id`. Security 
 | Layer | Mechanism |
 |-------|-----------|
 | PowerSync Sync Streams | Download `bookings` and `tables` where `restaurant_id` matches the user's profile |
-| Supabase RLS | CRUD on `bookings` when `restaurant_id = profiles.restaurant_id`; `tables` read/write scoped to assigned restaurant |
+| Supabase RLS | CRUD on `bookings` when `restaurant_id = profiles.restaurant_id`; `restaurants` select for assigned restaurant; `tables` read/write scoped to assigned restaurant |
 | Client queries | Booking and table SQL includes `WHERE restaurant_id = ?` from `getActiveRestaurantId()` |
 
 Users without an assigned restaurant see a notice and cannot create or edit bookings until an admin sets `profiles.restaurant_id`.
@@ -63,7 +63,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO powersync_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO powersync_role;
 
 -- Publication: bookings and tables (client uploads via uploadData)
-CREATE PUBLICATION powersync FOR TABLE bookings, tables;
+CREATE PUBLICATION powersync FOR TABLE bookings, tables, profiles;
 ```
 
 If the publication already exists with only `bookings`:
@@ -195,7 +195,7 @@ The client needs your PowerSync **instance endpoint** (not the dashboard URL, no
 VITE_POWERSYNC_URL=https://xxxxxxxx.powersync.journeyapps.com
 ```
 
-Restart the Vite dev server after changing `.env`. For GitHub Pages, add the same value as repository secret `VITE_POWERSYNC_URL` (see [Deployment](./deployment.html)).
+Restart the Vite dev server after changing `.env`. For deployed sites, add production values as `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_POWERSYNC_URL`, and dev preview values as `VITE_SUPABASE_URL_DEV`, `VITE_SUPABASE_ANON_KEY_DEV`, and `VITE_POWERSYNC_URL_DEV` — see [Deployment](./deployment.html#environment-and-secrets).
 
 No separate PowerSync API key goes in the frontend — authentication uses the user's Supabase JWT at runtime.
 
@@ -228,13 +228,15 @@ Sync is skipped when offline, `VITE_POWERSYNC_URL` is unset, or the user has no 
 
 ## Environment variables
 
+Production and dev preview use separate Supabase projects and PowerSync instances. Local `.env` and CI secrets use the same variable names; CI maps `_DEV` secrets into dev branch builds (see [Deployment](./deployment.html#environment-and-secrets)).
+
 | Variable | Purpose | Where to get it |
 |----------|---------|-----------------|
 | `VITE_SUPABASE_URL` | Supabase project URL | Supabase → Project Settings → API |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/publishable key | Supabase → Project Settings → API Keys |
 | `VITE_POWERSYNC_URL` | PowerSync Cloud instance endpoint | PowerSync Dashboard → Connect |
 
-Copy [`.env.example`](../.env.example) to `.env` for local dev.
+Copy [`.env.example`](../.env.example) to `.env` for local dev (typically your dev stack).
 
 ## Offline behavior
 
