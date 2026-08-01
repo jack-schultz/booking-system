@@ -6,11 +6,7 @@ import { wireDemoModeButton } from './auth/demoMode.js';
 import { enhancePasswordField } from './ui/passwordInput.js';
 import { wireLandingThemeToggles } from './ui/landingTheme.js';
 
-wireDemoModeButton(supabase, {
-    onError: (err) => {
-        errorEl.textContent = err.message;
-    },
-});
+wireDemoModeButton();
 wireLandingThemeToggles();
 
 const form = document.getElementById('loginForm');

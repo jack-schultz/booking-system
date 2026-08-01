@@ -1,15 +1,9 @@
 import '../pwa/register.js';
 import { initDatabase, ensureSyncConnected } from '../db/index.js';
-import { initAccountSwitcher} from '../auth/accountSwitcher.js';
-import {getActiveAccount} from "../auth/accounts.js";
-import { isDemoAccount } from '../auth/demoMode.js';
-import { syncAccountProfileFromSupabase } from '../auth/profiles.js';
-import { supabase } from '../supabaseClient.js';
-import { isOnline } from '../config/connectivity.js';
+import { initAccountSwitcher } from '../auth/accountSwitcher.js';
 import { mountAppNavbar, updateAppNavbar } from '../ui/navbar.js';
 import { mountSiteFooter } from '../ui/footer.js';
 import { mountBookingSidebar, updateBookingSidebar } from '../ui/bookingSidebar.js';
-import { mountDemoBanner } from '../ui/demoBanner.js';
 
 /** @type {Set<(account: import('../auth/accounts.js').Account | null) => void>} */
 const accountSwitchListeners = new Set();
@@ -60,17 +54,7 @@ export async function bootstrapBookingApp({ initialRoute, onNavigate }) {
 
     const db = await initDatabase();
     await switcherPromise;
-
-    const active = getActiveAccount();
-    if (active && isOnline()) {
-        await syncAccountProfileFromSupabase(supabase, active.id, { force: true });
-    }
-
     void ensureSyncConnected(db);
-
-    if (isDemoAccount(getActiveAccount())) {
-        mountDemoBanner();
-    }
 
     return {
         db,

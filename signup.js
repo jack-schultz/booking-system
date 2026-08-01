@@ -4,12 +4,7 @@ import { wireDemoModeButton } from './auth/demoMode.js';
 import { enhancePasswordField } from './ui/passwordInput.js';
 import { wireLandingThemeToggles } from './ui/landingTheme.js';
 
-wireDemoModeButton(supabase, {
-    onError: (err) => {
-        messageEl.textContent = err.message;
-        messageEl.className = MESSAGE_ERROR;
-    },
-});
+wireDemoModeButton();
 wireLandingThemeToggles();
 
 const form = document.getElementById('signupForm');

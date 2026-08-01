@@ -50,7 +50,7 @@ export function getAccountDisplayName(account) {
 }
 
 /** Merge profile fields into a saved account without touching auth tokens. */
-export function updateAccountProfile(userId, { first_name, last_name, restaurant_id, is_demo }) {
+export function updateAccountProfile(userId, { first_name, last_name, restaurant_id }) {
     const accounts = readAccounts();
     const idx = accounts.findIndex((a) => a.id === userId);
     if (idx < 0) return false;
@@ -59,7 +59,6 @@ export function updateAccountProfile(userId, { first_name, last_name, restaurant
     if (first_name) updated.first_name = first_name;
     if (last_name) updated.last_name = last_name;
     if (restaurant_id != null) updated.restaurant_id = restaurant_id;
-    if (is_demo != null) updated.is_demo = is_demo;
     accounts[idx] = updated;
     writeAccounts(accounts);
     return true;
@@ -83,7 +82,6 @@ export function addOrUpdateAccount(session) {
         first_name: existing?.first_name ?? metadata.first_name ?? null,
         last_name: existing?.last_name ?? metadata.last_name ?? null,
         restaurant_id: existing?.restaurant_id ?? null,
-        is_demo: existing?.is_demo ?? false,
     };
     if (idx >= 0) {
         accounts[idx] = account;
