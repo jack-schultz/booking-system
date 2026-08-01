@@ -41,6 +41,7 @@ export default defineConfig({
                 index: resolve(__dirname, 'index.html'),
                 login: resolve(__dirname, 'login.html'),
                 signup: resolve(__dirname, 'signup.html'),
+                confirmEmail: resolve(__dirname, 'confirm-email.html'),
                 forgotPassword: resolve(__dirname, 'forgot-password.html'),
                 resetPassword: resolve(__dirname, 'reset-password.html'),
                 bookingApp: resolve(__dirname, 'booking/app.html'),

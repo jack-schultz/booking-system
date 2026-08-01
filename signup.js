@@ -12,7 +12,6 @@ const confirmPasswordInput = document.getElementById('confirmPassword');
 
 const MESSAGE_BASE = 'mt-4 text-center text-sm';
 const MESSAGE_ERROR = `${MESSAGE_BASE} text-error`;
-const MESSAGE_SUCCESS = `${MESSAGE_BASE} text-success`;
 
 enhancePasswordField(passwordInput);
 enhancePasswordField(confirmPasswordInput);
@@ -52,12 +51,10 @@ form.addEventListener('submit', async (e) => {
     }
 
     if (data.session) {
-        messageEl.textContent = 'Account created. You can log in now.';
-        messageEl.className = MESSAGE_SUCCESS;
+        await registerLoggedInSession(supabase, data.session);
+        window.location.href = 'booking/manager';
         return;
     }
 
-    messageEl.textContent =
-        'Account created. Check your email to verify your address, then log in.';
-    messageEl.className = MESSAGE_SUCCESS;
+    window.location.href = `confirm-email.html?email=${encodeURIComponent(email)}`;
 });
