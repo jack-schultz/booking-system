@@ -5,9 +5,6 @@ on:
     branches: [main, dev]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -65,36 +62,11 @@ jobs:
             echo "The dev preview build will run in local-only mode without cloud sync."
           fi
 
-      - name: Build main (GitHub Pages)
+      - name: Install dependencies (main)
         working-directory: main
-        env:
-          VITE_BASE_PATH: /booking-system/
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
-        run: |
-          npm ci
-          npm run build
+        run: npm ci
 
-      - name: Build dev (GitHub Pages)
-        working-directory: dev
-        env:
-          VITE_BASE_PATH: /booking-system/dev/
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_DEV }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_DEV }}
-          VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL_DEV }}
-        run: |
-          npm ci
-          npm run build
-
-      - name: Prepare GitHub Pages site
-        run: |
-          mkdir public
-          cp -r main/dist/* public/
-          mkdir -p public/dev
-          cp -r dev/dist/* public/dev/
-
-      - name: Build main (Bunny.net)
+      - name: Build main
         working-directory: main
         env:
           VITE_BASE_PATH: /
@@ -103,7 +75,11 @@ jobs:
           VITE_POWERSYNC_URL: ${{ secrets.VITE_POWERSYNC_URL }}
         run: npm run build
 
-      - name: Build dev (Bunny.net)
+      - name: Install dependencies (dev)
+        working-directory: dev
+        run: npm ci
+
+      - name: Build dev
         working-directory: dev
         env:
           VITE_BASE_PATH: /dev/
@@ -123,26 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: site
-          path: |
-            public
-            bunny-public
-
-  deploy-gh-pages:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download site artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: site
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: public
+          path: bunny-public
 
   deploy-bunny:
     needs: build
