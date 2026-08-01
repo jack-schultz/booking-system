@@ -34,7 +34,7 @@ Users without an assigned restaurant see a notice and cannot create or edit book
 
 ## Supabase setup
 
-Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) through [`004_tables_write_rls.sql`](../supabase/migrations/004_tables_write_rls.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
+Run [`supabase/migrations/001_initial.sql`](../supabase/migrations/001_initial.sql) and [`002_tables.sql`](../supabase/migrations/002_tables.sql) in the Supabase SQL editor (or via Supabase CLI). This creates:
 
 - `restaurants` — tenant registry
 - `profiles` — one row per auth user (auto-created on signup via trigger)

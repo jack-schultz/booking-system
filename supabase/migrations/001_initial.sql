@@ -22,7 +22,7 @@ create table if not exists public.bookings (
   id uuid primary key,
   created_at timestamptz not null default now(),
   restaurant_id bigint not null references public.restaurants (id),
-  profile_id uuid references auth.users (id),
+  profile_id uuid references public.profiles (id),
   datetime timestamptz not null,
   first_name text not null,
   last_name text,
@@ -69,10 +69,12 @@ alter table public.bookings enable row level security;
 alter table public.restaurants enable row level security;
 
 -- profiles: users read/update own row; restaurant_id changes blocked (admin via service role)
+drop policy if exists profiles_select_own on public.profiles;
 create policy profiles_select_own
   on public.profiles for select
   using (id = auth.uid());
 
+drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_update_own
   on public.profiles for update
   using (id = auth.uid())
@@ -84,12 +86,14 @@ create policy profiles_update_own
   );
 
 -- bookings: scoped to the user's assigned restaurant
+drop policy if exists bookings_select_own_restaurant on public.bookings;
 create policy bookings_select_own_restaurant
   on public.bookings for select
   using (
     restaurant_id = (select restaurant_id from public.profiles where id = auth.uid())
   );
 
+drop policy if exists bookings_insert_own_restaurant on public.bookings;
 create policy bookings_insert_own_restaurant
   on public.bookings for insert
   with check (
@@ -97,6 +101,7 @@ create policy bookings_insert_own_restaurant
     and (select restaurant_id from public.profiles where id = auth.uid()) is not null
   );
 
+drop policy if exists bookings_update_own_restaurant on public.bookings;
 create policy bookings_update_own_restaurant
   on public.bookings for update
   using (
@@ -106,6 +111,7 @@ create policy bookings_update_own_restaurant
     restaurant_id = (select restaurant_id from public.profiles where id = auth.uid())
   );
 
+drop policy if exists bookings_delete_own_restaurant on public.bookings;
 create policy bookings_delete_own_restaurant
   on public.bookings for delete
   using (

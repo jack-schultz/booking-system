@@ -303,9 +303,7 @@ Supabase Postgres schema lives in [`supabase/migrations/`](../supabase/migration
 | Migration | Contents |
 |-----------|----------|
 | `001_initial.sql` | `restaurants`, `profiles`, `bookings`, RLS |
-| `002_tables.sql` | `tables` (seating), select-only RLS |
-| `003_bookings_table_id.sql` | `bookings.table_id` FK to `tables` |
-| `004_tables_write_rls.sql` | `tables` insert/update/delete RLS for admin page |
+| `002_tables.sql` | `tables` (seating), RLS, `bookings.table_id` FK |
 
 ## Vite configuration
 
