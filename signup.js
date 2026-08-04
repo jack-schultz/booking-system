@@ -52,7 +52,7 @@ form.addEventListener('submit', async (e) => {
 
     if (data.session) {
         await registerLoggedInSession(supabase, data.session);
-        window.location.href = 'booking/manager';
+        window.location.href = 'booking/display-list';
         return;
     }
 

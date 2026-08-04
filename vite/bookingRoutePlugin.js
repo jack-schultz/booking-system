@@ -2,7 +2,8 @@ import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export const BOOKING_SHELL_ROUTES = [
-    'manager',
+    'display-list',
+    'display-table',
     'create',
     'walkin',
     'metrics',
@@ -10,11 +11,11 @@ export const BOOKING_SHELL_ROUTES = [
     'sync-status',
 ];
 
-const BOOKING_ROUTE_RE = /^\/booking\/(manager|create|walkin|metrics|tables|sync-status)\/?$/;
+const BOOKING_ROUTE_RE = /^\/booking\/(display-list|display-table|create|walkin|metrics|tables|sync-status)\/?$/;
 
 /**
  * Serves pretty booking URLs in dev and emits static index.html copies at build time
- * so GitHub Pages can serve /booking/manager, /booking/create, etc.
+ * so GitHub Pages can serve /booking/display-list, /booking/create, etc.
  */
 export function bookingRoutePlugin() {
     return {

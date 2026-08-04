@@ -8,7 +8,7 @@ import { mountBookingSidebar, updateBookingSidebar } from '../ui/bookingSidebar.
 /** @type {Set<(account: import('../auth/accounts.js').Account | null) => void>} */
 const accountSwitchListeners = new Set();
 
-const SIDEBAR_ROUTES = new Set(['manager', 'create', 'walkin']);
+const SIDEBAR_ROUTES = new Set(['display-list', 'display-table', 'create', 'walkin']);
 
 function notifyAccountSwitch(account) {
     for (const listener of accountSwitchListeners) {
@@ -67,7 +67,6 @@ export async function bootstrapBookingApp({ initialRoute, onNavigate }) {
             updateAppNavbar({
                 activeRoute: route,
                 onNavigate,
-                basePath: '../',
             });
             if (SIDEBAR_ROUTES.has(route)) {
                 updateBookingSidebar({

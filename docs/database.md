@@ -76,10 +76,10 @@ The booking sidebar shell ([`booking/bootstrap.js`](../booking/bootstrap.js)) fo
 2. `initAccountSwitcher()` — auth and profile cache (Supabase profile fetch may be skipped if fresh; see [Authentication](./authentication.html)).
 3. `initDatabase()` — open local SQLite (do not block on sync).
 4. `void ensureSyncConnected(db)` — PowerSync connects in the background.
-5. Router mounts the initial view (`managerView`, `createView`, or `walkinView`).
+5. Router mounts the initial view (`displayListView`, `createView`, or `walkinView`).
 6. Manager view: `subscribeBookings()` — `db.query(...).watch()` renders from local data immediately; `onData` fires again when remote rows arrive.
 
-Sidebar navigation between manager, create, and walk-in **does not repeat steps 1–4** — only the active view unmounts and the next view mounts.
+Sidebar navigation between display-list, create, and walk-in **does not repeat steps 1–4** — only the active view unmounts and the next view mounts.
 
 Login only caches the session and profile, then redirects — it does not call `initDatabase()` or `connectSync()`.
 
@@ -146,7 +146,7 @@ All list/get/update/delete helpers include `restaurant_id` in their WHERE clause
 
 ### Status helpers
 
-Bookings cycle through `pending` → `set` → `seated` → `pending` when the status button is clicked in the manager view:
+Bookings cycle through `pending` → `set` → `seated` → `pending` when the status button is clicked in the display-list view:
 
 | Function | Purpose |
 |----------|---------|
@@ -169,7 +169,7 @@ Pax totals sum `total_pax`, `adult_pax`, `child_pax`, and `hc_pax` across bookin
 | `getWeekRange(anchorDate, weekOffset)` | Monday 00:00 through next Monday 00:00 |
 | `aggregateBookingsByWeek(bookings, weekStart)` | Per-day lunch/dinner totals plus week and weekend summaries |
 
-The manager view shows per-timeslot pax totals in each timeslot heading and lunch/dinner/day totals at the bottom. The metrics page uses `aggregateBookingsByWeek` for a tabular week view.
+The display-list view shows per-timeslot pax totals in each timeslot heading and lunch/dinner/day totals at the bottom. The metrics page uses `aggregateBookingsByWeek` for a tabular week view.
 
 Run `npm test` to execute [`db/bookings.test.js`](../db/bookings.test.js).
 
@@ -212,7 +212,7 @@ Run `npm test` to execute [`db/tables.test.js`](../db/tables.test.js).
 
 ## Watched queries (live UI)
 
-The manager view ([`booking/views/managerView.js`](../booking/views/managerView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the manager view calls `activeWatch.close()` so listeners do not leak.
+The display-list view ([`booking/views/displayListView.js`](../booking/views/displayListView.js)) uses a watched query so the list updates when local data changes — including remote sync from other devices. The list renders as soon as local SQLite is ready; sync does not need to be connected first. Leaving the display-list view calls `activeWatch.close()` so listeners do not leak.
 
 The metrics page uses the same pattern over a week range (`getWeekRange` + `toTimestamptz` bounds).
 
@@ -334,7 +334,7 @@ PowerSync stores data in IndexedDB (via WA-SQLite's default VFS). To reset durin
 - Chrome DevTools → Application → IndexedDB → delete the database files, or
 - Use an incognito window
 
-If the manager stays on "Loading..." after a code change during `npm run dev`, hard-refresh the page — a stale HMR reload can leave a half-initialized DB instance until you refresh.
+If the display-list stays on "Loading..." after a code change during `npm run dev`, hard-refresh the page — a stale HMR reload can leave a half-initialized DB instance until you refresh.
 
 ## Related docs
 

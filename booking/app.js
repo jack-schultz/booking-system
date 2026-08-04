@@ -1,6 +1,7 @@
 import { bootstrapBookingApp } from './bootstrap.js';
 import { createBookingRouter, parseRouteFromLocation } from './router.js';
-import { mountManagerView, unmountManagerView } from './views/managerView.js';
+import { mountDisplayListView, unmountDisplayListView } from './views/displayListView.js';
+import { mountDisplayTableView, unmountDisplayTableView } from './views/displayTableView.js';
 import { mountCreateView, unmountCreateView } from './views/createView.js';
 import { mountWalkinView, unmountWalkinView } from './views/walkinView.js';
 import { mountMetricsView, unmountMetricsView } from './views/metricsView.js';
@@ -19,7 +20,8 @@ const ctx = await bootstrapBookingApp({
 const router = createBookingRouter({
     ...ctx,
     views: {
-        manager: { mount: mountManagerView, unmount: unmountManagerView },
+        'display-list': { mount: mountDisplayListView, unmount: unmountDisplayListView },
+        'display-table': { mount: mountDisplayTableView, unmount: unmountDisplayTableView },
         create: { mount: mountCreateView, unmount: unmountCreateView },
         walkin: { mount: mountWalkinView, unmount: unmountWalkinView },
         metrics: { mount: mountMetricsView, unmount: unmountMetricsView },

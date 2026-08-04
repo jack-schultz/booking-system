@@ -155,7 +155,7 @@ For HTML pages that use PowerSync or other bundled modules (e.g. a new file unde
 3. Run `VITE_BASE_PATH=/booking-system/ npm run build` and confirm the file exists under `dist/`.
 4. Merge to `main` for production.
 
-**Booking shell routes** (`/booking/manager`, `/booking/create`, `/booking/walkin`) are not separate HTML files. They share [`booking/app.html`](../booking/app.html); [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` copies at build time and rewrites paths in dev. To add a new shell route, extend the plugin, router, and shell markup — see [Booking shell; Adding a new view](./booking-shell.html#adding-a-new-view).
+**Booking shell routes** (`/booking/display-list`, `/booking/create`, `/booking/walkin`) are not separate HTML files. They share [`booking/app.html`](../booking/app.html); [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` copies at build time and rewrites paths in dev. To add a new shell route, extend the plugin, router, and shell markup — see [Booking shell; Adding a new view](./booking-shell.html#adding-a-new-view).
 
 Doc pages and app pages share the same deployment path: **source → Vite build → `dist/` → `gh-pages`**.
 
@@ -225,7 +225,7 @@ Dev preview uses `/dev/` on the same domain; a separate hostname is optional.
 
 ### 4. CDN behavior
 
-This app is a multi-page site (not a client-side router SPA). [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` files for `/booking/manager`, `/booking/create`, etc., so SPA-style 404 → `index.html` fallback is not required.
+This app is a multi-page site (not a client-side router SPA). [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js) emits static `index.html` files for `/booking/display-list`, `/booking/create`, etc., so SPA-style 404 → `index.html` fallback is not required.
 
 Recommended Pull Zone settings:
 
@@ -256,10 +256,10 @@ If any bunny secret is missing, the workflow still deploys to GitHub Pages and s
 After the first successful deploy:
 
 1. **Bunny production:** `https://bookings.yourdomain.com/login.html` loads; no 404s under `/assets/`.
-2. **Booking routes:** `/booking/manager`, `/booking/create`, etc. work.
+2. **Booking routes:** `/booking/display-list`, `/booking/create`, etc. work.
 3. **Bunny dev:** `https://bookings.yourdomain.com/dev/login.html` works.
 4. **PWA:** `sw.js` and `manifest.webmanifest` load; service worker registers (DevTools → Application).
-5. **Supabase login (production):** sign in on the root site redirects to `/booking/manager` and sync connects to the **production** Supabase + PowerSync.
+5. **Supabase login (production):** sign in on the root site redirects to `/booking/display-list` and sync connects to the **production** Supabase + PowerSync.
 6. **Supabase login (dev preview):** sign in on `/dev/` connects to the **dev** Supabase + PowerSync (separate users/data from production).
 7. **GitHub Pages unchanged:** `https://<username>.github.io/booking-system/login.html` still works.
 8. **Cache:** after a second deploy, changed files appear within ~1 minute (purge step working).

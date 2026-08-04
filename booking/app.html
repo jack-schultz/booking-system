@@ -7,15 +7,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var path = location.pathname;
-            var match = path.replace(/\/$/, '').match(/\/booking\/(manager|create|walkin|metrics|tables|sync-status)$/);
-            var route = match ? match[1] : 'manager';
-            ['manager', 'create', 'walkin', 'metrics', 'tables', 'sync-status'].forEach(function (name) {
+            var match = path.replace(/\/$/, '').match(/\/booking\/(display-list|display-table|create|walkin|metrics|tables|sync-status)$/);
+            var route = match ? match[1] : 'display-list';
+            ['display-list', 'display-table', 'create', 'walkin', 'metrics', 'tables', 'sync-status'].forEach(function (name) {
                 var el = document.getElementById('view-' + name);
                 if (el) el.hidden = name !== route;
             });
             var layout = document.getElementById('booking-shell-layout');
             var sidebarPanel = document.getElementById('booking-sidebar-panel');
-            var showSidebar = route === 'manager' || route === 'create' || route === 'walkin';
+            var showSidebar = route === 'display-list' || route === 'display-table' || route === 'create' || route === 'walkin';
             if (layout) layout.classList.toggle('booking-page-layout--no-sidebar', !showSidebar);
             if (sidebarPanel) sidebarPanel.hidden = !showSidebar;
         });
@@ -27,7 +27,7 @@
 <div class="page-content">
     <div class="booking-page-layout" id="booking-shell-layout">
         <div class="page-primary-panel">
-            <div id="view-manager">
+            <div id="view-display-list">
                 <div class="booking-header-group">
                     <button type="button" class="booking-list-date-left" id="booking-list-date-left" aria-label="Previous day">‹</button>
                     <div class="booking-date-picker-wrap">
@@ -47,7 +47,30 @@
                     <button type="button" class="booking-list-date-right" id="booking-list-date-right" aria-label="Next day">›</button>
                 </div>
                 <p id="booking-notice" class="booking-notice" hidden></p>
-                <div class="booking-manager-list" id="booking-list">loading...</div>
+                <div class="booking-display-list" id="booking-list">loading...</div>
+            </div>
+
+            <div id="view-display-table" hidden>
+                <div class="booking-header-group">
+                    <button type="button" class="booking-list-date-left" id="display-table-list-date-left" aria-label="Previous day">‹</button>
+                    <div class="booking-date-picker-wrap">
+                        <div class="booking-day-header-panel booking-timeslot-group" id="display-table-date-picker" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                            <div class="booking-timeslot-heading booking-day-header-heading">
+                                <div class="booking-header-title">
+                                    <h1 id="display-table-list-header">Loading...</h1>
+                                    <div id="display-table-header-pax" class="booking-header-pax" hidden></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="display-table-date-dropdown" class="booking-date-dropdown" hidden>
+                            <div id="display-table-date-dropdown-list" class="booking-date-dropdown-list" role="listbox"></div>
+                        </div>
+                    </div>
+                    <button type="button" class="booking-date-today" id="display-table-date-today">Today</button>
+                    <button type="button" class="booking-list-date-right" id="display-table-list-date-right" aria-label="Next day">›</button>
+                </div>
+                <p id="display-table-notice" class="booking-notice" hidden></p>
+                <div class="booking-display-table-mount" id="display-table-booking-list">loading...</div>
             </div>
 
             <div id="view-create" hidden>

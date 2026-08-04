@@ -22,7 +22,7 @@ if (activeAccount && storedAccountPrompt && storedAccountName && storedAccountCo
     storedAccountName.textContent = getAccountDisplayName(activeAccount);
     storedAccountPrompt.hidden = false;
     storedAccountContinue.addEventListener('click', () => {
-        window.location.href = 'booking/manager';
+        window.location.href = 'booking/display-list';
     });
 }
 
@@ -46,5 +46,5 @@ form.addEventListener('submit', async (e) => {
     await registerLoggedInSession(supabase, data.session);
 
     // DB init happens on booking pages — starting it here orphans the worker on redirect.
-    window.location.href = 'booking/manager';
+    window.location.href = 'booking/display-list';
 });

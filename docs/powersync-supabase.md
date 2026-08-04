@@ -213,7 +213,7 @@ No separate PowerSync API key goes in the frontend — authentication uses the u
 |-------|--------|
 | Login success | Redirect to booking shell (no `initDatabase` or `connectSync` on login page) |
 | Booking shell load | [`booking/bootstrap.js`](../booking/bootstrap.js): `initDatabase()` → mount initial view → `void ensureSyncConnected(db)` |
-| Sidebar navigation (manager / create / walk-in) | View swap only — DB and sync stay connected |
+| Sidebar navigation (display-list / display-table / create / walk-in) | View swap only — DB and sync stay connected |
 | Metrics page load | Same pattern as shell bootstrap: `initDatabase()` → watch query → `void ensureSyncConnected(db)` |
 | Account switch | `reconnectSync(db)` with new JWT; shell views re-subscribe via `registerOnAccountSwitch` |
 | `window` `online` | Profile refresh + `reconnectSync(db)` |
@@ -224,7 +224,7 @@ Sync is skipped when offline, `VITE_POWERSYNC_URL` is unset, or the user has no 
 
 ### Live updates across devices
 
-[`booking/views/managerView.js`](../booking/views/managerView.js) and [`booking/views/metricsView.js`](../booking/views/metricsView.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
+[`booking/views/displayListView.js`](../booking/views/displayListView.js) and [`booking/views/metricsView.js`](../booking/views/metricsView.js) use `db.query(...).watch()` with `registerListener({ onData })` so lists and metrics re-render when local data changes - including changes synced from other devices. See [Database](./database.html#watched-queries-live-ui).
 
 ## Environment variables
 
@@ -272,8 +272,8 @@ const db = await initDatabase();
 
 ## Verification checklist
 
-1. **Offline create:** Disable network → create booking → appears in manager → go online → booking in Supabase and on a second device.
-2. **Remote update:** Edit on device A → manager on device B updates without manual refresh.
+1. **Offline create:** Disable network → create booking → appears in display-list → go online → booking in Supabase and on a second device.
+2. **Remote update:** Edit on device A → display-list on device B updates without manual refresh.
 3. **RLS:** Direct Supabase REST insert with wrong `restaurant_id` → rejected.
 4. **Unassigned user:** Profile with `restaurant_id = NULL` → notice shown, no sync/connect.
 5. **Account switch:** Two users, two restaurants → correct bookings per account.

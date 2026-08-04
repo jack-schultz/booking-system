@@ -74,7 +74,7 @@ runButton.addEventListener('click', async () => {
         setStatus(`Done — inserted ${count} test bookings in ${seconds}s.`);
         appendLog(`Restaurant ID: ${restaurantId}`);
         appendLog(`Date window: ${daySpan} days centered on today`);
-        appendLog('Open the booking manager to review seeded data. Changes will sync when online.');
+        appendLog('Open the booking list to review seeded data. Changes will sync when online.');
     } catch (error) {
         console.error(error);
         setStatus(`Seed failed: ${error.message ?? error}`);

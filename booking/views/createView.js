@@ -29,6 +29,7 @@ let unregisterAccountSwitch = null;
 let dateBar = null;
 let db = null;
 let onNavigate = null;
+let returnRoute = 'display-list';
 
 // Required as the date bar is used in multiple views
 const CREATE_DATE_BAR_IDS = {
@@ -133,7 +134,7 @@ async function loadBookingForEdit(editId, state) {
     const restaurantId = getActiveRestaurantId();
     const booking = await getBookingById(db, editId, restaurantId);
     if (!booking) {
-        onNavigate?.('manager', { replace: true });
+        onNavigate?.(returnRoute, { replace: true });
         return;
     }
 
@@ -172,11 +173,12 @@ function updatePax(viewRoot) {
 }
 
 /**
- * @param {{ db: import('@powersync/web').PowerSyncDatabase, onNavigate: Function, registerOnAccountSwitch: Function, editId?: string | null }} ctx
+ * @param {{ db: import('@powersync/web').PowerSyncDatabase, onNavigate: Function, registerOnAccountSwitch: Function, editId?: string | null, returnTo?: string | null }} ctx
  */
 export async function mountCreateView(ctx) {
     db = ctx.db;
     onNavigate = ctx.onNavigate;
+    returnRoute = ctx.returnTo ?? 'display-list';
     abortController = new AbortController();
     const { signal } = abortController;
 
@@ -296,7 +298,7 @@ export async function mountCreateView(ctx) {
             });
         }
 
-        onNavigate?.('manager');
+        onNavigate?.(returnRoute);
     }, { signal });
 }
 
@@ -310,4 +312,5 @@ export async function unmountCreateView() {
     unregisterAccountSwitch = null;
     db = null;
     onNavigate = null;
+    returnRoute = 'display-list';
 }

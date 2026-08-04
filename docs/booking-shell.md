@@ -1,6 +1,6 @@
 # Booking shell
 
-The booking section uses a **client-routed SPA**: manager, create, walk-in, metrics, tables, and sync status share one JavaScript session and one PowerSync database connection. Navigation swaps views in place instead of reloading the page.
+The booking section uses a **client-routed SPA**: display-list, display-table, create, walk-in, metrics, tables, and sync status share one JavaScript session and one PowerSync database connection. Navigation swaps views in place instead of reloading the page.
 
 ## What it is
 
@@ -8,7 +8,8 @@ Six app screens live inside a single HTML document:
 
 | Route | URL | View container | Module | Booking sidebar |
 |-------|-----|----------------|--------|-----------------|
-| Manager | `booking/manager` | `#view-manager` | [`booking/views/managerView.js`](../booking/views/managerView.js) | Yes |
+| Display list | `booking/display-list` | `#view-display-list` | [`booking/views/displayListView.js`](../booking/views/displayListView.js) | Yes |
+| Display table | `booking/display-table` | `#view-display-table` | [`booking/views/displayTableView.js`](../booking/views/displayTableView.js) | Yes |
 | Create / edit | `booking/create` (`?edit=<id>` for edit) | `#view-create` | [`booking/views/createView.js`](../booking/views/createView.js) | Yes |
 | Walk-in | `booking/walkin` | `#view-walkin` | [`booking/views/walkinView.js`](../booking/views/walkinView.js) | Yes |
 | Metrics | `booking/metrics` | `#view-metrics` | [`booking/views/metricsView.js`](../booking/views/metricsView.js) | No |
@@ -40,7 +41,7 @@ Benefits:
 |------------|--------|
 | Larger initial HTML | All view markup ships in one document, even if the user only opens one screen. |
 | Mount/unmount discipline | Views must clean up listeners and PowerSync watches in `unmount()`. Leaks show up as duplicate handlers or stale queries. |
-| DOM scoping | Query inside the view root (`#view-manager`, etc.), not `document` globally, multiple views coexist in one page. |
+| DOM scoping | Query inside the view root (`#view-display-list`, etc.), not `document` globally, multiple views coexist in one page. |
 | Not a full SPA | Public pages (`index.html`, `login.html`, `signup.html`, docs) still do full page loads. Only routes inside the booking shell are client-routed. |
 
 These trade-offs are intentional: the shell optimizes the high-frequency path (switching between bookings / new booking / walk-in) without rewriting the whole app.
@@ -51,7 +52,7 @@ These trade-offs are intentional: the shell optimizes the high-frequency path (s
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                         Booking shell (one session)                       │
 │                                                                           │
-│  booking/app.html  (+ build copies → booking/manager, create, walkin)     │
+│  booking/app.html  (+ build copies → booking/display-list, create, walkin)     │
 │       │                                                                   │
 │       ▼                                                                   │
 │  booking/app.js ─────┬────────────────────────────────────────────┐       │
@@ -67,8 +68,8 @@ These trade-offs are intentional: the shell optimizes the high-frequency path (s
 │                                      │                                    │
 │                    ┌─────────────────┼─────────────────┐                  │
 │                    ▼                 ▼                 ▼                  │
-│            managerView.js     createView.js     walkinView.js             │
-│            #view-manager        #view-create      #view-walkin            │
+│            displayListView.js     createView.js     walkinView.js             │
+│            #view-display-list        #view-create      #view-walkin            │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -80,7 +81,7 @@ These trade-offs are intentional: the shell optimizes the high-frequency path (s
 | [`booking/bootstrap.js`](../booking/bootstrap.js) | One-time startup: chrome, auth, DB, sync, account-switch registry. |
 | [`booking/router.js`](../booking/router.js) | Map pathname -> view; `navigate()`; History API; show/hide containers. |
 | [`booking/views/*.js`](../booking/views/) | Per-screen logic with `mount()` / `unmount()` lifecycle. |
-| [`ui/bookingSidebar.js`](../ui/bookingSidebar.js) | Sidebar buttons call `onNavigate(route)` — visible on manager / create / walk-in only. |
+| [`ui/bookingSidebar.js`](../ui/bookingSidebar.js) | Sidebar buttons call `onNavigate(route)` — visible on display-list / create / walk-in only. |
 | [`ui/navbar.js`](../ui/navbar.js) | `mountAppNavbar()` — Bookings, Metrics, Tables, sync icon; all client-routed within the shell. |
 
 ## Startup sequence
@@ -101,7 +102,7 @@ See [Database; Page load order](./database.html#page-load-order-booking-shell) f
 
 ### Flash prevention
 
-The shell HTML includes a small inline script in `<head>` that hides the wrong view containers before JavaScript loads. Without it, opening `/booking/create` could briefly show the manager list.
+The shell HTML includes a small inline script in `<head>` that hides the wrong view containers before JavaScript loads. Without it, opening `/booking/create` could briefly show the display-list list.
 
 ## Client-side navigation
 
@@ -144,8 +145,8 @@ The shell HTML includes a small inline script in `<head>` that hides the wrong v
 | Sidebar: Bookings / New Booking / Walk-in | `pushState` + view swap, no document reload |
 | Browser back / forward | `popstate` -> unmount current, mount view for URL |
 | Link to `/booking/create?edit=<id>` | Full load into shell; router opens create view in edit mode |
-| Login redirect to `/booking/manager` | Full load; router opens manager view |
-| Save booking (create view) | `onNavigate('manager')`, client navigation back to list |
+| Login redirect to `/booking/display-list` | Full load; router opens display-list view |
+| Save booking (create view) | `onNavigate('display-list')`, client navigation back to list |
 | App navbar: Metrics / Tables / sync icon | `onNavigate(...)` — view swap, no document reload |
 
 The router updates the URL with `history.pushState` so the address bar always matches the visible view. State `{ route, editId }` is stored on the history entry for back/forward.
@@ -173,8 +174,8 @@ export async function unmountExampleView() { /* ... */ }
 - Store `ctx.db` and `ctx.onNavigate` if needed.
 - Create an `AbortController` and pass `{ signal }` to all `addEventListener` calls.
 - Register for account switches via `ctx.registerOnAccountSwitch()` when the view depends on restaurant scope (e.g. re-subscribe bookings).
-- Query DOM **inside the view container** (e.g. `document.getElementById('view-manager').querySelector(...)`).
-- Start PowerSync watched queries here (manager view).
+- Query DOM **inside the view container** (e.g. `document.getElementById('view-display-list').querySelector(...)`).
+- Start PowerSync watched queries here (display-list view).
 
 ### `unmount()`
 
@@ -259,7 +260,7 @@ In [`vite/bookingRoutePlugin.js`](../vite/bookingRoutePlugin.js), add `'settings
 ```javascript
 onNavigate?.('settings');
 onNavigate?.('create', { edit: bookingId });
-onNavigate?.('manager', { replace: true });  // replace history entry (no extra back step)
+onNavigate?.('display-list', { replace: true });  // replace history entry (no extra back step)
 ```
 
 ## Patterns to follow
@@ -291,7 +292,7 @@ Bootstrap fans out account switches to all registered listeners.
 Use `onNavigate` from `mount()` context instead of `window.location` for moves within the shell:
 
 ```javascript
-onNavigate?.('manager');                    // after save
+onNavigate?.('display-list');                    // after save
 onNavigate?.('create', { edit: id });       // open edit form
 ```
 
@@ -307,13 +308,13 @@ Auth profile fetches use a 5-minute TTL in [`auth/profiles.js`](../auth/profiles
 
 When changing the shell or adding a view:
 
-- [ ] Cold load each URL (`/booking/manager`, `/booking/create`, `/booking/walkin`, `/booking/metrics`, `/booking/tables`, `/booking/sync-status`) shows the correct view without flash.
+- [ ] Cold load each URL (`/booking/display-list`, `/booking/create`, `/booking/walkin`, `/booking/metrics`, `/booking/tables`, `/booking/sync-status`) shows the correct view without flash.
 - [ ] Sidebar switches views without full reload (Network tab: no new document request).
 - [ ] Browser back/forward restores the correct view and URL.
 - [ ] `/booking/create?edit=<id>` loads the form with booking data.
-- [ ] Account switch refreshes manager list (restaurant scope).
-- [ ] Navigate away from manager and back, no duplicate rows or duplicate click handlers.
-- [ ] PowerSync watch is closed after leaving manager (no extra subscriptions in devtools/logging).
+- [ ] Account switch refreshes display-list list (restaurant scope).
+- [ ] Navigate away from display-list and back, no duplicate rows or duplicate click handlers.
+- [ ] PowerSync watch is closed after leaving display-list (no extra subscriptions in devtools/logging).
 
 ## Related docs
 

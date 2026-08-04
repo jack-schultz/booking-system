@@ -1,5 +1,6 @@
 const ROUTES = [
-    { name: 'manager', label: 'BOOKINGS', className: 'booking-sidebar-nav-link--bookings' },
+    { name: 'display-list', label: 'LIST VIEW', className: 'booking-sidebar-nav-link--bookings' },
+    { name: 'display-table', label: 'TABLE VIEW', className: 'booking-sidebar-nav-link--display-table' },
     { name: 'create', label: 'NEW BOOKING', className: 'booking-sidebar-nav-link--new-booking' },
     { name: 'walkin', label: 'WALK-IN', className: 'booking-sidebar-nav-link--walk-in' },
 ];

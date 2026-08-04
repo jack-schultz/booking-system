@@ -32,8 +32,7 @@ let dateBar = null;
 let db = null;
 let onNavigate = null;
 
-// Required as the date bar is used in multiple views
-const MANAGER_DATE_BAR_IDS = {
+const DISPLAY_LIST_DATE_BAR_IDS = {
     dateLeft: 'booking-list-date-left',
     dateRight: 'booking-list-date-right',
     datePicker: 'booking-date-picker',
@@ -44,7 +43,7 @@ const MANAGER_DATE_BAR_IDS = {
     dateToday: 'booking-date-today',
 };
 
-const root = () => document.getElementById('view-manager');
+const root = () => document.getElementById('view-display-list');
 
 function getTimeslotPaxTotals(bookings) {
     const totals = new Map();
@@ -275,7 +274,7 @@ async function subscribeBookings() {
 /**
  * @param {{ db: import('@powersync/web').PowerSyncDatabase, onNavigate: Function, registerOnAccountSwitch: Function }} ctx
  */
-export async function mountManagerView(ctx) {
+export async function mountDisplayListView(ctx) {
     db = ctx.db;
     onNavigate = ctx.onNavigate;
     abortController = new AbortController();
@@ -288,7 +287,7 @@ export async function mountManagerView(ctx) {
         viewRoot,
         db,
         signal,
-        ids: MANAGER_DATE_BAR_IDS,
+        ids: DISPLAY_LIST_DATE_BAR_IDS,
         unavailableHeaderText: 'Bookings unavailable',
         onDateChange: () => {
             void subscribeBookings();
@@ -302,7 +301,7 @@ export async function mountManagerView(ctx) {
     await subscribeBookings();
 }
 
-export async function unmountManagerView() {
+export async function unmountDisplayListView() {
     if (activeWatch) {
         await activeWatch.close();
         activeWatch = null;

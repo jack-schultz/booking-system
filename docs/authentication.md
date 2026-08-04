@@ -27,7 +27,7 @@ On load:
 
 1. `mountAuthNavbar()` — account switcher and logout (no app section links).
 2. `initAccountSwitcher()` restores any stored session from localStorage.
-3. If a stored account exists, a **Continue as [name]** prompt appears; **Continue** redirects to `booking/manager`.
+3. If a stored account exists, a **Continue as [name]** prompt appears; **Continue** redirects to `booking/display-list`.
 4. The login form remains available to sign in as another account (multi-account support).
 
 On form submit:
@@ -36,7 +36,7 @@ On form submit:
 2. `supabase.auth.signInWithPassword()` runs.
 3. On success:
    - `registerLoggedInSession()` caches the account and syncs profile from Supabase (forced refresh).
-4. Redirect to `booking/manager` — **DB init and sync start on the booking shell**, not on the login page. PowerSync connects in the background after the shell loads.
+4. Redirect to `booking/display-list` — **DB init and sync start on the booking shell**, not on the login page. PowerSync connects in the background after the shell loads.
 
 ## Signup (`signup.html`)
 

@@ -4,7 +4,7 @@
 import { getSyncIndicatorMarkup, initSyncIndicator, wireSyncIndicatorNavigation } from './syncIndicator.js';
 
 const APP_NAV_ROUTES = [
-    { name: 'manager', label: 'Bookings' },
+    { name: 'display-list', label: 'Bookings' },
     { name: 'metrics', label: 'Weekly Metrics' },
     { name: 'tables', label: 'Tables' },
 ];
@@ -36,7 +36,7 @@ export function mountPublicNavbar(mountPoint, { basePath = '' } = {}) {
     mountPoint.outerHTML = `
         <div class="site-navbar">
             <div class="site-navbar-links-primary">
-                <a href="${basePath}booking/manager">Open Booking App</a>
+                <a href="${basePath}booking/display-list">Open Booking App</a>
             </div>
         </div>
     `;
@@ -55,7 +55,7 @@ export function mountAppNavbar(
 
     const primaryLinks = APP_NAV_ROUTES.map(({ name, label }) => {
         const isActive = activeRoute === name;
-        return `<a href="${basePath}booking/${name === 'manager' ? 'manager' : name}" class="site-navbar-app-link${isActive ? ' is-active' : ''}" data-route="${name}"${isActive ? ' aria-current="page"' : ''}>${label}</a>`;
+        return `<a href="${basePath}booking/${name}" class="site-navbar-app-link${isActive ? ' is-active' : ''}" data-route="${name}"${isActive ? ' aria-current="page"' : ''}>${label}</a>`;
     }).join('');
 
     mountPoint.outerHTML = `
@@ -79,7 +79,7 @@ export function mountAppNavbar(
 /**
  * @param {{ activeRoute?: string, onNavigate?: Function, basePath?: string }} options
  */
-export function updateAppNavbar({ activeRoute, onNavigate, basePath = '../' } = {}) {
+export function updateAppNavbar({ activeRoute, onNavigate } = {}) {
     const navbar = document.querySelector('.site-navbar');
     if (!navbar) return;
 
