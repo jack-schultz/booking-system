@@ -62,7 +62,7 @@ export default defineConfig({
         bookingRoutePlugin(),
         VitePWA({
             registerType: 'autoUpdate',
-            includeAssets: ['style.css'],
+            includeAssets: ['css/shell.css', 'css/auth-pages.css', 'css/booking-app.css', 'css/seed-bookings.css'],
             manifest: {
                 name: 'Booking System',
                 short_name: 'Bookings',

@@ -1,0 +1,111 @@
+.booking-display-list {
+    display: flex;
+    flex-direction: column;
+    row-gap: 24px;
+}
+
+.booking-timeslot-group {
+    background-color: #c8c8c8;
+    border: 2px solid #9a9a9a;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.booking-day-header-panel.booking-timeslot-group {
+    overflow: visible;
+}
+
+.booking-timeslot-heading {
+    padding: 8px 16px;
+    font-size: 24px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    background-color: rgba(0, 0, 0, 0.18);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+    color: #111;
+}
+
+.booking-day-total .booking-timeslot-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-bottom: none;
+}
+
+.booking-timeslot-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+}
+
+.booking-list-item-card {
+    background-color: #8f8f8f;
+    padding: 4px 16px;
+    margin: 0;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.booking-list-item-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.booking-summary-contact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.booking-summary-phone,
+.booking-summary-email {
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.booking-summary-phone {
+    background-color: rgba(46, 125, 50, 0.35);
+}
+
+.booking-summary-phone::before {
+    content: "☎ ";
+}
+
+.booking-summary-email {
+    background-color: rgba(25, 118, 210, 0.35);
+}
+
+.booking-summary-email::before {
+    content: "@ ";
+    font-weight: normal;
+}
+
+.booking-summary-phone.is-empty,
+.booking-summary-email.is-empty {
+    opacity: 0.45;
+    font-weight: normal;
+    text-align: center;
+}
+
+.booking-summary-phone.is-empty::before,
+.booking-summary-email.is-empty::before {
+    content: none;
+}
+
+.booking-list-item-details {
+    display: none;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.booking-list-item-details.is-expanded {
+    display: block;
+}

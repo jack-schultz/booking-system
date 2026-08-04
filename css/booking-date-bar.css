@@ -1,0 +1,211 @@
+.booking-header-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: visible;
+    z-index: 10;
+}
+
+.booking-date-picker-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
+}
+
+.booking-day-header-panel {
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    overflow: visible;
+}
+
+.booking-day-header-panel:hover {
+    background-color: #b8b8b8;
+}
+
+.booking-date-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 6px;
+    background-color: #c8c8c8;
+    border: 2px solid #9a9a9a;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+}
+
+.booking-date-today {
+    flex-shrink: 0;
+    height: 44px;
+    padding: 0 14px;
+    border: 2px solid #9a9a9a;
+    border-radius: 8px;
+    background-color: #c8c8c8;
+    color: #111;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.booking-date-today:hover:not(:disabled) {
+    background-color: #b0b0b0;
+}
+
+.booking-date-today:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.booking-date-dropdown-list {
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+}
+
+.booking-date-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    color: #111;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.booking-date-option-label {
+    min-width: 0;
+}
+
+.booking-date-option-pax {
+    flex-shrink: 0;
+}
+
+.booking-date-option-pax .booking-summary-pax-total {
+    font-size: 18px;
+}
+
+.booking-date-option-pax .booking-summary-pax-breakdown {
+    font-size: 12px;
+}
+
+.booking-date-option:hover {
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+.booking-date-option.is-selected {
+    background-color: #4a90e2;
+    color: #fff;
+    font-weight: bold;
+}
+
+.booking-date-option.is-selected:hover {
+    background-color: #3a7bc8;
+}
+
+.booking-date-option.is-today:not(.is-selected) {
+    font-weight: bold;
+}
+
+.booking-date-month-group + .booking-date-month-group {
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.booking-date-month-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background-color: #b0b0b0;
+    color: #111;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.booking-date-month-toggle:hover {
+    background-color: #a4a4a4;
+}
+
+.booking-date-month-chevron {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.2s ease;
+}
+
+.booking-date-month-group.is-expanded .booking-date-month-chevron {
+    transform: rotate(45deg);
+}
+
+.booking-month-separator-label {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    color: #333
+}
+
+.booking-date-month-days .booking-date-option {
+    padding-left: 24px;
+}
+
+.booking-day-header-heading {
+    border-bottom: none;
+    padding: 12px 16px;
+    font-size: 24px;
+    color: #111;
+    border-radius: 8px;
+}
+
+.booking-header-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.booking-header-title h1 {
+    font-size: 24px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+}
+
+.booking-list-date-left,
+.booking-list-date-right {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 2px solid #9a9a9a;
+    border-radius: 8px;
+    background-color: #c8c8c8;
+    color: #111;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.booking-list-date-left:hover,
+.booking-list-date-right:hover {
+    background-color: #b0b0b0;
+}

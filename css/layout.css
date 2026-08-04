@@ -1,0 +1,58 @@
+.page-content {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Two-column booking pages: primary panel + sidebar */
+.booking-page-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0;
+}
+
+.booking-page-layout--no-sidebar .page-primary-panel {
+    width: 100%;
+}
+
+.booking-page-layout--no-sidebar .page-sidebar-panel {
+    display: none;
+}
+
+.stored-account-prompt {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: whitesmoke;
+    border-radius: 10px;
+}
+
+.stored-account-prompt p {
+    margin: 0 0 0.75rem;
+}
+
+.site-navbar-app-link.is-active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* Left column: forms, lists, and main page content */
+.page-primary-panel {
+    width: 70%;
+    background-color: whitesmoke;
+    padding: 20px;
+    margin: 0;
+    border-radius: 10px;
+}
+
+/* Right column: sidebar navigation */
+.page-sidebar-panel {
+    width: 30%;
+    background-color: whitesmoke;
+    padding: 20px;
+    margin: 0;
+    border-radius: 10px;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+}

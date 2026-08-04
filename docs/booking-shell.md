@@ -249,7 +249,7 @@ In [`ui/bookingSidebar.js`](../ui/bookingSidebar.js), add a route to the `ROUTES
 { name: 'settings', label: 'SETTINGS', className: 'booking-sidebar-nav-link--settings' },
 ```
 
-Add CSS for the new modifier class in [`style.css`](../style.css) if needed.
+Add CSS for the new modifier class in the appropriate file under [`css/`](../css/) (e.g. [`css/booking-sidebar.css`](../css/booking-sidebar.css)) if needed.
 
 ### 5. Register the route for build and dev
 

@@ -17,7 +17,7 @@ Short guide for where code belongs in this project. Full setup and architecture 
 | PowerSync connector / sync | `db/supabaseConnector.js`, `db/sync.js` |
 | Auth / account switching | `auth/accountSwitcher.js`, `auth/accounts.js`, `auth/profiles.js` |
 | App-wide constants | `config/constants.js`, `config/timeslots.js` |
-| Styles | `style.css` |
+| Styles | `css/` — component modules plus page entry files (`shell.css`, `auth-pages.css`, `booking-app.css`, `seed-bookings.css`) |
 | Supabase client config | `supabaseClient.js` + `.env` (see `.env.example`) |
 | Documentation | `docs/*.md` |
 

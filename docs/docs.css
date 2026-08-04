@@ -1,3 +1,5 @@
+@import '../css/shell.css';
+
 .docs-layout {
     display: flex;
     gap: 1.5rem;

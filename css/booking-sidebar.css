@@ -1,0 +1,59 @@
+.booking-sidebar-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.booking-sidebar-nav-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100px;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.booking-sidebar-nav-link.is-active {
+    outline: 3px solid #fff;
+    outline-offset: -3px;
+}
+
+.booking-sidebar-nav-link:hover {
+    background-color: #555;
+}
+
+.booking-sidebar-nav-link:active {
+    transform: scale(0.98);
+}
+
+.booking-sidebar-nav-link--bookings {
+    background-color: darkseagreen;
+}
+
+.booking-sidebar-nav-link--display-table {
+    background-color: #7b8ea0;
+}
+
+.booking-sidebar-nav-link--new-booking {
+    background-color: steelblue;
+}
+
+.booking-sidebar-nav-link--walk-in {
+    background-color: yellowgreen;
+}
+
+.booking-sidebar-nav-link--save {
+    background-color: #333;
+}
