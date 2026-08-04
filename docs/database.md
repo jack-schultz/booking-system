@@ -329,7 +329,9 @@ This is required for worker and WASM loading. Do not remove the `optimizeDeps` o
 
 ## Clearing local data
 
-PowerSync stores data in IndexedDB (via WA-SQLite's default VFS). To reset during development:
+PowerSync stores data in IndexedDB (via WA-SQLite's default VFS). The local filename is `bookings.db` on main/production builds, and `bookings-dev.db` when running on the `dev` git branch locally or when using the `/dev/` preview deployment, This is so dev and production local data stay isolated in the same browser.
+
+To reset during development:
 
 - Chrome DevTools → Application → IndexedDB → delete the database files, or
 - Use an incognito window

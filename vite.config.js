@@ -1,8 +1,29 @@
+import { execSync } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { bookingRoutePlugin } from './vite/bookingRoutePlugin.js';
+
+const DEV_DB_FILENAME = 'bookings-dev.db';
+
+function resolveDbFilename() {
+    if (process.env.VITE_DB_FILENAME) {
+        return process.env.VITE_DB_FILENAME;
+    }
+    try {
+        const branch = execSync('git rev-parse --abbrev-ref HEAD', {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        }).trim();
+        if (branch === 'dev') {
+            return DEV_DB_FILENAME;
+        }
+    } catch {
+        // Not a git repo or git unavailable.
+    }
+    return undefined;
+}
 
 function copyDocsMarkdown() {
     return {
@@ -22,8 +43,13 @@ function copyDocsMarkdown() {
     };
 }
 
+const dbFilename = resolveDbFilename();
+
 export default defineConfig({
     base: process.env.VITE_BASE_PATH ?? '/',
+    define: dbFilename
+        ? { 'import.meta.env.VITE_DB_FILENAME': JSON.stringify(dbFilename) }
+        : undefined,
     root: '.',
     server: {
         port: 5173,
