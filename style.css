@@ -1012,7 +1012,7 @@ a.booking-detail-email:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 20px;
+    padding: 8px;
     border-radius: 999px;
     font-size: 18px;
     font-weight: bold;
@@ -1043,8 +1043,9 @@ a.booking-detail-email:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 20px;
-    border-radius: 999px;
+    padding: 8px;
+    margin-left: 6px;
+    border-radius: 6px;
     font-size: 18px;
     font-weight: bold;
     line-height: 1;

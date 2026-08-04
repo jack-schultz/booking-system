@@ -92,7 +92,7 @@ async function advanceBookingStatus(bookingId, status) {
     await updateBookingStatus(db, bookingId, getActiveRestaurantId(), nextStatus);
 }
 
-function renderBookings(bookings, date) {
+function renderBookings(bookings) {
     const viewRoot = root();
     if (!viewRoot) return;
 
@@ -268,7 +268,7 @@ async function subscribeBookings() {
         .watch();
 
     activeWatch.registerListener({
-        onData: (bookings) => renderBookings(bookings, date),
+        onData: (bookings) => renderBookings(bookings),
     });
 }
 
