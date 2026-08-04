@@ -121,6 +121,10 @@ function renderBookings(bookings, date) {
             preference = `<div class="booking-detail-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</div>`;
         }
 
+        const tableBadge = booking.table_name
+            ? `<div class="booking-summary-table">${booking.table_name}</div>`
+            : '<div class="booking-summary-table is-unassigned">No table</div>';
+
         const statusClass = getBookingStatusClass(booking.status);
         const statusLabel = getBookingStatusLabel(booking.status);
         const status = `<button type="button" class="booking-detail-status ${statusClass}" data-id="${booking.id}">${statusLabel}</button>`;
@@ -131,6 +135,7 @@ function renderBookings(bookings, date) {
             <div class="booking-summary-primary">
                 <div class="booking-detail-time-preference">
                     <span class="booking-summary-name">${booking.first_name} ${booking.last_name}</span>
+                    ${tableBadge}                    
                     ${preference}
                 </div>
                 <span class="booking-summary-time">${formatTimeslot(booking.datetime)}</span>
@@ -253,9 +258,11 @@ async function subscribeBookings() {
 
     activeWatch = db
         .query({
-            sql: `SELECT * FROM bookings
-                  WHERE restaurant_id = ? AND datetime >= ? AND datetime < ?
-                  ORDER BY datetime, last_name`,
+            sql: `SELECT b.*, t.name AS table_name
+                  FROM bookings b
+                  LEFT JOIN tables t ON t.id = b.table_id
+                  WHERE b.restaurant_id = ? AND b.datetime >= ? AND b.datetime < ?
+                  ORDER BY b.datetime, b.last_name`,
             parameters: [restaurantId, toTimestamptz(start), toTimestamptz(end)],
         })
         .watch();

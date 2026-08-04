@@ -37,7 +37,7 @@ export function formatTableLabel(table) {
     if (table.pax_max == null) {
         return table.name;
     }
-    return `${table.name} (${table.pax_max} max)`;
+    return `${table.name}`;
 }
 
 /** @param {number} bookingCount */

@@ -1039,6 +1039,31 @@ a.booking-detail-email:hover {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
+.booking-summary-table {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    opacity: 0.85;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+    white-space: nowrap;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: rgba(96, 125, 139, 0.45);
+}
+
+.booking-summary-table.is-unassigned {
+    opacity: 0.55;
+    font-weight: normal;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
 .booking-detail-status.is-pending {
     background-color: rgba(192, 57, 43, 0.55);
 }
