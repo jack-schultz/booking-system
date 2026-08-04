@@ -933,6 +933,10 @@ Booking display list
     gap: 4px;
 }
 
+.booking-detail-time-preference .booking-display-table-notes-indicator {
+    font-size: 18px;
+}
+
 .booking-detail-pax-total {
     font-size: 40px;
     font-weight: bold;
@@ -1145,7 +1149,7 @@ Booking table view
 .booking-display-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 17px;
     background-color: #c8c8c8;
     border: 2px solid #9a9a9a;
     border-radius: 12px;
@@ -1157,8 +1161,8 @@ Booking table view
 }
 
 .booking-display-table th {
-    padding: 6px 10px;
-    font-size: 13px;
+    padding: 10px 12px;
+    font-size: 16px;
     font-weight: bold;
     text-align: left;
     border-bottom: 2px solid rgba(0, 0, 0, 0.12);
@@ -1176,12 +1180,13 @@ Booking table view
 }
 
 .booking-display-table-row td {
-    padding: 4px 10px;
+    padding: 4px 12px;
     vertical-align: middle;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .booking-display-table-time {
+    font-size: 18px;
     font-variant-numeric: tabular-nums;
     font-weight: bold;
     white-space: nowrap;
@@ -1193,6 +1198,7 @@ Booking table view
 }
 
 .booking-display-table-name {
+    font-size: 18px;
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
@@ -1202,23 +1208,47 @@ Booking table view
 .booking-display-table-preference {
     display: inline-block;
     margin-left: 6px;
-    padding: 1px 6px;
+    padding: 2px 8px;
     border-radius: 999px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: bold;
     background-color: rgba(255, 255, 255, 0.25);
     text-transform: capitalize;
 }
 
+.booking-display-table-notes-header {
+    width: 1%;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.booking-display-table-notes {
+    width: 1%;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.booking-display-table-notes-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.35;
+}
+
+.booking-display-table-notes-indicator.has-notes {
+    opacity: 1;
+}
+
 .booking-display-table-table {
     white-space: nowrap;
-    font-weight: bold;
 }
 
 .booking-display-table-table .booking-summary-table {
-    padding: 2px 6px;
+    padding: 4px 10px;
     margin-left: 0;
-    font-size: 13px;
+    font-size: 18px;
 }
 
 .booking-display-table-pax {
@@ -1228,22 +1258,22 @@ Booking table view
 .booking-display-table-pax .booking-summary-pax {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 }
 
 .booking-display-table-pax .booking-summary-pax-total {
-    font-size: 16px;
-    padding: 1px 6px;
-    border-width: 1px;
+    font-size: 20px;
+    padding: 2px 8px;
+    border-width: 2px;
 }
 
 .booking-display-table-pax .booking-summary-pax-breakdown {
-    font-size: 11px;
-    gap: 2px;
+    font-size: 13px;
+    gap: 4px;
 }
 
 .booking-display-table-pax .booking-summary-pax-breakdown span {
-    padding: 1px 4px;
+    padding: 2px 6px;
 }
 
 .booking-display-table-status {
@@ -1252,8 +1282,8 @@ Booking table view
 }
 
 .booking-display-table-status .booking-detail-status {
-    padding: 3px 8px;
-    font-size: 12px;
+    padding: 4px 12px;
+    font-size: 15px;
 }
 
 .booking-display-table-details {
@@ -1281,12 +1311,12 @@ Booking table view
 .booking-display-table-totals {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 10px;
+    padding: 12px 14px;
     background-color: #c8c8c8;
     border: 2px solid #9a9a9a;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 16px;
 }
 
 .booking-display-table-totals-item {
@@ -1301,17 +1331,17 @@ Booking table view
 }
 
 .booking-display-table-totals-count {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: bold;
     font-variant-numeric: tabular-nums;
 }
 
 .booking-display-table-totals .booking-summary-pax-total {
-    font-size: 18px;
+    font-size: 22px;
 }
 
 .booking-display-table-totals .booking-summary-pax-breakdown {
-    font-size: 11px;
+    font-size: 13px;
 }
 
 /*

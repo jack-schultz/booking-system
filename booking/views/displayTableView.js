@@ -93,6 +93,7 @@ function renderBookings(bookings) {
             <tr>
                 <th>Time</th>
                 <th>Guest</th>
+                <th class="booking-display-table-notes-header" aria-label="Notes"><span aria-hidden="true">Notes</span></th>
                 <th>Table</th>
                 <th>Pax</th>
                 <th>Status</th>
@@ -109,8 +110,12 @@ function renderBookings(bookings) {
             : '';
 
         const tableCell = booking.table_name
-            ? booking.table_name
+            ? `<span class="booking-summary-table">${booking.table_name}</span>`
             : '<span class="booking-summary-table is-unassigned">No table</span>';
+
+        const notesCell = booking.notes?.trim()
+            ? '<span class="booking-display-table-notes-indicator has-notes" title="Has notes" aria-label="Has notes">📝</span>'
+            : '';
 
         const statusClass = getBookingStatusClass(booking.status);
         const statusLabel = getBookingStatusLabel(booking.status);
@@ -123,6 +128,7 @@ function renderBookings(bookings) {
                 <span class="booking-display-table-name">${booking.first_name} ${booking.last_name}</span>
                 ${preference}
             </td>
+            <td class="booking-display-table-notes">${notesCell}</td>
             <td class="booking-display-table-table">${tableCell}</td>
             <td class="booking-display-table-pax"><span class="booking-summary-pax">${formatPaxBreakdown(booking)}</span></td>
             <td class="booking-display-table-status">
@@ -133,7 +139,7 @@ function renderBookings(bookings) {
         const detailRow = document.createElement('tr');
         detailRow.className = 'booking-display-table-details';
         detailRow.innerHTML = `
-            <td colspan="5">
+            <td colspan="6">
                 <div class="booking-detail-grid">
                     <div class="booking-detail-contact">
                         ${booking.phone_number

@@ -124,6 +124,10 @@ function renderBookings(bookings) {
             ? `<div class="booking-summary-table">${booking.table_name}</div>`
             : '<div class="booking-summary-table is-unassigned">No table</div>';
 
+        const notesIndicator = booking.notes?.trim()
+            ? '<span class="booking-display-table-notes-indicator has-notes" title="Has notes" aria-label="Has notes">📝</span>'
+            : '';
+
         const statusClass = getBookingStatusClass(booking.status);
         const statusLabel = getBookingStatusLabel(booking.status);
         const status = `<button type="button" class="booking-detail-status ${statusClass}" data-id="${booking.id}">${statusLabel}</button>`;
@@ -134,6 +138,7 @@ function renderBookings(bookings) {
             <div class="booking-summary-primary">
                 <div class="booking-detail-time-preference">
                     <span class="booking-summary-name">${booking.first_name} ${booking.last_name}</span>
+                    ${notesIndicator}
                     ${tableBadge}                    
                     ${preference}
                 </div>

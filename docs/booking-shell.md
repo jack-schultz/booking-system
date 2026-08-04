@@ -52,7 +52,7 @@ These trade-offs are intentional: the shell optimizes the high-frequency path (s
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                         Booking shell (one session)                       │
 │                                                                           │
-│  booking/app.html  (+ build copies → booking/display-list, create, walkin)     │
+│  booking/app.html  (+ build copies → booking/display-list, create, walkin)│
 │       │                                                                   │
 │       ▼                                                                   │
 │  booking/app.js ─────┬────────────────────────────────────────────┐       │
@@ -68,8 +68,8 @@ These trade-offs are intentional: the shell optimizes the high-frequency path (s
 │                                      │                                    │
 │                    ┌─────────────────┼─────────────────┐                  │
 │                    ▼                 ▼                 ▼                  │
-│            displayListView.js     createView.js     walkinView.js             │
-│            #view-display-list        #view-create      #view-walkin            │
+│            displayListView.js     createView.js     walkinView.js         │
+│            #view-display-list        #view-create      #view-walkin       │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -106,7 +106,7 @@ The shell HTML includes a small inline script in `<head>` that hides the wrong v
 
 ## Client-side navigation
 
-```mermaid
+```
   ┌──────┐         ┌───────────────────┐         ┌───────────┐  ┌──────────────┐   ┌───────────┐
   │ User │         │ bookingSidebar.js │         │ router.js │  │ current view │   │ next view │
   └───┬──┘         └─────────┬─────────┘         └─────┬─────┘  └───────┬──────┘   └─────┬─────┘
