@@ -20,6 +20,7 @@ import {
     getDateRange,
     mountBookingDateBar,
 } from '../../ui/bookingDateBar.js';
+import { escapeHtml } from '../../ui/escapeHtml.js';
 
 /** @type {AbortController | null} */
 let abortController = null;
@@ -115,13 +116,17 @@ function renderBookings(bookings) {
             bookingList,
         );
 
+        // Guest-controlled fields must be escaped before innerHTML — see ui/escapeHtml.js.
         let preference = '';
         if (booking.preference !== 'none') {
-            preference = `<div class="booking-detail-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</div>`;
+            const preferenceLabel = escapeHtml(
+                booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1),
+            );
+            preference = `<div class="booking-detail-preference">${preferenceLabel}</div>`;
         }
 
         const tableBadge = booking.table_name
-            ? `<div class="booking-summary-table">${booking.table_name}</div>`
+            ? `<div class="booking-summary-table">${escapeHtml(booking.table_name)}</div>`
             : '<div class="booking-summary-table is-unassigned">No table</div>';
 
         const notesIndicator = booking.notes?.trim()
@@ -131,13 +136,16 @@ function renderBookings(bookings) {
         const statusClass = getBookingStatusClass(booking.status);
         const statusLabel = getBookingStatusLabel(booking.status);
         const status = `<button type="button" class="booking-detail-status ${statusClass}" data-id="${booking.id}">${statusLabel}</button>`;
+        // Escape for both link text and href so quotes cannot break out of the attribute.
+        const safePhone = escapeHtml(booking.phone_number);
+        const safeEmail = escapeHtml(booking.email);
 
         const bookingDiv = document.createElement('div');
         bookingDiv.className = 'booking-list-item-card';
         bookingDiv.innerHTML = `
             <div class="booking-summary-primary">
                 <div class="booking-detail-time-preference">
-                    <span class="booking-summary-name">${booking.first_name} ${booking.last_name}</span>
+                    <span class="booking-summary-name">${escapeHtml(booking.first_name)} ${escapeHtml(booking.last_name)}</span>
                     ${notesIndicator}
                     ${tableBadge}                    
                     ${preference}
@@ -153,14 +161,14 @@ function renderBookings(bookings) {
                 <div class="booking-detail-grid">
                     <div class="booking-detail-contact">
                         ${booking.phone_number
-                            ? `<a class="booking-detail-phone" href="tel:${booking.phone_number}">${booking.phone_number}</a>`
+                            ? `<a class="booking-detail-phone" href="tel:${safePhone}">${safePhone}</a>`
                             : '<span class="booking-detail-phone booking-detail-empty">—</span>'}
                         ${booking.email
-                            ? `<a class="booking-detail-email" href="mailto:${booking.email}">${booking.email}</a>`
+                            ? `<a class="booking-detail-email" href="mailto:${safeEmail}">${safeEmail}</a>`
                             : '<span class="booking-detail-email booking-detail-empty">No Email</span>'}
                     </div>
                     
-                    <div class="booking-detail-notes${booking.notes ? '' : ' is-empty'}">${booking.notes || 'No notes'}</div>
+                    <div class="booking-detail-notes${booking.notes ? '' : ' is-empty'}">${booking.notes ? escapeHtml(booking.notes) : 'No notes'}</div>
                 </div>
 
                 <div class="booking-actions-row">

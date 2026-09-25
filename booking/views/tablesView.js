@@ -12,6 +12,7 @@ import {
     hasAssignedRestaurant,
 } from '../../auth/accountSwitcher.js';
 import { isOnline } from '../../config/connectivity.js';
+import { escapeHtml } from '../../ui/escapeHtml.js';
 
 /** @type {AbortController | null} */
 let abortController = null;
@@ -137,14 +138,6 @@ async function renderTablesFromWatch(tables) {
     renderTables(tables);
 }
 
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-}
-
 function renderTables(tables) {
     const tablesList = root()?.querySelector('#tables-list');
     if (!tablesList) return;
@@ -169,6 +162,7 @@ function renderTables(tables) {
     const rows = tables.map((table) => {
         const paxDisplay = table.pax_max == null ? '—' : String(table.pax_max);
         const disabledAttr = mutationsDisabled ? ' disabled' : '';
+        // Table names are user-configured; escape before innerHTML (see ui/escapeHtml.js).
         return `
             <tr data-id="${table.id}">
                 <td>${escapeHtml(formatTableLabel(table))}</td>

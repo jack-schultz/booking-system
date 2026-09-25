@@ -4,6 +4,7 @@ import {
     getRecentIssues,
     getDownloadActivityLog,
 } from '../../db/syncStatus.js';
+import { escapeHtml } from '../../ui/escapeHtml.js';
 
 /** @type {AbortController | null} */
 let abortController = null;
@@ -29,12 +30,6 @@ function healthLabel(health) {
     if (health === 'offline') return 'Offline';
     if (health === 'warning') return 'Attention needed';
     return 'Up to date';
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 function renderSummary(snapshot) {
@@ -93,6 +88,7 @@ function renderSummary(snapshot) {
 }
 
 function renderUploadItem(entry) {
+    // Pending uploads may include guest booking fields — escape before innerHTML.
     const name = [entry.opData?.first_name, entry.opData?.last_name].filter(Boolean).join(' ');
     const datetime = entry.opData?.datetime ?? '';
     const status = entry.opData?.status ?? '';

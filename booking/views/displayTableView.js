@@ -17,6 +17,7 @@ import {
     getDateRange,
     mountBookingDateBar,
 } from '../../ui/bookingDateBar.js';
+import { escapeHtml } from '../../ui/escapeHtml.js';
 
 /** @type {AbortController | null} */
 let abortController = null;
@@ -105,12 +106,13 @@ function renderBookings(bookings) {
     const tbody = table.querySelector('tbody');
 
     bookings.forEach((booking) => {
+        // Guest-controlled fields must be escaped before innerHTML — see ui/escapeHtml.js.
         const preference = booking.preference !== 'none'
-            ? `<span class="booking-display-table-preference">${booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1)}</span>`
+            ? `<span class="booking-display-table-preference">${escapeHtml(booking.preference.charAt(0).toUpperCase() + booking.preference.slice(1))}</span>`
             : '';
 
         const tableCell = booking.table_name
-            ? `<span class="booking-summary-table">${booking.table_name}</span>`
+            ? `<span class="booking-summary-table">${escapeHtml(booking.table_name)}</span>`
             : '<span class="booking-summary-table is-unassigned">No table</span>';
 
         const notesCell = booking.notes?.trim()
@@ -119,13 +121,16 @@ function renderBookings(bookings) {
 
         const statusClass = getBookingStatusClass(booking.status);
         const statusLabel = getBookingStatusLabel(booking.status);
+        // Escape for both link text and href so quotes cannot break out of the attribute.
+        const safePhone = escapeHtml(booking.phone_number);
+        const safeEmail = escapeHtml(booking.email);
 
         const row = document.createElement('tr');
         row.className = 'booking-display-table-row';
         row.innerHTML = `
             <td class="booking-display-table-time">${formatTimeslot(booking.datetime)}</td>
             <td class="booking-display-table-guest">
-                <span class="booking-display-table-name">${booking.first_name} ${booking.last_name}</span>
+                <span class="booking-display-table-name">${escapeHtml(booking.first_name)} ${escapeHtml(booking.last_name)}</span>
                 ${preference}
             </td>
             <td class="booking-display-table-notes">${notesCell}</td>
@@ -143,13 +148,13 @@ function renderBookings(bookings) {
                 <div class="booking-detail-grid">
                     <div class="booking-detail-contact">
                         ${booking.phone_number
-                            ? `<a class="booking-detail-phone" href="tel:${booking.phone_number}">${booking.phone_number}</a>`
+                            ? `<a class="booking-detail-phone" href="tel:${safePhone}">${safePhone}</a>`
                             : '<span class="booking-detail-phone booking-detail-empty">—</span>'}
                         ${booking.email
-                            ? `<a class="booking-detail-email" href="mailto:${booking.email}">${booking.email}</a>`
+                            ? `<a class="booking-detail-email" href="mailto:${safeEmail}">${safeEmail}</a>`
                             : '<span class="booking-detail-email booking-detail-empty">No Email</span>'}
                     </div>
-                    <div class="booking-detail-notes${booking.notes ? '' : ' is-empty'}">${booking.notes || 'No notes'}</div>
+                    <div class="booking-detail-notes${booking.notes ? '' : ' is-empty'}">${booking.notes ? escapeHtml(booking.notes) : 'No notes'}</div>
                 </div>
                 <div class="booking-actions-row">
                     <button class="booking-action-edit" data-id="${booking.id}">Edit</button>
